@@ -84,10 +84,10 @@ def _format_column_for_prompt(column: dict[str, Any], *, indent: str = "") -> st
 
 
 # Dialects whose connection does *not* bind the catalog, so a name has to carry
-# it explicitly. These are exactly the connectors that override
-# ``SQLDatabase.qualify`` to prepend it (``auto_ontology.connectors.kyuubi``,
-# ``auto_ontology.connectors.trino``); everywhere else the session is already scoped to
-# the database and a two-part name resolves.
+# it explicitly: engines whose connector overrides ``SQLDatabase.qualify`` to
+# prepend it (Spark- and Trino-style catalogs; none of the connectors shipped
+# today). Everywhere else the session is already scoped to the database and a
+# two-part name resolves.
 _CATALOG_QUALIFIED_DIALECTS = frozenset({"spark", "trino"})
 
 

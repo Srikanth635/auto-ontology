@@ -59,7 +59,7 @@ statuses:
   - blocked
 gates:
   - target mode and destructive actions are approved before commands run
-  - the published Helm chart is the default install; setup_env.sh is for developer workflows only
+  - Docker Compose is the default install; setup_env.sh is for developer workflows only
   - the public web origin is used for REST and MCP discovery
   - source connection succeeds before ingestion is treated as complete
   - ingest and query use the same embedding endpoint and model
@@ -67,7 +67,6 @@ gates:
 fail_closed_when:
   - required model credentials are absent
   - authentication secrets would be printed or committed
-  - partial Vault configuration is being treated as protected storage
   - connection ingestion or compilation evidence is missing
 handoffs:
   - nvidia-ontology-management for inspection modeling mutation or publication

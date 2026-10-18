@@ -10,8 +10,7 @@
 //   export const POST = withPermission({ acronym: ['create'] })(async (req, { user }) => { ... });
 //
 // `withPermission` resolves the caller via resolveUser() — a Better Auth session
-// cookie (browser) or a verified SSO bearer token (service callers such as AI-Q)
-// — checks the permission with userCan(), and injects the resolved `user` into
+// cookie (browser), an API token, or an MCP OAuth access token — checks the permission with userCan(), and injects the resolved `user` into
 // the handler context. Dynamic-route params are preserved, so handlers still
 // receive `{ params, user }`.
 

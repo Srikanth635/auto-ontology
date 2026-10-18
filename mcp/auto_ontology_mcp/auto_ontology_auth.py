@@ -8,7 +8,7 @@ This server could instead sit between the client and the deployment's identity
 provider. That works, but it has to be told a client id, a client secret, and a
 redirect URI that someone registered with that provider first — a ticket for
 every deployment, and a secret to hold and rotate. Auto Ontology already knows how to sign
-a person in, including through SSO, so it does, and this server carries no
+a person in, so it does, and this server carries no
 credentials at all.
 
 What that buys, concretely:
@@ -116,7 +116,7 @@ def build_auto_ontology_auth(settings: Settings) -> RemoteAuthProvider:
     Publishing Auto Ontology's URL here is the whole handshake: a client that gets a 401
     reads this server's protected-resource metadata, finds Auto Ontology, discovers Auto Ontology's
     endpoints, registers itself, and sends the user to Auto Ontology's ordinary login
-    page — which already knows how to do SSO.
+    page.
     """
     return RemoteAuthProvider(
         token_verifier=AutoOntologyTokenVerifier(

@@ -16,11 +16,6 @@ from auto_ontology.connectors.registry import (
     create_connector,
     invalidate_connectors_cache,
 )
-from auto_ontology.connectors.vault import (
-    delete_secrets,
-    is_vault_configured,
-    write_secret,
-)
 from auto_ontology.server.ingestion.proxy import trigger_ingest, trigger_reset
 from auto_ontology.server.chat.worker import refresh_chat_workers
 from auto_ontology.dal.connections import (
@@ -104,16 +99,9 @@ def _refresh_connection_caches() -> None:
     would compare the new list against itself and skip it again — permanently.
     A stale cache, by contrast, costs one refresh.
     """
-    # Imported here rather than at module scope: ``databricks_oauth`` reaches
-    # back into the server package, so a top-level import is circular.
-    from auto_ontology.connectors.databricks_oauth import (
-        invalidate_sso_federation_cache,
-    )
-
     caches = (
         ("connectors", invalidate_connectors_cache),
         ("chat workers", refresh_chat_workers),
-        ("SSO federation", invalidate_sso_federation_cache),
     )
     for name, refresh in caches:
         try:
@@ -210,13 +198,8 @@ def create_connection(
     if _database_already_connected(database_name):
         raise ValueError(f"A connection for database {database_name!r} already exists")
 
-    # With Vault configured, store credentials in Vault and keep them off the
-    # catalog row; otherwise fall back to persisting the JSON on the row.
-    vault_configured = is_vault_configured()
-    if vault_configured:
-        write_secret(database_name, connection)
     insert_connection(
-        connection=json.dumps(connection) if not vault_configured else "",
+        connection=json.dumps(connection),
         database_name=database_name,
     )
 
@@ -269,16 +252,10 @@ def update_connection(
         stored,
     )
 
-    if is_vault_configured():
-        write_secret(database_name, updated)
-        # Blank out any credentials the row still carries from before Vault was
-        # configured, so there is only ever one copy of them.
-        insert_connection(connection="", database_name=database_name)
-    else:
-        insert_connection(
-            connection=json.dumps(updated),
-            database_name=database_name,
-        )
+    insert_connection(
+        connection=json.dumps(updated),
+        database_name=database_name,
+    )
 
     _refresh_connection_caches()
 
@@ -286,36 +263,6 @@ def update_connection(
         trigger_ingest(updated)
 
     return updated
-
-
-def set_sso_federation(*, database_name: str, enabled: bool) -> dict[str, Any]:
-    """Toggle "authenticate as signed-in user" on an existing connection.
-
-    Deliberately narrow: it rewrites only the ``sso_federation`` flag on the
-    stored connection, so callers never have to re-send credentials to change
-    it. Ingestion is unaffected — it always uses the stored access token — so
-    no re-ingest is triggered.
-    """
-    connection = _stored_connection(database_name)
-    if connection is None:
-        raise ValueError(f"No connection found for database {database_name!r}")
-
-    updated = {**connection, "sso_federation": enabled}
-
-    if is_vault_configured():
-        write_secret(database_name, updated)
-    else:
-        insert_connection(
-            connection=json.dumps(updated),
-            database_name=database_name,
-        )
-
-    # Connectors cache the credential, chat workers hold connectors, and the
-    # chat endpoint caches this very flag, so all three have to be rebuilt for
-    # the change to take effect on the next question rather than after a TTL.
-    _refresh_connection_caches()
-
-    return {"database_name": database_name, "sso_federation": enabled}
 
 
 def delete_connection(database_name: str) -> dict[str, str] | None:
@@ -336,12 +283,6 @@ def delete_connection(database_name: str) -> dict[str, str] | None:
     """
     if _stored_connection(database_name) is None:
         return None
-
-    # Vault first: `list_connections` prefers a secret over the row, so failing
-    # after the row is cleared would resurrect the connection, while failing
-    # after the secret is gone cannot.
-    if is_vault_configured():
-        delete_secrets(database_name)
 
     clear_connection(database_name=database_name)
 

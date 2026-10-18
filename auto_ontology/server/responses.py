@@ -46,7 +46,6 @@ from auto_ontology.server.models import (
     SqlExplorationDetails,
     SqlExpressionValidationResult,
     SqlValidationResult,
-    SsoFederationState,
     TableColumns,
     TableExplorationDetails,
     TableSummary,
@@ -115,7 +114,6 @@ __all__ = [
     "SqlExplorationDetailsResponse",
     "SqlExpressionValidationResponse",
     "SqlValidationResponse",
-    "SsoFederationResponse",
     "StatusResponse",
     "TableColumnsPageResponse",
     "TableExplorationDetailsResponse",
@@ -359,7 +357,6 @@ TableZonesResponse = DataResponse[dict[str, list[ZoneChip]]]
 # Connections
 ConnectionResponse = DataResponse[PublicConnection]
 ConnectionListResponse = ListResponse[PublicConnection]
-SsoFederationResponse = DataResponse[SsoFederationState]
 
 # Metadata
 EntityCoverageResponse = DataResponse[EntityCoverageResult]

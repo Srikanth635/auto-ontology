@@ -10,8 +10,8 @@ which is where authentication and permission checks live. So all it needs is the
 base URL of a Auto Ontology deployment.
 
 It holds no credential of its own, and there is no setting that would give it
-one. Callers sign in against Auto Ontology itself — the same login page and the same SSO
-behind it that they would meet in a browser — and every call then runs as the
+one. Callers sign in against Auto Ontology itself — the same login page they would meet
+in a browser — and every call then runs as the
 person who signed in, with exactly their permissions. Nothing to mint, paste, or
 share, and no way to configure a single identity that everybody silently
 inherits.

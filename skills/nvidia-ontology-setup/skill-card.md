@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 ## Description: <br>
-Set up or troubleshoot the Auto Ontology runtime, covering Helm (the official install), Docker Compose, developer setup, and MCP connection to an existing deployment. <br>
+Set up or troubleshoot the Auto Ontology runtime, covering Docker Compose, developer setup, and MCP connection to an existing deployment. <br>
 
 This skill is ready for commercial/non-commercial use. <br>
 
@@ -15,7 +15,7 @@ NVIDIA <br>
 ### License/Terms of Use: <br>
 Apache 2.0 <br>
 ## Use Case: <br>
-Developers and platform engineers use this skill to install Auto Ontology with the published Helm chart or Docker Compose, run developer workflows, connect a source database, verify readiness, and connect an MCP client to a deployment that is already running. <br>
+Developers and platform engineers use this skill to install Auto Ontology with Docker Compose, run developer workflows, connect a source database, verify readiness, and connect an MCP client to a deployment that is already running. <br>
 
 ### Deployment Geography for Use: <br>
 Global <br>

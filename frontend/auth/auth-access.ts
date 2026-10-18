@@ -16,7 +16,6 @@ const applicationStatements = {
 	analytics: ['read'],
 	acronym: ['read', 'create', 'update', 'delete'],
 	prompt: ['read', 'create', 'update', 'delete'],
-	sso: ['read', 'manage'],
 	conversation: ['read', 'write', 'delete'],
 	chat: ['use'],
 	analysis: ['read', 'manage'],

@@ -23,7 +23,7 @@ const SemanticCompilationPage = async () => {
 		readConnectionsEnvSource(),
 	]);
 	// `connections.count` only reflects UI-managed connections (stored on the
-	// catalog database row / Vault) — it's always 0 when connections instead
+	// catalog database row) — it's always 0 when connections instead
 	// come from CONNECTION_STRINGS, since that path never writes either. Treat
 	// env-managed mode as "databases connected" too, otherwise this would tell
 	// an operator to "connect a data source" they already configured.

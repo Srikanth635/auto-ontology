@@ -420,10 +420,9 @@ def test_insert_connection_updates_an_existing_database(world) -> None:
     assert row["connection"] == {"host": "second"}
 
 
-def test_databases_without_a_connection_are_skipped(world, monkeypatch) -> None:
+def test_databases_without_a_connection_are_skipped(world) -> None:
     """This is "connections", not "databases" — an ingested catalog with no UI
     connection has nothing to return."""
-    monkeypatch.setattr(conn, "read_secret", lambda name: None)
     before = conn.list_connections()
 
     conn.insert_connection(connection='{"host": "db"}', database_name=world.prefix)
@@ -431,17 +430,6 @@ def test_databases_without_a_connection_are_skipped(world, monkeypatch) -> None:
 
     assert {"host": "db"} in after
     assert len(after) == len(before) + 1
-
-
-def test_a_vault_secret_wins_over_the_stored_connection(world, monkeypatch) -> None:
-    conn.insert_connection(connection='{"host": "stored"}', database_name=world.prefix)
-    monkeypatch.setattr(
-        conn,
-        "read_secret",
-        lambda name: {"host": "vault"} if name == world.prefix else None,
-    )
-    assert {"host": "vault"} in conn.list_connections()
-    assert {"host": "stored"} not in conn.list_connections()
 
 
 def test_verify_connectivity_succeeds_against_a_live_store() -> None:

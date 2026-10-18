@@ -22,7 +22,6 @@ const SEMANTIC_INPUT_NAV_ITEM: NavItem = {
 	href: '/settings/semantic-input',
 };
 const USERS_NAV_ITEM: NavItem = { label: 'Users', href: '/settings/users' };
-const SSO_NAV_ITEM: NavItem = { label: 'Single Sign-On', href: '/settings/sso' };
 const SEMANTIC_COMPILATION_NAV_ITEM: NavItem = {
 	label: 'Semantic Compilation',
 	href: '/settings/semantic-compilation',
@@ -68,7 +67,6 @@ export const SettingsNav = ({ connectionsEnvManaged }: SettingsNavProps) => {
 		PII_SETTINGS_NAV_ITEM,
 		SEMANTIC_INPUT_NAV_ITEM,
 		USERS_NAV_ITEM,
-		SSO_NAV_ITEM,
 		SEMANTIC_COMPILATION_NAV_ITEM,
 		AGENT_SETTINGS_NAV_ITEM,
 		IMPORT_EXPORT_NAV_ITEM,

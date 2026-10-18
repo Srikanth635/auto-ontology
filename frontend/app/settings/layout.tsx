@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 	title: 'Settings',
 };
 
-// The entire Settings section (Connections, Zones, Users, SSO) is admin-only.
+// The entire Settings section (Connections, Zones, Users) is admin-only.
 // This is the real gate; the nav rail also hides Settings from non-admins.
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
 	await requireAdmin();

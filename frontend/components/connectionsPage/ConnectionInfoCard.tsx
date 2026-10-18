@@ -10,16 +10,12 @@ import { Icon, IconName } from '@/common/icons';
 import { PopoverMenu } from '@/common/PopoverMenu';
 import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
-import { ConnectionType } from '@/enums/connection';
 import type { Connection } from '@/types/connection';
 
 export type ConnectionInfoCardProps = {
 	connection: Connection;
 	onEdit?: (connection: Connection) => void;
 	onDelete?: (databaseName: string) => void;
-	onSsoFederationChange?: (databaseName: string, enabled: boolean) => void;
-	/** Disables the toggle while its request is in flight. */
-	ssoFederationPending?: boolean;
 	disabled?: boolean;
 };
 
@@ -27,8 +23,6 @@ export const ConnectionInfoCard = ({
 	connection,
 	onEdit,
 	onDelete,
-	onSsoFederationChange,
-	ssoFederationPending = false,
 	disabled = false,
 }: ConnectionInfoCardProps) => {
 	const menuItems = [
@@ -53,11 +47,6 @@ export const ConnectionInfoCard = ({
 				]),
 	];
 	const menuDisabled = disabled || menuItems.length === 0;
-	// Only Databricks supports authenticating as the signed-in user.
-	const databricks =
-		connection.connection.type === ConnectionType.DATABRICKS ? connection.connection : null;
-	const showSsoFederation = databricks != null && onSsoFederationChange != null;
-	const ssoFederationOn = databricks?.sso_federation === true;
 
 	return (
 		<article className="flex h-fit flex-col rounded-lg border border-zinc-200/90 bg-white shadow-sm dark:border-zinc-700/90 dark:bg-zinc-950">
@@ -99,32 +88,6 @@ export const ConnectionInfoCard = ({
 					)}
 				</div>
 			</header>
-			{showSsoFederation && (
-				<div className="border-t border-zinc-200/90 px-4 py-3 dark:border-zinc-700/90">
-					<label className="flex cursor-pointer items-start gap-2">
-						<input
-							type="checkbox"
-							checked={ssoFederationOn}
-							disabled={disabled || ssoFederationPending}
-							onChange={({ target }) =>
-								onSsoFederationChange(connection.database_name, target.checked)
-							}
-							data-testid={`sso-federation-${connection.database_name}`}
-							className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-300 accent-[#76b900] disabled:cursor-default dark:border-zinc-600"
-						/>
-						<span className="min-w-0">
-							<span className="block text-xs font-medium text-heading dark:text-zinc-200">
-								Authenticate as Signed-In User
-							</span>
-							<span className="block text-xs text-secondary dark:text-zinc-400">
-								{ssoFederationOn
-									? 'Chat runs SQL with each user’s own Databricks privileges.'
-									: 'Chat runs SQL with this connection’s stored access token.'}
-							</span>
-						</span>
-					</label>
-				</div>
-			)}
 		</article>
 	);
 };

@@ -7,10 +7,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const tabs = [
-	{ href: '/admin/users', label: 'Users' },
-	{ href: '/admin/sso', label: 'Single Sign-On' },
-];
+const tabs = [{ href: '/admin/users', label: 'Users' }];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 	const pathname = usePathname();

@@ -33,12 +33,11 @@ def _kyuubi_connection() -> dict[str, object]:
     }
 
 
-def test_create_connection_persists_connection_without_vault() -> None:
+def test_create_connection_persists_connection_on_the_row() -> None:
     connection = _snowflake_connection()
 
     with (
         patch.object(service, "_database_already_connected", return_value=False),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,
         patch.object(service, "invalidate_connectors_cache"),
         patch.object(service, "refresh_chat_workers"),
@@ -182,7 +181,6 @@ def test_update_connection_keeps_the_stored_secret_when_left_blank() -> None:
 
     with (
         patch.object(service, "_stored_connection", return_value=stored),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,
         patch.object(service, "_refresh_connection_caches"),
         patch.object(service, "trigger_ingest") as trigger_ingest,
@@ -204,7 +202,6 @@ def test_update_connection_keeps_the_stored_truststore_password() -> None:
     none to send back and a blank field must not wipe it."""
     with (
         patch.object(service, "_stored_connection", return_value=_kyuubi_connection()),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,
         patch.object(service, "_refresh_connection_caches"),
         patch.object(service, "trigger_ingest"),
@@ -231,7 +228,6 @@ def test_update_connection_reingests_even_when_a_cache_refresh_fails() -> None:
         patch.object(
             service, "_stored_connection", return_value=_snowflake_connection()
         ),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection"),
         patch.object(service, "invalidate_connectors_cache"),
         patch.object(
@@ -252,7 +248,6 @@ def test_update_connection_reingests_when_the_schema_allowlist_changes() -> None
         patch.object(
             service, "_stored_connection", return_value=_snowflake_connection()
         ),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection"),
         patch.object(service, "_refresh_connection_caches"),
         patch.object(service, "trigger_ingest") as trigger_ingest,
@@ -302,7 +297,6 @@ def test_delete_connection_clears_the_stored_record() -> None:
         patch.object(
             service, "_stored_connection", return_value=_snowflake_connection()
         ),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "clear_connection") as clear_connection,
         patch.object(service, "_refresh_connection_caches"),
         patch.object(service, "trigger_reset") as trigger_reset,
@@ -312,30 +306,6 @@ def test_delete_connection_clears_the_stored_record() -> None:
     clear_connection.assert_called_once_with(database_name="database")
     trigger_reset.assert_called_once_with("database")
     assert result == {"database_name": "database"}
-
-
-def test_delete_connection_removes_the_vault_secret_before_the_row() -> None:
-    """`list_connections` prefers a Vault secret over the row, so clearing the
-    row first would resurrect the connection if the secret delete then failed."""
-    calls: list[str] = []
-
-    with (
-        patch.object(
-            service, "_stored_connection", return_value=_snowflake_connection()
-        ),
-        patch.object(service, "is_vault_configured", return_value=True),
-        patch.object(
-            service, "delete_secrets", side_effect=lambda *_: calls.append("vault")
-        ),
-        patch.object(
-            service, "clear_connection", side_effect=lambda **_: calls.append("row")
-        ),
-        patch.object(service, "_refresh_connection_caches"),
-        patch.object(service, "trigger_reset"),
-    ):
-        service.delete_connection("database")
-
-    assert calls == ["vault", "row"]
 
 
 def test_delete_connection_reports_an_unknown_database_as_missing() -> None:
@@ -357,7 +327,6 @@ def test_create_connection_drops_the_schema_shorthand() -> None:
 
     with (
         patch.object(service, "_database_already_connected", return_value=False),
-        patch.object(service, "is_vault_configured", return_value=False),
         patch.object(service, "insert_connection") as insert_connection,
         patch.object(service, "invalidate_connectors_cache"),
         patch.object(service, "refresh_chat_workers"),

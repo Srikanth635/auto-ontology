@@ -32,9 +32,6 @@ logger = logging.getLogger(__name__)
 logging.getLogger("databricks.sql").setLevel(logging.WARNING)
 
 # Which credential a connector is running under, logged with every statement.
-# "SSO federation" means the caller's SSO token was exchanged for a Databricks
-# token, so the query carries that user's own Unity Catalog grants.
-AUTH_SSO_FEDERATION = "the signed-in user (SSO federation)"
 AUTH_STORED_TOKEN = "the stored access token"
 
 
@@ -103,7 +100,7 @@ def _parse_connection_string(
 
     Expected format::
 
-        databricks://token:ACCESS_TOKEN@HOST/CATALOG?http_path=SQL_HTTP_PATH[&auth=sso]
+        databricks://token:ACCESS_TOKEN@HOST/CATALOG?http_path=SQL_HTTP_PATH
     """
     parsed = urlparse(connection_string)
     if parsed.scheme.split("+", 1)[0].lower() != "databricks":
@@ -135,11 +132,7 @@ def _parse_connection_string(
             "Databricks connection string requires ?http_path=/sql/1.0/warehouses/..."
         )
 
-    auth_mode = (
-        AUTH_SSO_FEDERATION
-        if query.get("auth", [""])[0].strip().lower() == "sso"
-        else AUTH_STORED_TOKEN
-    )
+    auth_mode = AUTH_STORED_TOKEN
 
     return (
         {
@@ -238,8 +231,7 @@ class DatabricksDatabase(SQLDatabase):
     def auth_mode(self) -> str:
         """Which credential this connector runs under, for logging.
 
-        Either :data:`AUTH_SSO_FEDERATION` (the caller's SSO token was exchanged
-        for a Databricks token) or :data:`AUTH_STORED_TOKEN`.
+        Always :data:`AUTH_STORED_TOKEN`: the connection's stored access token.
         """
         return self._auth_mode
 

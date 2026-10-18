@@ -10,7 +10,7 @@ import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import { Icon, IconName } from '@/common/icons';
 import { SkeletonBlock } from '@/common/Skeleton';
-import { authApi, type SsoProvider } from '@/api/auth';
+import { authApi } from '@/api/auth';
 import { useSession } from '@/auth/auth-client';
 import { resumeAuthorizeFromApp } from '@/auth/oauth-loopback';
 import { SkeletonVariant } from '@/enums/skeleton';
@@ -63,25 +63,12 @@ const LoginForm = () => {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
-	const [providers, setProviders] = useState<SsoProvider[]>([]);
-	const [providersLoaded, setProvidersLoaded] = useState(false);
-	// When SSO is configured, SSO is the only option shown by default. This
-	// toggles the email/password fallback ("backdoor") so the local bootstrap
-	// admin can still sign in if the SSO provider is unreachable.
-	const [showPasswordLogin, setShowPasswordLogin] = useState(false);
 
 	// Authoritative session check (validates the cookie server-side and clears
 	// it if invalid). Used to send an already-authenticated user to their
 	// destination — the middleware no longer bounces cookie-bearing requests off
 	// /login, since a stale cookie there would loop against requireUser().
 	const { data: session, isPending: sessionPending } = useSession();
-
-	useEffect(() => {
-		authApi
-			.listProviders()
-			.then(setProviders)
-			.finally(() => setProvidersLoaded(true));
-	}, []);
 
 	useEffect(() => {
 		if (!session) return;
@@ -91,8 +78,6 @@ const LoginForm = () => {
 		}
 		router.replace(next);
 	}, [session, router, next]);
-
-	const ssoEnabled = providers.length > 0;
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -108,53 +93,12 @@ const LoginForm = () => {
 		router.refresh();
 	};
 
-	const handleSso = (providerId: string) => {
-		authApi.signInWithProvider(providerId, next);
-	};
-
-	// The password "backdoor" — reachable via /login?password (or the link
-	// below) so the local admin can still sign in if SSO is down.
-	const passwordMode = showPasswordLogin || params.has('password');
-
-	// Avoid flashing the form before we know whether SSO is configured, and while
-	// an already-authenticated user is being redirected to their destination.
-	if (!providersLoaded || sessionPending || session) {
+	// Avoid flashing the form while an already-authenticated user is being
+	// redirected to their destination.
+	if (sessionPending || session) {
 		return <LoginLoading />;
 	}
 
-	// SSO configured: show a "Sign In with SSO" button (no auto-login) so the
-	// user explicitly starts the flow, plus the password backdoor for the local
-	// bootstrap admin.
-	if (ssoEnabled && !passwordMode) {
-		return (
-			<div className="flex w-full max-w-sm flex-col gap-4">
-				{providers.map((provider) => (
-					<Button
-						theme={ButtonTheme.Primary}
-						size={Size.REGULAR}
-						key={provider.provider_id}
-						type="button"
-						onClick={() => handleSso(provider.provider_id)}
-					>
-						Sign In with SSO
-					</Button>
-				))}
-				<Button
-					theme={ButtonTheme.Minimal}
-					size={Size.SMALL}
-					type="button"
-					onClick={() => {
-						setError(null);
-						setShowPasswordLogin(true);
-					}}
-				>
-					Sign In with Password
-				</Button>
-			</div>
-		);
-	}
-
-	// No SSO configured, or the admin chose the password fallback.
 	return (
 		<form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
 			<div className="flex flex-col gap-1.5">
@@ -199,20 +143,6 @@ const LoginForm = () => {
 			>
 				{submitting ? 'Signing in…' : 'Sign in'}
 			</Button>
-
-			{ssoEnabled ? (
-				<Button
-					theme={ButtonTheme.Minimal}
-					size={Size.SMALL}
-					type="button"
-					onClick={() => {
-						setError(null);
-						setShowPasswordLogin(false);
-					}}
-				>
-					Back to SSO
-				</Button>
-			) : null}
 		</form>
 	);
 };

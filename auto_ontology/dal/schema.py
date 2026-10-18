@@ -181,9 +181,7 @@ catalog_database = Table(
     METADATA,
     _id(),
     Column("name", Text, nullable=False, unique=True),
-    # UI-managed connection form. Stored here only when Vault is not configured;
-    # with Vault the credentials live there and this stays null (the database
-    # name is the lookup key -- there is no separate reference field).
+    # UI-managed connection form, credentials included.
     Column("connection", JSONB, nullable=True),
     Column("dialect", Text, nullable=True),
     # A database and a schema each carry a curated description, as tables and

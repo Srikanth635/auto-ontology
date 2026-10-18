@@ -38,18 +38,6 @@
       "expected_script": null
     },
     {
-      "id": "query-eval-004-sso-vs-api-token",
-      "prompt": "AI-Q already has the user's NVIDIA SSO JWT. Should it also mint an Auto Ontology API token to call chat?",
-      "expected_output": "No extra Auto Ontology token is required. Auto Ontology accepts the SSO id token as Authorization: Bearer, verifies issuer/signature/expiry, and does not check audience (aud is AI-Q's client id). The token must map to an existing Auto Ontology user (email, then SSO subject). An Auto Ontology API token is for scripts that cannot present SSO.",
-      "assertions": [
-        "Uses the SSO bearer as the AI-Q credential",
-        "Does not require minting an Auto Ontology API token for AI-Q",
-        "Notes audience is not checked and an Auto Ontology user must already exist"
-      ],
-      "expected_skill": "nvidia-ontology-query",
-      "expected_script": null
-    },
-    {
       "id": "query-eval-005-no-raw-schema-tools",
       "prompt": "Which MCP tool lists every schema and column in the warehouse so I can write SQL myself?",
       "expected_output": "There is none, on purpose. Consumers reach data through the semantic layer. describe_table is the table view (terms and SQL attributes). Use search_terms / ask_question rather than information_schema.",

@@ -88,8 +88,7 @@ Auth (any of these; resolved in one place):
 - Browser session cookie
 - API token: `x-api-key: $AUTO_ONTOLOGY_API_TOKEN` (`Authorization: Bearer` works for
   `auto_ontology_…` tokens too). Token acts as its owner.
-- OAuth bearer issued by Auto Ontology (MCP sign-in)
-- SSO id token (`Authorization: Bearer <jwt>`), e.g. AI-Q — see
+- OAuth bearer issued by Auto Ontology (MCP sign-in) — see
   [stack.md](references/stack.md)
 
 Shapes: `docs/openapi/auto-ontology-api.json`. Do not scrape all ~87 operations. A write

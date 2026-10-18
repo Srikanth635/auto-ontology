@@ -138,7 +138,6 @@ def _worker_loop(
             question,
             prediction,
             target_db,
-            subject_token,
             conversation_history,
             evidence,
         ) = payload
@@ -159,17 +158,7 @@ def _worker_loop(
             if not connectors:
                 connectors = get_connectors()
 
-            # Per-user Databricks auth trades the prewarmed connectors for ones
-            # bound to the caller's exchanged token. Databricks connectors open
-            # connections per operation, so rebuilding them here is cheap.
-            if subject_token is not None:
-                from auto_ontology.connectors.registry import (
-                    get_connectors_for_subject_token,
-                )
-
-                ask_connectors = get_connectors_for_subject_token(subject_token)
-            else:
-                ask_connectors = connectors
+            ask_connectors = connectors
 
             is_follow_up, processing_question = resolve_follow_up(
                 question=question,
@@ -243,7 +232,6 @@ class PrewarmedWorker:
         question: str,
         prediction: bool | None = None,
         target_db: str | None = None,
-        subject_token: str | None = None,
         conversation_history: list[dict[str, str | None]] | None = None,
         evidence: str | None = None,
     ) -> None:
@@ -252,9 +240,6 @@ class PrewarmedWorker:
         *prediction* mirrors the API parameter: True or False skips the
         classification step, None classifies as usual.
         *target_db* scopes the run to one connected database when set.
-        *subject_token* is the caller's SSO JWT. When present the worker builds
-        per-user connectors for this question instead of using the prewarmed
-        ones, so SQL executes under that user's own Databricks grants.
         *evidence* is optional authoritative evidence kept separate from
         the question.
         """
@@ -265,7 +250,6 @@ class PrewarmedWorker:
                     question,
                     prediction,
                     target_db,
-                    subject_token,
                     conversation_history or [],
                     evidence,
                 ),

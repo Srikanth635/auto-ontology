@@ -19,7 +19,6 @@ from typing import Any
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 
-from auto_ontology.connectors.vault import read_secret
 from auto_ontology.dal import schema as s
 from auto_ontology.dal.session import store
 
@@ -29,8 +28,7 @@ logger = logging.getLogger(__name__)
 def list_connections() -> list[dict[str, Any]]:
     """Every catalog database's resolved connection.
 
-    Vault wins when it holds a secret for the database name; otherwise the
-    stored value is used. Databases with neither are skipped, which is what
+    Databases with no stored connection are skipped, which is what
     makes this "connections" rather than "databases" — an ingested catalog with
     no UI connection has nothing to return.
     """
@@ -40,10 +38,6 @@ def list_connections() -> list[dict[str, Any]]:
             s.catalog_database.c.name
         )
     ):
-        secret = read_secret(str(row["name"]))
-        if secret:
-            connections.append(secret)
-            continue
         stored = row["connection"]
         if stored:
             # jsonb here, a JSON *string* on the graph node. Callers get the
@@ -65,12 +59,8 @@ def insert_connection(
     Creating it matters: a connection is normally configured *before* anything
     is ingested, so there is usually no database row to attach to yet.
     """
-    # An empty string means "no connection JSON on the row" -- the Vault path
-    # writes the credentials to Vault and deliberately keeps them off the
-    # catalog. `json.loads("")` raises, and because the Vault write happens
-    # first, the secret was already stored when the insert 500s: no
-    # catalog_database row, so the connection is invisible to list_connections
-    # and cannot be ingested.
+    # An empty string means "no connection JSON on the row"; `json.loads("")`
+    # would raise.
     payload = json.loads(connection) if connection and connection.strip() else None
     statement = insert(s.catalog_database).values(
         name=database_name, connection=payload

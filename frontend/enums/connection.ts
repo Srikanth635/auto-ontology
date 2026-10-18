@@ -8,10 +8,6 @@ export enum ConnectionType {
 	POSTGRESQL = 'postgresql',
 	MYSQL = 'mysql',
 	SNOWFLAKE = 'snowflake',
-	HEAVYDB = 'heavydb',
-	KYUUBI = 'kyuubi',
-	TRINO = 'trino',
-	CLICKHOUSE = 'clickhouse',
 }
 
 export const connectionDisplayName: Record<ConnectionType, string> = {
@@ -19,10 +15,6 @@ export const connectionDisplayName: Record<ConnectionType, string> = {
 	[ConnectionType.POSTGRESQL]: 'PostgreSQL',
 	[ConnectionType.MYSQL]: 'MySQL',
 	[ConnectionType.SNOWFLAKE]: 'Snowflake',
-	[ConnectionType.HEAVYDB]: 'HeavyDB',
-	[ConnectionType.KYUUBI]: 'Apache Kyuubi',
-	[ConnectionType.TRINO]: 'Trino',
-	[ConnectionType.CLICKHOUSE]: 'ClickHouse',
 };
 
 export const isConnectionType = (value: string | null | undefined): value is ConnectionType =>
@@ -39,14 +31,7 @@ export type ConnectionFieldKey =
 	| 'private_key'
 	| 'private_key_passphrase'
 	| 'database'
-	| 'protocol'
-	| 'ssa_url'
-	| 'truststore'
-	| 'truststore_file'
-	| 'truststore_password'
 	| 'schema'
-	| 'http_scheme'
-	| 'sso_federation'
 	| 'table_allow_regex'
 	| 'table_deny_regex';
 
@@ -107,13 +92,6 @@ export const CONNECTION_FIELDS: Record<ConnectionType, ConnectionField[]> = {
 			optional: true,
 			testOnly: true,
 		},
-		{
-			key: 'sso_federation',
-			label: 'Authenticate as Signed-In User (SSO)',
-			hint: 'Chat queries run with the signed-in user’s own Databricks privileges instead of the access token above. Requires a Databricks federation policy trusting your SSO issuer. Ingestion always uses the access token.',
-			optional: true,
-			boolean: true,
-		},
 	],
 	[ConnectionType.POSTGRESQL]: [
 		{ key: 'host', label: 'Host', placeholder: 'localhost' },
@@ -158,117 +136,12 @@ export const CONNECTION_FIELDS: Record<ConnectionType, ConnectionField[]> = {
 		},
 		{ key: 'database', label: 'Database', placeholder: 'MY_DATABASE' },
 	],
-	[ConnectionType.HEAVYDB]: [
-		{ key: 'host', label: 'Host', placeholder: 'localhost' },
-		{ key: 'port', label: 'Port', placeholder: '6274', optional: true },
-		{ key: 'user', label: 'User', placeholder: 'admin' },
-		{ key: 'password', label: 'Password', secret: true },
-		{ key: 'database', label: 'Database', placeholder: 'heavyai' },
-		{ key: 'protocol', label: 'Protocol', placeholder: 'binary', optional: true },
-	],
-	[ConnectionType.KYUUBI]: [
-		{ key: 'host', label: 'Host' },
-		{ key: 'port', label: 'Port', optional: true },
-		{
-			key: 'user',
-			label: 'Generate Token Client ID',
-			hint: 'The SSA client ID for a service account, or your account name when using a pasted token.',
-		},
-		{
-			key: 'password',
-			label: 'Generate Token Client Secret',
-			secret: true,
-			hint: 'The SSA client secret when a token URL is set below, otherwise a JWT copied from the data platform profile page.',
-		},
-		{
-			key: 'ssa_url',
-			label: 'Generate Token URL',
-			optional: true,
-			hint: 'Enables service-account auth. Tokens expire hourly, so this lets the connector mint fresh ones instead of failing after an hour.',
-		},
-		{ key: 'database', label: 'Catalog' },
-		{
-			key: 'truststore_file',
-			label: 'Truststore (JKS)',
-			file: true,
-			fileAccept: '.jks,.keystore,.truststore',
-			optional: true,
-			hint: 'Upload the CA truststore. Needed when the server does not already trust the internal CA.',
-		},
-		{
-			key: 'truststore_password',
-			label: 'Truststore Password',
-			secret: true,
-			optional: true,
-		},
-	],
-	[ConnectionType.TRINO]: [
-		{ key: 'host', label: 'Host', placeholder: 'trino.example.com' },
-		{ key: 'port', label: 'Port', placeholder: '8080', optional: true },
-		{
-			key: 'user',
-			label: 'User',
-			placeholder: 'analyst',
-			hint: 'On an unauthenticated cluster this is only the identity Trino records against the query.',
-		},
-		{
-			key: 'password',
-			label: 'Password',
-			secret: true,
-			optional: true,
-			hint: 'Leave empty for an unauthenticated cluster. A password switches the connection to HTTPS, which Trino requires before it will accept one.',
-		},
-		{ key: 'database', label: 'Catalog', placeholder: 'hive' },
-		{
-			key: 'schema',
-			label: 'Schema',
-			placeholder: 'Leave Empty to Choose from a List',
-			hint: 'Ingest only this schema. Leave empty to pick schemas from a list instead.',
-			optional: true,
-		},
-	],
-	[ConnectionType.CLICKHOUSE]: [
-		{
-			key: 'host',
-			label: 'Host',
-			placeholder: 'clickhouse.example.com',
-			hint: 'A pasted ClickHouse Cloud endpoint may include https://; the scheme is kept as the transport.',
-		},
-		{
-			key: 'port',
-			label: 'Port',
-			placeholder: '8123',
-			optional: true,
-			hint: 'The HTTP interface: 8123 by default, 8443 on ClickHouse Cloud.',
-		},
-		{
-			key: 'user',
-			label: 'User',
-			placeholder: 'default',
-			optional: true,
-			hint: 'Leave empty to connect as the server default user.',
-		},
-		{ key: 'password', label: 'Password', secret: true, optional: true },
-		{
-			key: 'database',
-			label: 'Database',
-			placeholder: 'analytics',
-			hint: 'ClickHouse has no schema below the database, so one connection covers one database. Add a second connection for a second database.',
-		},
-		{
-			key: 'http_scheme',
-			label: 'Protocol',
-			placeholder: 'http',
-			optional: true,
-			hint: 'Leave empty to infer from the port: https on 443 and 8443, http otherwise. Set https explicitly for a TLS listener on any other port — unlike Trino, a password alone does not imply TLS here.',
-		},
-	],
 };
 
 /**
  * Fields offered for every connector, appended after the type-specific ones.
  *
- * Kept separate rather than copied into all eight lists: they are enforced
+ * Kept separate rather than copied into every list: they are enforced
  * centrally at catalog extraction (`auto_ontology/catalog/table_filter.py`), so
  * every connector honours them identically and none may drift.
  */

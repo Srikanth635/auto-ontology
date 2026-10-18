@@ -93,8 +93,7 @@ bundles Mermaid (MIT); its license text ships in the wheel as
 
 ### Release tooling (`release` dependency group, not redistributed)
 
-Installed only by the Helm chart release workflow to run
-`dev_tools/release_helm_chart.py`.
+Not installed by the local stack.
 
 | Component | Version | License | Project URL |
 | --- | --- | --- | --- |

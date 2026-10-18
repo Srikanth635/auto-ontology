@@ -35,23 +35,17 @@ field falls back to `DEFAULT_MODELS_*`.
 A mismatch puts stored vectors and query vectors in different spaces; answers
 look like "nothing found."
 
-Confirm the triplets in `.env` (or the Helm values) are the same for the
+Confirm the triplets in `.env` are the same for the
 ingestion service and the backend.
 
-## Connections: UI vs `CONNECTION_STRINGS` vs Vault
+## Connections: UI vs `CONNECTION_STRINGS`
 
 Auto Ontology resolves source databases from two places:
 
 1. Connections added in the UI. Credentials are stored in plaintext on the
-   catalog row unless Vault is fully configured.
-2. `CONNECTION_STRINGS` (comma-separated), including the Helm
-   `connectionStrings` value. This is a **fallback**: used only when there
+   catalog row.
+2. `CONNECTION_STRINGS` (comma-separated) in `.env`. This is a **fallback**: used only when there
    are no UI-added connections.
-
-Vault is on only when **all four** of `VAULT_ADDR`, `VAULT_NAMESPACE`,
-`VAULT_ROLE_ID`, and `VAULT_SECRET_ID` are set. A partial Vault config is
-ignored with a warning and falls back to plaintext. `VAULT_AUTH_MOUNT` and
-`VAULT_KV_MOUNT` are optional overrides.
 
 ## MCP client cannot discover how to sign in
 
@@ -69,8 +63,7 @@ Users, sessions, API keys, and the MCP OAuth tables live in the Prisma
 `auto-ontology-migrate`. Read its log even if it exited 0; it has finished
 without an error before while leaving MCP login broken:
 
-- Compose: `docker compose logs frontend-migrate`
-- Helm: `kubectl logs job/frontend-migrate-<release revision>`
+`docker compose logs frontend-migrate`.
 
 ## "Protected resource ... does not match expected ..."
 
@@ -105,8 +98,3 @@ when a `conversation_id` already has a turn in flight (`409`).
 
 Check the client's MCP logs. The server logs to stderr. Confirm the client
 URL includes the `/mcp` suffix and was restarted after the config change.
-
-## SSO redirect URI
-
-IdP redirect URI is `APP_URL/api/auth/sso/callback`. A mismatch looks like a
-failed login, not a compose failure.

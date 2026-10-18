@@ -19,7 +19,6 @@ from auto_ontology.server.responses import (
     ConnectionListResponse,
     ConnectionResponse,
     ConnectionTestResponse,
-    SsoFederationResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -67,10 +66,10 @@ def is_env_source() -> bool:
 def list_connections() -> dict:
     """List every configured database connection, credential-free.
 
-    Credentials — passwords, private keys and the Kyuubi truststore password —
-    are stripped from each connection object, so the payload is safe to render
-    in the UI. ``database_name`` doubles as the connection's identity in the
-    other routes here.
+    Credentials — passwords and private keys — are stripped from each
+    connection object, so the payload is safe to render in the UI.
+    ``database_name`` doubles as the connection's identity in the other routes
+    here.
     """
     rows = [_serialize_connection(conn) for conn in _list_connections()]
     return {"data": rows, "count": len(rows)}
@@ -154,38 +153,6 @@ def update_connection(
         ) from exc
 
     return {"data": _serialize_connection(row)}
-
-
-class SsoFederationBody(BaseModel):
-    enabled: bool
-
-
-@router.patch(
-    "/connections/{database_name}/sso-federation",
-    response_model=SsoFederationResponse,
-)
-def set_sso_federation(
-    body: SsoFederationBody,
-    database_name: str = Path(
-        description=(
-            "Catalog database name, which doubles as the connection's identity."
-        )
-    ),
-) -> dict:
-    """Toggle whether chat runs this connection's SQL as the signed-in user."""
-    try:
-        row = service.set_sso_federation(
-            database_name=database_name, enabled=body.enabled
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Failed to update connection: {exc}",
-        ) from exc
-
-    return {"data": row}
 
 
 @router.delete("/connections/{database_name}", response_model=ConnectionResponse)

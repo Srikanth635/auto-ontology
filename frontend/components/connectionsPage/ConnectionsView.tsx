@@ -11,11 +11,9 @@ import { Button } from '@/common/Button';
 import { EmptyState } from '@/common/EmptyState';
 import { Size, ButtonTheme } from '@/enums/button';
 import { EmptyStateVariant } from '@/enums/emptyState';
-import { ToastVariant } from '@/enums/toast';
 import { ConnectionsInfoCardView } from '@/components/connectionsPage/ConnectionsInfoCardView';
 import { ConnectionModal } from '@/components/connectionsPage/ConnectionModal';
 import { ConfirmModal } from '@/common/modal';
-import { Toast } from '@/common/Toast';
 import { Icon, IconName } from '@/common/icons';
 import { connectionsApi } from '@/api/connections';
 import {
@@ -47,8 +45,6 @@ export const ConnectionsView = () => {
 	const [deletingConnection, setDeletingConnection] = useState<string | null>(null);
 	const [deleting, setDeleting] = useState(false);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
-	const [ssoFederationPending, setSsoFederationPending] = useState<string | null>(null);
-	const [ssoError, setSsoError] = useState<string | null>(null);
 
 	const handleCreateConnection = () => {
 		setEditingConnection(null);
@@ -68,36 +64,6 @@ export const ConnectionsView = () => {
 	const handleConnectionModalConfirm = () => {
 		handleConnectionModalClose();
 		void invalidateConnectionList(queryClient);
-	};
-
-	const handleSsoFederationChange = async (databaseName: string, enabled: boolean) => {
-		setSsoError(null);
-		setSsoFederationPending(databaseName);
-
-		// Optimistic update — applied before the write so the checkbox doesn't
-		// snap back while it is out.
-		await patchConnections((prev) =>
-			prev.map((c) =>
-				c.database_name === databaseName
-					? { ...c, connection: { ...c.connection, sso_federation: enabled } }
-					: c,
-			),
-		);
-
-		const res = await connectionsApi.setSsoFederation(databaseName, enabled);
-		setSsoFederationPending(null);
-
-		if (res.error) {
-			// Revert optimistic update on failure.
-			await patchConnections((prev) =>
-				prev.map((c) =>
-					c.database_name === databaseName
-						? { ...c, connection: { ...c.connection, sso_federation: !enabled } }
-						: c,
-				),
-			);
-			setSsoError(res.message ?? 'Failed to update connection.');
-		}
 	};
 
 	const handleDeleteRequest = (databaseName: string) => {
@@ -188,10 +154,6 @@ export const ConnectionsView = () => {
 						connections={connections}
 						onEdit={handleEditConnection}
 						onDelete={handleDeleteRequest}
-						onSsoFederationChange={(databaseName, enabled) => {
-							void handleSsoFederationChange(databaseName, enabled);
-						}}
-						ssoFederationPending={ssoFederationPending}
 					/>
 				</div>
 			)}
@@ -221,13 +183,6 @@ export const ConnectionsView = () => {
 				connection={editingConnection}
 				onConfirm={handleConnectionModalConfirm}
 				onCancel={handleConnectionModalClose}
-			/>
-
-			<Toast
-				open={ssoError !== null}
-				message={ssoError ?? ''}
-				variant={ToastVariant.Error}
-				onClose={() => setSsoError(null)}
 			/>
 		</div>
 	);

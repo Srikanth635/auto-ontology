@@ -55,5 +55,11 @@ BEGIN
 END $$;
 SQL
 
+echo "migrate: dropping tables of removed features (SSO, invitations)..."
+$PRISMA db execute --stdin <<'SQL'
+DROP TABLE IF EXISTS frontend.invitations;
+DROP TABLE IF EXISTS frontend."ssoProvider";
+SQL
+
 echo "migrate: running prisma db push..."
 exec $PRISMA db push

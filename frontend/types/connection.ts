@@ -17,12 +17,6 @@ export type DatabricksConnectionParams = {
 	 * Verified by the connection test, then sent as `schemas`; never persisted itself.
 	 */
 	schema?: string;
-	/**
-	 * Run chat queries as the signed-in user by exchanging their SSO token for a
-	 * Databricks token, instead of using the stored access token. Ingestion is
-	 * unaffected and always uses the stored token.
-	 */
-	sso_federation?: boolean;
 };
 
 export type PostgresConnectionParams = {
@@ -63,16 +57,6 @@ export type SnowflakeConnectionParams = {
 	schemas?: string[];
 };
 
-export type HeavyDBConnectionParams = {
-	type: ConnectionType.HEAVYDB;
-	host: string;
-	port: string;
-	user: string;
-	password: string;
-	database: string;
-	protocol: string;
-};
-
 /**
  * Ingestion filters offered on every connector, regardless of type.
  *
@@ -93,7 +77,6 @@ export type ConnectionParams = (
 	| PostgresConnectionParams
 	| MySqlConnectionParams
 	| SnowflakeConnectionParams
-	| HeavyDBConnectionParams
 ) &
 	TableFilterParams;
 

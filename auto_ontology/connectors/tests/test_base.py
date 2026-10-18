@@ -112,7 +112,6 @@ def test_every_shipped_connector_subclasses_the_base() -> None:
     shipped = [
         connectors.DatabricksDatabase,
         connectors.DuckDBDatabase,
-        connectors.HeavyDBDatabase,
         connectors.PostgresDatabase,
         connectors.SnowflakeDatabase,
     ]

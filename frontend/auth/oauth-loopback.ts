@@ -160,7 +160,7 @@ export const followOAuthRedirect = (redirectUrl: string): void => {
 	window.location.assign(parsed.toString());
 };
 
-// After SSO or password sign-in the login page has to resume `/oauth2/authorize`.
+// After password sign-in the login page has to resume `/oauth2/authorize`.
 // A top-level navigation follows Better Auth's 302 to :8787. Asking for JSON
 // (or reading a 302 Location) lets us send loopback callbacks to `/oauth/handoff`
 // instead, so Chrome never paints "This site can't be reached".

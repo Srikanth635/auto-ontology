@@ -1,8 +1,8 @@
 ---
 name: nvidia-ontology-setup
 description: >-
-  Set up or troubleshoot the Auto Ontology runtime. Use for Helm (the official
-  install), Docker Compose, developer setup, and MCP connection to an existing
+  Set up or troubleshoot the Auto Ontology runtime. Use for Docker Compose
+  (the install), developer setup, and MCP connection to an existing
   deployment.
 license: Apache-2.0
 metadata:
@@ -12,7 +12,6 @@ metadata:
     - nvidia-ontology
     - install
     - docker
-    - helm
     - mcp
     - troubleshooting
 ---
@@ -29,8 +28,8 @@ SPDX-License-Identifier: Apache-2.0
 
 Bring up the current Auto Ontology implementation, troubleshoot it, or connect an agent
 to an instance that is already running. Do not invent a second installer:
-the official installation is the Helm chart in repository-root `DEPLOYMENT.md`;
-Docker Compose runs the same stack on one machine. `dev_tools/setup_env.sh` is a
+the installation is Docker Compose (`docker-compose.yml`), which runs the
+whole stack on one machine. `dev_tools/setup_env.sh` is a
 developer tool, not an installer. Typed setup, connection, ingestion,
 compilation, and readiness artifacts are in
 [runtime-contract.yaml](assets/runtime-contract.yaml).
@@ -44,58 +43,18 @@ searching the web.
 
 Ask these if not already clear. Do not guess a default and emit a command.
 
-1. **Target** — Helm on Kubernetes (the official install, and the default
-   recommendation), Docker Compose on one machine, a developer workflow
+1. **Target** — Docker Compose on one machine (the default), a developer workflow
    (`--dev` / `--ds`, only when changing Auto Ontology itself), or "Auto
    Ontology is already up, I only need MCP"?
-2. **NVIDIA NIM key** — is `DEFAULT_MODELS_API_KEY` (Helm:
-   `defaultModelsApiKey`) available? Chat and ingest need it.
+2. **NVIDIA NIM key** — is `DEFAULT_MODELS_API_KEY` available? Chat and ingest need it.
 3. **Admin account** — the email and password for the bootstrap admin.
    Self-service sign-up is disabled, so this is the only way to sign in.
-4. **Source database** — a connection string (`CONNECTION_STRINGS` /
-   `connectionStrings`), or will connections be added in the UI?
-5. **Helm only** — which chart version, and the URL users will browse to
-   (`appUrl`).
-6. **Compose only** — is host `5432` free? `POSTGRES_PORT` only remaps the
+4. **Source database** — a connection string (`CONNECTION_STRINGS`), or will connections be added in the UI?
+5. **Compose** — is host `5432` free? `POSTGRES_PORT` only remaps the
    host side; containers still use 5432 internally.
 
 Never ask the user to paste secrets into the conversation, and never put them
-in command arguments. Have the user write them into a values file or `.env`.
-
-## Install with Helm (official)
-
-Releases are published to the public NGC `nvidia` org (chart and images). Follow
-`DEPLOYMENT.md` with the version the user named:
-
-The user creates a values file in an editor (not on the command line, so
-values stay out of shell history and process arguments), readable only by
-them, and out of git:
-
-```yaml
-# auto-ontology-values.yaml
-defaultModelsApiKey: <API-KEY>
-postgresPassword: <POSTGRES-PASSWORD>
-adminEmail: <ADMIN-EMAIL>
-adminPassword: <ADMIN-PASSWORD>
-connectionStrings: <CONNECTION-STRINGS>   # optional; or add connections in the UI
-```
-
-```bash
-helm fetch https://helm.ngc.nvidia.com/nvidia/charts/auto-ontology-<VERSION>.tgz
-helm install auto-ontology auto-ontology-<VERSION>.tgz -f auto-ontology-values.yaml
-kubectl port-forward svc/frontend 3000:3000
-```
-
-- `adminEmail` and `adminPassword` are required; the install fails without them.
-- `appUrl` must be the exact origin users browse to. The default
-  (`http://localhost:3000`) only fits the port-forward above; set it for a
-  NodePort, ingress, or HTTPS origin.
-- `authSecret` is generated on first install and kept across upgrades; set it
-  only to share one value across environments.
-- If the chart fetch returns 404, that version is not published yet. Ask the
-  user; do not fall back to the internal staging registry.
-
-This skill does not cover Astra GitOps.
+in command arguments. Have the user write them into `.env`.
 
 ## Local: Docker Compose
 
@@ -177,9 +136,8 @@ firewalled from other machines. On native Linux Docker you may need
 
 ## Limitations
 
-This skill uses the repository's existing Helm chart and Compose file and does
-not cover Astra GitOps, change semantic definitions, or treat partial Vault
-configuration as secret storage. Ask before destructive volume deletion.
+This skill uses the repository's existing Compose file and does not change
+semantic definitions. Ask before destructive volume deletion.
 
 ## Auto Ontology is already up — MCP only
 
@@ -205,8 +163,6 @@ curl -s -o /dev/null -w '%{http_code}\n' "$AUTO_ONTOLOGY_API_URL/.well-known/oau
 
 ## Examples
 
-- Kubernetes: install the published Helm chart from `DEPLOYMENT.md` with the
-  admin account and `appUrl` set.
 - One machine: `docker compose up -d --build` after filling `.env`.
 - Existing deployment: do not reinstall; configure `AUTO_ONTOLOGY_API_URL` and verify
   OAuth discovery before connecting the MCP client.
@@ -241,11 +197,11 @@ end-to-end rather than implying it is.
 
 ## Verify
 
-1. UI loads at http://localhost:3000 (or the deployed `APP_URL` / Helm `appUrl`) and shows
+1. UI loads at http://localhost:3000 (or the configured `APP_URL`) and shows
    the left navigation. Missing nav → stale cookie; see
    [troubleshooting.md](references/troubleshooting.md).
 2. `GET /api/semantic-compilation/status` on the **web** origin authenticates
-   (cookie, `x-api-key`, or SSO bearer) and returns JSON. `calculated: false`
+   (cookie, `x-api-key`, or OAuth bearer) and returns JSON. `calculated: false`
    means the glossary is empty — ingest / compile, do not keep retrying chat.
 3. MCP: OAuth discovery returns 200 (above). Then `check_readiness` once a
    client is connected.
@@ -253,18 +209,16 @@ end-to-end rather than implying it is.
 ## Stop
 
 ```bash
-helm uninstall auto-ontology  # Helm; also deletes the postgres-data PVC and its data
-docker compose down           # Compose; keep volumes
-docker compose down -v        # Compose; wipe Postgres / pgAdmin data
+docker compose down     # keep volumes
+docker compose down -v  # wipe Postgres / pgAdmin data
 ```
 
-Both `helm uninstall` and `docker compose down -v` destroy data; ask first.
+`docker compose down -v` destroys data; ask first.
 
 ## Troubleshooting
 
 Use [troubleshooting.md](references/troubleshooting.md) for stale sessions,
-model-key failures, embedding mismatches, port conflicts, and partial Vault
-configuration. Redact secrets before sharing command output as evidence.
+model-key failures, embedding mismatches, and port conflicts. Redact secrets before sharing command output as evidence.
 
 ## See also
 

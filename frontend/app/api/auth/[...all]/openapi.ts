@@ -7,7 +7,7 @@ import type { OpenApiRoute } from '@/types/openapi';
 
 // Better Auth mounts its whole surface behind this one catch-all
 // (`toNextJsHandler`), so the concrete sub-paths — sign-in/out, session, the
-// SSO authorize/callback pair — are the library's contract rather than ours,
+// OAuth endpoints MCP clients use — are the library's contract rather than ours,
 // and there is no per-endpoint shape to declare. What this pins down is that
 // the segment exists, is unauthenticated by nature, and answers JSON.
 const responses = {

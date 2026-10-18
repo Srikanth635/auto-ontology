@@ -5,7 +5,7 @@
 """Resolve configured connections for the ingestion-service schedulers.
 
 Connections come from the ``CONNECTION_STRINGS`` env var when set, otherwise
-from the catalog (Vault-resolved). Both the data and semantic schedulers
+from the catalog. Both the data and semantic schedulers
 resolve through here so they see the *same* set — in particular env-var
 connections, which never reach the catalog.
 """

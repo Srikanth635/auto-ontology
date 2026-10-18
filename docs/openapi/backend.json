@@ -1444,19 +1444,6 @@
         "title": "DataResponse[SqlValidationResult]",
         "type": "object"
       },
-      "DataResponse_SsoFederationState_": {
-        "additionalProperties": true,
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/SsoFederationState"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "title": "DataResponse[SsoFederationState]",
-        "type": "object"
-      },
       "DataResponse_TableExplorationDetails_": {
         "additionalProperties": true,
         "properties": {
@@ -4573,39 +4560,6 @@
         "title": "SqlValidationResult",
         "type": "object"
       },
-      "SsoFederationBody": {
-        "properties": {
-          "enabled": {
-            "title": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "title": "SsoFederationBody",
-        "type": "object"
-      },
-      "SsoFederationState": {
-        "additionalProperties": true,
-        "description": "The one flag ``PATCH /connections/{database_name}/sso-federation`` sets.\n\nThe route deliberately echoes just the flag rather than the connection, so\na caller never has to re-send credentials to toggle it.",
-        "properties": {
-          "database_name": {
-            "title": "Database Name",
-            "type": "string"
-          },
-          "sso_federation": {
-            "title": "Sso Federation",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "database_name",
-          "sso_federation"
-        ],
-        "title": "SsoFederationState",
-        "type": "object"
-      },
       "StatusResponse": {
         "additionalProperties": true,
         "description": "``{\"status\": \"ok\"}`` or ``{\"status\": \"accepted\"}`` for async triggers.",
@@ -6478,7 +6432,7 @@
     },
     "/api/connections": {
       "get": {
-        "description": "List every configured database connection, credential-free.\n\nCredentials \u2014 passwords, private keys and the Kyuubi truststore password \u2014\nare stripped from each connection object, so the payload is safe to render\nin the UI. ``database_name`` doubles as the connection's identity in the\nother routes here.",
+        "description": "List every configured database connection, credential-free.\n\nCredentials \u2014 passwords and private keys \u2014 are stripped from each\nconnection object, so the payload is safe to render in the UI.\n``database_name`` doubles as the connection's identity in the other routes\nhere.",
         "operationId": "list_connections_api_connections_get",
         "responses": {
           "200": {
@@ -6696,61 +6650,6 @@
           }
         },
         "summary": "Update Connection",
-        "tags": [
-          "connections"
-        ]
-      }
-    },
-    "/api/connections/{database_name}/sso-federation": {
-      "patch": {
-        "description": "Toggle whether chat runs this connection's SQL as the signed-in user.",
-        "operationId": "set_sso_federation_api_connections__database_name__sso_federation_patch",
-        "parameters": [
-          {
-            "description": "Catalog database name, which doubles as the connection's identity.",
-            "in": "path",
-            "name": "database_name",
-            "required": true,
-            "schema": {
-              "description": "Catalog database name, which doubles as the connection's identity.",
-              "title": "Database Name",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SsoFederationBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_SsoFederationState_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Set Sso Federation",
         "tags": [
           "connections"
         ]

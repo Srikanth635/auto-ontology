@@ -7,7 +7,6 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { admin } from 'better-auth/plugins/admin';
 import { nextCookies } from 'better-auth/next-js';
 import { APIError, createAuthMiddleware, getAuthoritativeSessionFromCtx } from 'better-auth/api';
-import { sso } from '@better-auth/sso';
 import { apiKey } from '@better-auth/api-key';
 import { mcp } from '@better-auth/mcp';
 import { getPrisma } from '@/lib/prisma';
@@ -59,9 +58,6 @@ const mcpResource = (): string => {
 	return 'http://localhost:3003/mcp';
 };
 
-/** True once at least one SSO provider has been registered. */
-export const isSsoConfigured = async (): Promise<boolean> => (await prisma.ssoProvider.count()) > 0;
-
 export const auth = betterAuth({
 	// Project-scoped env var names, wired explicitly so they aren't tied to
 	// Better Auth's BETTER_AUTH_* defaults.
@@ -87,8 +83,7 @@ export const auth = betterAuth({
 		},
 	},
 	// Email/password sign-IN is enabled, but self-service sign-UP is disabled.
-	// Credential accounts come from the bootstrap admin (see seed-admin.ts) or
-	// from an admin invite link. Further users can also be provisioned via SSO.
+	// Credential accounts come from the bootstrap admin (see seed-admin.ts).
 	emailAndPassword: { enabled: true, disableSignUp: true },
 	// MCP clients (Cursor, the Python SDK) register loopback HTTP and
 	// `cursor://` redirect URIs. Better Auth 1.7 defaults an omitted
@@ -190,10 +185,6 @@ export const auth = betterAuth({
 	plugins: [
 		// Two roles only: `admin` (user management) and `viewer` (everything else).
 		admin({ ac, roles, adminRoles: [Role.Admin], defaultRole: Role.Viewer }),
-		// Auto Ontology Allows only one SSO provider, so this makes the redirect URI static.
-		// Better Auth's baseURL already includes `/api/auth`, so this becomes
-		// APP_URL/api/auth/sso/callback — the URI the README tells the IdP to register.
-		sso({ redirectURI: '/sso/callback' }),
 		// Machine-to-machine credentials: long-lived API tokens users mint for
 		// scripts. The plugin owns hashing (SHA-256), expiry, and revocation; we
 		// only pin the ergonomics. Tokens are verified explicitly in
@@ -220,12 +211,12 @@ export const auth = betterAuth({
 		}),
 		// Makes Auto Ontology the authorization server that MCP clients log in against, so
 		// the MCP server holds no client credentials and NVIDIA never needs a
-		// redirect URI registered for it — the only one it ever sees is Auto Ontology's,
-		// which SSO already uses. Clients register themselves, and those
+		// redirect URI registered for it — the only one it ever sees is Auto Ontology's.
+		// Clients register themselves, and those
 		// registrations live in Postgres rather than on an MCP pod's disk.
 		//
 		// `loginPage` is where an unauthenticated authorize request is sent; from
-		// there the existing SSO flow takes over, so human login is unchanged.
+		// there the normal password sign-in takes over.
 		mcp({
 			loginPage: '/login',
 			consentPage: '/oauth/consent',
@@ -256,11 +247,9 @@ export const auth = betterAuth({
 	databaseHooks: {
 		user: {
 			create: {
-				// Runs on Better Auth user.create (SSO JIT, not invite accept —
-				// invites insert via Prisma). First account becomes admin and is
-				// marked email-verified so it can later link an SSO identity.
-				// Later SSO logins default to viewer unless the payload already
-				// carries admin.
+				// Runs on Better Auth user.create. The first account becomes admin
+				// and is marked email-verified; later accounts default to viewer
+				// unless the payload already carries admin.
 				before: async (user) => {
 					const isFirstUser = (await prisma.user.count()) === 0;
 					const name = user.name || user.email;

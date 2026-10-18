@@ -6,9 +6,8 @@
 //
 // Auto Ontology is itself the authorization server an MCP client logs in against (see the
 // `mcp` plugin in auth/auth.ts). A client sends the user through Auto Ontology's normal
-// login page, receives an access token, and presents it here. So unlike the SSO
-// bearer path — which trusts a token another product's IdP signed — these tokens
-// are ours, and validating one is a lookup in our own database.
+// login page, receives an access token, and presents it here. These tokens are
+// ours, and validating one is a lookup in our own database.
 //
 // The token carries no permissions of its own: it resolves to the user who
 // approved it, and the request is then authorized against that user's role, the
@@ -17,10 +16,9 @@
 import { auth } from '@/auth/auth';
 import { getPrisma } from '@/lib/prisma';
 
-// A Auto Ontology access token is opaque — random characters, no structure. An SSO id
-// token is a JWT: three dot-separated segments. Telling them apart by shape
-// lets each credential go straight to the code that can verify it, instead of
-// failing JWT verification first and logging a misleading reason.
+// A Auto Ontology access token is opaque — random characters, no structure. A JWT
+// (three dot-separated segments) is never one of ours, so it is rejected by
+// shape without a database lookup.
 const JWT_SHAPE = /^[\w-]+\.[\w-]+\.[\w-]+$/;
 
 /**

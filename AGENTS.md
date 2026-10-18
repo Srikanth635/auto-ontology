@@ -17,8 +17,7 @@ skills.
 
 ## Which skill to read
 
-- [`skills/nvidia-ontology-setup/`](./skills/nvidia-ontology-setup/) — Helm (the official
-  install), local Compose, developer `--dev` / `--ds`, MCP against an
+- [`skills/nvidia-ontology-setup/`](./skills/nvidia-ontology-setup/) — local Compose, developer `--dev` / `--ds`, MCP against an
   already-running instance, and troubleshooting. Start here when Auto Ontology is not up yet or something failed
   during bring-up.
 - [`skills/nvidia-ontology-management/`](./skills/nvidia-ontology-management/) — inspect, model,
@@ -53,7 +52,7 @@ API catalog or a second installer.
 
 | Job | Owner | Skills do |
 | --- | --- | --- |
-| Install commands | `DEPLOYMENT.md` (Helm, official), `docker-compose.yml`; `dev_tools/setup_env.sh` for developer workflows | Invoke them; do not write a new installer |
+| Install commands | `docker-compose.yml`; `dev_tools/setup_env.sh` for developer workflows | Invoke them; do not write a new installer |
 | Live read tools | `mcp/auto_ontology_mcp/tools.py` (handshake tool list) | Prefer MCP; sequence reads; never copy the tool table |
 | REST shapes and permissions | `docs/openapi/auto-ontology-api.json` | Name the operation and permission; link; do not paste schemas |
 

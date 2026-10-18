@@ -29,5 +29,5 @@ def test_registered_connector_reports_a_dialect_sqlglot_knows(scheme: str) -> No
     assert isinstance(dialect, str) and dialect, f"{scheme} reports no dialect"
     assert dialect in _KNOWN_DIALECTS, (
         f"{scheme} reports {dialect!r}, which sqlglot does not know; map it onto "
-        f"the closest supported dialect the way HeavyDBDatabase does"
+        "the closest supported dialect"
     )

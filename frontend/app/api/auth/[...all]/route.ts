@@ -59,13 +59,13 @@ const rewriteMcpClientRedirect =
 		});
 	};
 
-// Better Auth's GET surface: session lookup and the SSO callbacks.
+// Better Auth's GET surface: session lookup and the OAuth (MCP) endpoints.
 //
-// Public by design — sign-in and the callback that completes it must both be
-// reachable without a session. The plugin's own `/api/auth/api-key/*` routes
+// Public by design — sign-in and the OAuth endpoints MCP clients call must
+// be reachable without a session. The plugin's own `/api/auth/api-key/*` routes
 // are blocked here so `/api/api-tokens` stays the single way to manage tokens.
 export const GET = withPublic(blockPluginApiKeyRoutes(rewriteMcpClientRedirect(handlers.GET)));
-// Better Auth's POST surface: sign-in, sign-out, and the SSO callbacks.
+// Better Auth's POST surface: sign-in, sign-out, and the OAuth (MCP) endpoints.
 //
 // Public for the same reason GET is — none of it can require a session. The
 // plugin's own `/api/auth/api-key/*` management routes are blocked here so

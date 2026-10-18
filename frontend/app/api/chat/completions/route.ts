@@ -16,7 +16,6 @@
 import { after } from 'next/server';
 import { withPermission } from '@/auth/with-auth';
 import { userCan } from '@/auth/permissions';
-import { resolveSubjectToken } from '@/auth/sso-token';
 import { buildInternalIdentityHeaders } from '@/lib/internalIdentity';
 
 const PYTHON_API_URL = process.env.PYTHON_API_URL ?? 'http://127.0.0.1:3001';
@@ -58,18 +57,12 @@ export const POST = withPermission({ chat: ['use'] })(async (req, { user }) => {
 	// chart/table bubble on this same connection — see the module docstring.
 	const body = JSON.stringify(payload);
 
-	// Forward the caller's SSO token whenever we have one. Only the backend knows
-	// which connections are configured to authenticate as the signed-in user, so
-	// it owns the fail-closed decision; sending the token is a no-op otherwise.
 	const upstreamHeaders: Record<string, string> = {
 		'Content-Type': 'application/json',
 		Accept: 'text/event-stream',
 		[SOURCE_HEADER]: req.headers.get(SOURCE_HEADER) ?? 'api',
 		...buildInternalIdentityHeaders(user.id),
 	};
-
-	const subjectToken = await resolveSubjectToken(req.headers, user.id);
-	if (subjectToken) upstreamHeaders.Authorization = `Bearer ${subjectToken}`;
 
 	let upstream: Response;
 	try {

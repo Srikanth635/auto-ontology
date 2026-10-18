@@ -5,7 +5,7 @@
 """Build a connector connection string from a structured connection object.
 
 UI-managed connections are stored as a JSON ``connection`` object on the
-catalog DB node or in Vault. The connectors still consume a connection string,
+catalog DB node. The connectors still consume a connection string,
 so this module converts the structured form into the URL the connectors expect.
 """
 
@@ -17,11 +17,6 @@ from urllib.parse import quote
 
 DEFAULT_POSTGRES_PORT = "5432"
 DEFAULT_MYSQL_PORT = "3306"
-DEFAULT_HEAVYDB_PORT = "6274"
-DEFAULT_KYUUBI_PORT = "10000"
-DEFAULT_TRINO_PORT = "8080"
-DEFAULT_CLICKHOUSE_PORT = "8123"
-DEFAULT_HEAVYDB_PROTOCOL = "binary"
 
 
 def _require(connection: Mapping[str, Any], key: str) -> str:
@@ -99,162 +94,11 @@ def build_connection_string(connection: Mapping[str, Any]) -> str:
         if host.startswith(("https://", "http://")):
             host = host.split("://", 1)[1]
         http_path = _require(connection, "http_path")
-        # ``access_token_override`` carries a Databricks token exchanged from the
-        # caller's SSO identity, so the query runs with that user's privileges
-        # instead of the connection's stored PAT.
-        access_token = str(connection.get("access_token_override") or "").strip()
-        federated = bool(access_token)
-        if not access_token:
-            access_token = _require(connection, "password")
+        access_token = _require(connection, "password")
         catalog = _require(connection, "database")
-        url = (
+        return (
             f"databricks://token:{_enc(access_token)}@{host}/{_enc(catalog)}"
             f"?http_path={_enc(http_path)}"
-        )
-        # The token itself is opaque, so record which credential it is. The
-        # connector logs this alongside every statement it runs.
-        if federated:
-            url += "&auth=sso"
-        return url
-
-    if conn_type == "kyuubi":
-        host = _require(connection, "host").rstrip("/")
-        if host.startswith(("https://", "http://")):
-            host = host.split("://", 1)[1]
-        user = _require(connection, "user")
-        password = _require(connection, "password")
-        catalog = _require(connection, "database")
-        port = str(connection.get("port") or "").strip() or DEFAULT_KYUUBI_PORT
-
-        # An SSA client mints a fresh token per hour, so the connector needs the
-        # token endpoint alongside the credentials. Without ``ssa_url`` the
-        # password is treated as a JWT that nothing can refresh.
-        ssa_url = str(connection.get("ssa_url") or "").strip().rstrip("/")
-        params = [f"auth={'ssa' if ssa_url else 'token'}"]
-        if ssa_url:
-            params.append(f"ssa_url={_enc(ssa_url)}")
-
-        # NVIDIA ships its internal CAs as a Java truststore; the connector
-        # converts it to PEM since Python's ssl module cannot read a JKS. The
-        # keystore can arrive either as base64 bytes uploaded through the UI --
-        # which keeps it with the connection instead of requiring a file to
-        # exist on every pod -- or as a path, for env-var connection strings.
-        truststore_file = str(connection.get("truststore_file") or "").strip()
-        truststore = str(connection.get("truststore") or "").strip()
-        if truststore_file:
-            params.append(f"truststore_data={_enc(truststore_file)}")
-        elif truststore:
-            params.append(f"truststore={_enc(truststore)}")
-        if truststore_file or truststore:
-            truststore_password = str(
-                connection.get("truststore_password") or ""
-            ).strip()
-            if truststore_password:
-                params.append(f"truststore_password={_enc(truststore_password)}")
-
-        return (
-            f"kyuubi://{_enc(user)}:{_enc(password)}@{host}:{port}/{_enc(catalog)}"
-            f"?{'&'.join(params)}"
-        )
-
-    if conn_type == "trino":
-        host = _require(connection, "host").rstrip("/")
-        if host.startswith(("https://", "http://")):
-            host = host.split("://", 1)[1]
-        user = _require(connection, "user")
-        catalog = _require(connection, "database")
-        port = str(connection.get("port") or "").strip() or DEFAULT_TRINO_PORT
-
-        # The password is optional: an unauthenticated cluster -- the usual shape
-        # for a development Trino -- takes the username as a plain identity label
-        # and rejects any credential, so an empty password must produce a URL with
-        # no password rather than an empty one.
-        password = str(connection.get("password") or "").strip()
-        credentials = f"{_enc(user)}:{_enc(password)}" if password else _enc(user)
-
-        params = []
-        schema = str(connection.get("schema") or "").strip()
-        if schema:
-            params.append(f"schema={_enc(schema)}")
-        # Left to the connector when unset: it picks https for a password or a
-        # TLS port, http otherwise. See ``auto_ontology.connectors.trino``.
-        http_scheme = str(connection.get("http_scheme") or "").strip().lower()
-        if http_scheme:
-            params.append(f"http_scheme={_enc(http_scheme)}")
-
-        url = f"trino://{credentials}@{host}:{port}/{_enc(catalog)}"
-        if params:
-            url += f"?{'&'.join(params)}"
-        return url
-
-    if conn_type == "clickhouse":
-        host = _require(connection, "host").rstrip("/")
-        # A pasted ClickHouse Cloud endpoint carries its scheme; keep it as the
-        # transport rather than dropping it, since 8443 is the only hint the
-        # connector would otherwise have that the endpoint is TLS.
-        scheme_from_host = ""
-        if host.startswith(("https://", "http://")):
-            scheme_from_host, host = host.split("://", 1)
-
-        # A pasted endpoint carries its port as well as its scheme, and the Port
-        # field is optional, so the two have to be reconciled here. Appending
-        # both yields ``host:8443:8123``, which is not a "wrong port" but an
-        # unparseable URL -- ``urlparse(...).port`` raises rather than returning
-        # anything the connector could fall back from.
-        port_from_host = ""
-        if host.count(":") == 1:
-            host, _, candidate = host.partition(":")
-            if candidate.isdigit():
-                port_from_host = candidate
-            else:
-                # Not a port after all; put it back rather than losing it.
-                host = f"{host}:{candidate}"
-
-        database = _require(connection, "database")
-        port = (
-            str(connection.get("port") or "").strip()
-            or port_from_host
-            or DEFAULT_CLICKHOUSE_PORT
-        )
-
-        # Both credentials are optional: a stock server runs as ``default`` with
-        # an empty password. A password without a user is still sent, as
-        # ``:password@`` -- the connector reads that as the default user (see
-        # ``ClickHouseDatabase._ensure_client``), and dropping it instead would
-        # silently downgrade the connection to unauthenticated and surface as an
-        # auth failure the form gives no way to explain.
-        user = str(connection.get("user") or "").strip()
-        password = str(connection.get("password") or "").strip()
-        credentials = ""
-        if password:
-            credentials = f"{_enc(user)}:{_enc(password)}@"
-        elif user:
-            credentials = f"{_enc(user)}@"
-
-        params = []
-        http_scheme = (
-            str(connection.get("http_scheme") or "").strip().lower() or scheme_from_host
-        )
-        if http_scheme:
-            params.append(f"http_scheme={_enc(http_scheme)}")
-
-        url = f"clickhouse://{credentials}{host}:{port}/{_enc(database)}"
-        if params:
-            url += f"?{'&'.join(params)}"
-        return url
-
-    if conn_type == "heavydb":
-        host = _require(connection, "host").rstrip("/")
-        user = _require(connection, "user")
-        password = _require(connection, "password")
-        database = _require(connection, "database")
-        port = str(connection.get("port") or "").strip() or DEFAULT_HEAVYDB_PORT
-        protocol = (
-            str(connection.get("protocol") or "").strip() or DEFAULT_HEAVYDB_PROTOCOL
-        )
-        return (
-            f"heavydb://{_enc(user)}:{_enc(password)}@{host}:{port}/{_enc(database)}"
-            f"?protocol={_enc(protocol)}"
         )
 
     raise ValueError(f"Unsupported connection type: {conn_type!r}")

@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import pytest
 from pytest import LogCaptureFixture
 
-from auto_ontology.connectors.databricks import AUTH_SSO_FEDERATION, AUTH_STORED_TOKEN
+from auto_ontology.connectors.databricks import AUTH_STORED_TOKEN
 from auto_ontology.infra.feature_flags import DEFAULT_SQL_QUERY_TIMEOUT_SECONDS
 from auto_ontology.retrieval.text_to_sql import chat_sql
 from auto_ontology.retrieval.text_to_sql.chat_sql import (
@@ -31,17 +31,6 @@ def configured_timeout(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     stored = [DEFAULT_SQL_QUERY_TIMEOUT_SECONDS]
     monkeypatch.setattr(chat_sql, "get_sql_query_timeout_seconds", lambda: stored[-1])
     return stored
-
-
-def test_logs_sso_federated_credential(caplog: LogCaptureFixture) -> None:
-    connector = SimpleNamespace(database_name="kdc_ca1", auth_mode=AUTH_SSO_FEDERATION)
-
-    with caplog.at_level(logging.INFO, logger=_LOGGER):
-        log_chat_sql(connector, "SELECT 1")
-
-    assert f"[kdc_ca1] Executing chat SQL as {AUTH_SSO_FEDERATION}:\nSELECT 1" in [
-        r.getMessage() for r in caplog.records
-    ]
 
 
 def test_logs_stored_token_credential(caplog: LogCaptureFixture) -> None:

@@ -277,7 +277,7 @@ const AUTH_RESPONSES: Json = {
 
 // Of the three credentials resolveUser() accepts, the API token is the only one
 // a script can obtain for itself — a session cookie needs a browser login and an
-// SSO id token is minted for another service. So it is the one documented here,
+// OAuth access token needs an interactive MCP sign-in. So it is the one documented here,
 // and the one a generated client should be wired to send.
 const SECURITY_SCHEMES: Json = {
 	ApiToken: {

@@ -53,9 +53,8 @@ def _validate_relation_column_coverage(
 
     Meeting the contract is the connector's job, not this function's, because
     only the connector knows whether one relation failed or the whole scope did.
-    :meth:`auto_ontology.connectors.kyuubi.KyuubiDatabase._introspect` and
-    :meth:`auto_ontology.connectors.databricks.DatabricksDatabase._describe_pass` both drop
-    a relation they cannot describe from *both* frames, and both raise when the
+    :meth:`auto_ontology.connectors.databricks.DatabricksDatabase._describe_pass` drops
+    a relation it cannot describe from *both* frames, and raises when the
     failure is scope-wide rather than per-relation. This is the backstop for a
     connector that gets that wrong: it turns a silently incomplete catalog into
     a loud failure before anything is written.

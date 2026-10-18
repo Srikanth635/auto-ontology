@@ -25,7 +25,7 @@ export const MAX_NAME_LENGTH = 64;
  *
  * Snake_case because that is what the API publishes; the Better Auth model
  * behind it is camelCase, so `toApiToken` maps at the boundary rather than
- * leaking the library's naming (same as `GET /api/sso-providers`).
+ * leaking the library's naming.
  */
 export type ApiTokenSummary = {
 	id: string;

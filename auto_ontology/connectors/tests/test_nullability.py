@@ -12,7 +12,7 @@ both ``'YES'`` and ``'NO'`` are truthy and a single connector leaking strings
 marks its whole database nullable.
 
 Postgres has its own coverage in ``test_postgres.py`` against the Pagila
-fixture. Snowflake, Databricks and HeavyDB need live warehouses, so their
+fixture. Snowflake and Databricks need live warehouses, so their
 conversions are asserted against the emitted SQL here and verified against a
 real warehouse separately.
 """

@@ -69,8 +69,7 @@ client after editing its config, since most read MCP configuration only at
 startup.
 
 The client sees that the server wants authorization and offers to sign in —
-Cursor lists it as needing login. The user gets Auto Ontology's ordinary login page, with
-whatever SSO that deployment uses, and the client ends up holding a token it
+Cursor lists it as needing login. The user gets Auto Ontology's ordinary login page, and the client ends up holding a token it
 manages itself. Nothing is minted or pasted by hand, and every call runs as the
 person who signed in.
 

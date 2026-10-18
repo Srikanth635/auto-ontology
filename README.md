@@ -39,8 +39,7 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
   Postgres alongside the catalog it describes.
 - **Authentication & RBAC** —using [Better Auth](https://github.com/better-auth/better-auth).
 - **Web UI** for chat, analysis, data catalog, analytics, and settings.
-- **Flexible deployment** — Helm chart for Kubernetes or Docker Compose for a
-  local stack.
+- **Local deployment** — Docker Compose brings up the full stack.
 
 ## Software Components
 
@@ -50,7 +49,6 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
 | Backend             | FastAPI (Python 3.12+), LangChain                                      | Chat / NL-to-SQL, catalog, datasource APIs | 3001         |
 | Ingestion worker    | FastAPI (Python 3.12+)                                                 | Ingests tabular data and writes embeddings | 3002         |
 | Postgres + pgvector | Relational Database                                                    | App metadata, the catalog and ontology, vector store | 5432 |
-| HashiCorp Vault     | Optional                                                               | Secure storage of connection credentials   | —            |
 
 ### NVIDIA NIM
 
@@ -90,20 +88,13 @@ back to the legacy `NVIDIA_API_KEY` for backward compatibility.
 ### Prerequisites
 
 - **Docker** with **Docker Compose v2** (e.g. Docker Desktop on macOS/Windows,
-  Docker Engine on Linux) for the local stack. For Kubernetes deployments see
-  [`DEPLOYMENT.md`](./DEPLOYMENT.md).
+  Docker Engine on Linux) for the local stack.
 - An **NVIDIA API key** (`nvapi-...`) for NVIDIA NIM (chat and ingestion) from
   the NVIDIA API catalog at <https://build.nvidia.com>.
 - Connection details for the source database(s) you want to query
   (Databricks, Postgres, Snowflake, or DuckDB).
 
 ### Installation
-
-**Kubernetes**
-
-To deploy Auto Ontology on a Kubernetes cluster, see [`DEPLOYMENT.md`](./DEPLOYMENT.md).
-
-**Local (Docker Compose)**
 
 1. Clone the repository:
 
@@ -151,29 +142,20 @@ To deploy Auto Ontology on a Kubernetes cluster, see [`DEPLOYMENT.md`](./DEPLOYM
 
 Auto Ontology resolves the source databases it connects to from two sources:
 
-1. **Added through the UI** — connections created from within the app. With this
-   option the connection credentials are **stored in plaintext in Postgres unless
-   Vault is configured**:
-   - **Without Vault:** the full connection object (including the password) is
-     JSON-serialized and stored, unencrypted, on the catalog's database row.
-   - **With Vault:** the credentials are written to Vault, keyed by the database
-     name, and the catalog row stores no credentials (the database name is the
-     lookup key — there is no separate reference field).
-
-   Vault is enabled only when all of `VAULT_ADDR`, `VAULT_NAMESPACE`,
-   `VAULT_ROLE_ID`, and `VAULT_SECRET_ID` are set (`VAULT_AUTH_MOUNT` and
-   `VAULT_KV_MOUNT` are optional overrides). It is off by default; a partial
-   configuration is ignored with a warning and falls back to plaintext storage.
+1. **Added through the UI** — connections created from within the app. The
+   full connection object (including the password) is JSON-serialized and
+   stored, **unencrypted**, on the catalog's database row in Postgres.
 
 2. **`CONNECTION_STRINGS` environment variable** — a comma-separated list of
-   connection strings supplied at deploy time (e.g. the Helm
-   `--set connectionStrings=<CONNECTION-STRINGS>` flag). This is a fallback: it
+   connection strings supplied at deploy time in `.env`. This is a fallback: it
    is used only when there are no UI-added connections.
 
 ## Authentication
 
-Auto Ontology Supports SSO for authentication.
-The Redirect URI should be configured in the IdP as: APP_URL/api/auth/sso/callback
+Auto Ontology signs users in with email and password. Self-service sign-up is
+disabled: the only account is the bootstrap admin from
+`AUTO_ONTOLOGY_ADMIN_EMAIL` / `AUTO_ONTOLOGY_ADMIN_PASSWORD` in `.env`, which is
+created (or has its password reset) every time the frontend starts.
 
 ### API tokens (scripting)
 

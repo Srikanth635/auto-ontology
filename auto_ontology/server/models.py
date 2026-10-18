@@ -61,7 +61,6 @@ __all__ = [
     "SqlAttribute",
     "SqlExpressionValidationResult",
     "SqlValidationResult",
-    "SsoFederationState",
     "TableColumns",
     "TableExplorationDetails",
     "TableExplorationTerm",
@@ -1142,17 +1141,6 @@ class PublicConnection(ApiModel):
 
     database_name: str
     connection: dict[str, Any] | None = None
-
-
-class SsoFederationState(ApiModel):
-    """The one flag ``PATCH /connections/{database_name}/sso-federation`` sets.
-
-    The route deliberately echoes just the flag rather than the connection, so
-    a caller never has to re-send credentials to toggle it.
-    """
-
-    database_name: str
-    sso_federation: bool
 
 
 # ---------------------------------------------------------------------------

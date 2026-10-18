@@ -37,7 +37,6 @@ const SETTINGS_SECTION_LABELS: Record<string, string> = {
 	pii: 'PII Settings',
 	'agent-settings': 'Agent Settings',
 	users: 'Users',
-	sso: 'Single Sign-On',
 	'import-export': 'Import / Export',
 };
 

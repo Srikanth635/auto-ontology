@@ -46,14 +46,6 @@ export const connectionsApi = {
 			connection: input,
 		}),
 
-	// Narrow update: flips "authenticate as signed-in user" without re-sending
-	// credentials, so the connections page can toggle it inline.
-	setSsoFederation: (databaseName: string, enabled: boolean) =>
-		requests.patch<{ data: { database_name: string; sso_federation: boolean } }>(
-			`connections/${encodeURIComponent(databaseName)}/sso-federation`,
-			{ enabled },
-		),
-
 	delete: (databaseName: string) =>
 		requests.delete<{ data: { database_name: string } }>(
 			`connections/${encodeURIComponent(databaseName)}`,

@@ -107,11 +107,6 @@ reviews:
         a job that skips because an input changed outside its filter reports a
         green run that proved nothing. Actions should be pinned and tool
         versions kept consistent with the versions used elsewhere in the repo.
-    - path: 'helm/**'
-      instructions: >-
-        Check that new or renamed values are documented in values.yaml with a
-        sane default, and that templates do not hardcode secrets, image tags
-        or environment-specific hostnames.
 
   # Advisory only (`warning`), so nothing here can block a merge.
   pre_merge_checks:
@@ -167,8 +162,6 @@ reviews:
     # with prettier over the same lines.
     biome:
       enabled: false
-    # Off: helm/auto-ontology/templates are Go templates, not YAML, so a YAML linter
-    # reports syntax errors on every one of them.
     yamllint:
       enabled: false
 
