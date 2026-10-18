@@ -1,0 +1,110 @@
+@prefix : <http://example.org/kitchen#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/kitchen> a owl:Ontology ;
+    rdfs:label "Kitchen ontology" .
+
+:PhysicalObject a owl:Class ;
+    rdfs:label "Physical object" ;
+    skos:definition "A thing that has a location and extent in space." .
+
+:Agent a owl:Class ;
+    rdfs:subClassOf :PhysicalObject ;
+    skos:definition "Something that can act on its own behalf." .
+
+:Robot a owl:Class ;
+    rdfs:subClassOf :Agent ;
+    skos:altLabel "robotic agent" ;
+    skos:definition "A machine agent that performs physical tasks." .
+
+:Tool a owl:Class ;
+    rdfs:subClassOf :PhysicalObject ;
+    skos:definition "An object used to carry out a task." .
+
+:CuttingTool a owl:Class ;
+    rdfs:subClassOf :Tool ;
+    rdfs:subClassOf [ a owl:Restriction ;
+        owl:onProperty :hasCapability ;
+        owl:someValuesFrom :CuttingCapability ] ;
+    skos:definition "A tool with a sharp edge used to divide food or material." .
+
+:Knife a owl:Class ;
+    rdfs:subClassOf :CuttingTool ;
+    skos:altLabel "blade" ;
+    skos:definition "A hand-held cutting tool with a blade and a handle." .
+
+:BreadKnife a owl:Class ;
+    rdfs:subClassOf :Knife ;
+    skos:definition "A knife with a serrated blade for slicing bread." .
+
+:Container a owl:Class ;
+    rdfs:subClassOf :PhysicalObject ;
+    skos:definition "An object that can hold other objects or substances." .
+
+:Cup a owl:Class ;
+    rdfs:subClassOf :Container ;
+    skos:altLabel "mug" ;
+    skos:definition "A small open container used for drinking." .
+
+:Bowl a owl:Class ;
+    rdfs:subClassOf :Container ;
+    skos:definition "A round, deep container for food or liquid." .
+
+:Mug a owl:Class ;
+    rdfs:subClassOf :Container .
+
+:Food a owl:Class ;
+    rdfs:subClassOf :PhysicalObject ;
+    skos:definition "Something that can be eaten." .
+
+:Bread a owl:Class ;
+    rdfs:subClassOf :Food ;
+    skos:definition "A baked food made from flour and water." .
+
+:Capability a owl:Class ;
+    skos:definition "Something an object or agent is able to do." .
+
+:CuttingCapability a owl:Class ;
+    rdfs:subClassOf :Capability ;
+    skos:definition "The ability to divide material into pieces." .
+
+:PouringCapability a owl:Class ;
+    rdfs:subClassOf :Capability .
+
+:Food owl:disjointWith :Tool .
+
+:hasCapability a owl:ObjectProperty ;
+    rdfs:domain :PhysicalObject ;
+    rdfs:range :Capability ;
+    skos:definition "Relates an object to something it is able to do." .
+
+:locatedIn a owl:ObjectProperty ;
+    rdfs:label "located in" ;
+    rdfs:domain :PhysicalObject ;
+    rdfs:range :Container .
+
+:uses a owl:ObjectProperty ;
+    rdfs:domain :Agent ;
+    rdfs:range :Tool ;
+    skos:definition "An agent uses a tool to perform a task." .
+
+:hasWeight a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:domain :PhysicalObject ;
+    rdfs:range xsd:decimal ;
+    skos:definition "The weight of an object in grams." .
+
+:pr2 a owl:NamedIndividual , :Robot ;
+    rdfs:label "PR2" ;
+    :uses :knife1 .
+
+:knife1 a owl:NamedIndividual , :BreadKnife ;
+    rdfs:label "knife 1" ;
+    :hasWeight "120.0"^^xsd:decimal ;
+    :locatedIn :drawer1 .
+
+:drawer1 a owl:NamedIndividual , :Container ;
+    rdfs:label "drawer 1" .

@@ -46,6 +46,7 @@ from auto_ontology.server.model_interchange.router import (  # noqa: E402
     router as model_interchange_router,
 )
 from auto_ontology.server.search.router import router as search_router  # noqa: E402
+from auto_ontology.server.onto_query.router import router as onto_query_router  # noqa: E402
 
 
 @asynccontextmanager
@@ -110,6 +111,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(search_router, prefix="/api", tags=["search"])
     app.include_router(model_settings_router, prefix="/api", tags=["model-settings"])
+    app.include_router(onto_query_router, prefix="/api", tags=["onto-query"])
 
     return app
 

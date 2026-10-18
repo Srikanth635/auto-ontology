@@ -94,3 +94,6 @@ helm.sh
 /temp.txt
 /vectors_wiki.py
 /vectors_wiki_load.py
+
+# OntoQuerying: uploaded ontologies and their vector cache (ONTO_QUERY_DATA_DIR)
+/data/

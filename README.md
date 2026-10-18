@@ -263,6 +263,81 @@ without `conversation_id` remains stateless; a direct request with
 The web UI manages the UUID automatically. An API-created conversation can be
 opened in the UI at `/chat?focus=<conversation_id>`.
 
+## OntoQuerying: natural-language access to an existing ontology
+
+The SQL path builds a semantic layer from a database. OntoQuerying starts from
+an ontology someone has already written (OWL/RDF: Turtle, RDF/XML, N-Triples,
+JSON-LD, N3) and offers the same retrieval-plus-LLM approach over it. The code
+is in `auto_ontology/onto_query/`. The routes are on FastAPI under
+`/api/ontologies` and are called directly at `http://127.0.0.1:3001`, with no
+gateway or user header.
+
+**How it works:**
+
+1. **Loading.** Each class, property and individual becomes a short text: its
+   label, synonyms, definition, parent path (*Bread Knife → Knife → Cutting
+   Tool → Tool*), restrictions in Manchester syntax, domain and range.
+2. **Indexing.** Those texts are indexed by embedding (pgvector collection
+   `ontology_layer`) and by keyword (BM25), and the two rankings are fused.
+3. **Reranking.** Search results are reranked by the rerank API role if one is
+   set. Otherwise a local cross-encoder is used when it is installed:
+   `uv sync --extra onto-rerank` installs `BAAI/bge-reranker-base`.
+4. **Context.** For a question, the fast model extracts the concepts it
+   mentions. Each concept is searched, and the hits grow by one hop: parents,
+   children, properties touching them, and terms their restrictions use. Only
+   this small piece of the ontology reaches a prompt.
+
+**Endpoints:**
+
+| Feature | Endpoint |
+| --- | --- |
+| Load (file or text) / list / delete / export | `POST /ontologies/upload`, `POST /ontologies`, `GET /ontologies`, `DELETE /ontologies/{id}`, `GET /ontologies/{id}/export` |
+| Browse elements | `GET /ontologies/{id}/elements`, `GET /ontologies/{id}/element?iri=` |
+| Hybrid search | `POST /ontologies/{id}/search` |
+| Find suitable candidates for a description, judged exact / broader / narrower / related | `POST /ontologies/{id}/candidates` |
+| Answer a question with SPARQL | `POST /ontologies/{id}/ask` |
+| Run your own SPARQL (checked, read-only) | `POST /ontologies/{id}/sparql` |
+| Grow: place a new concept, suggest missing subclasses, draft definitions | `POST /ontologies/{id}/grow/placement`, `.../grow/children`, `.../grow/definitions` |
+| Find duplicates, missing definitions, orphans, untyped properties, cycles | `POST /ontologies/{id}/grow/issues` |
+| Apply reviewed Turtle | `POST /ontologies/{id}/additions` |
+| Align two ontologies (JSON, SSSOM TSV, Turtle) | `POST /ontologies/align` |
+| SHACL from the ontology's axioms, or from plain-language rules | `GET /ontologies/{id}/shapes/derived`, `POST /ontologies/{id}/shapes/from-rules` |
+| Validate RDF data, or the ontology's own individuals | `POST /ontologies/{id}/validate` |
+
+All paths are under `/api`.
+
+```bash
+curl -F file=@pizza.owl http://127.0.0.1:3001/api/ontologies/upload
+curl -H 'content-type: application/json' \
+  -d '{"question": "Which pizzas have a spicy topping?"}' \
+  http://127.0.0.1:3001/api/ontologies/pizza/ask
+```
+
+**Notes:**
+
+- **Models.** It uses the models from **Settings → Models**: `chat` writes the
+  SPARQL and makes the judgements, `fast_chat` extracts the concepts in a
+  question, and `embedding` builds the index. Without an embedding model,
+  search is keyword-only. Without a chat model, the model-backed routes return
+  `503`; search, SPARQL, issues, derived shapes and validation still work.
+- **No reasoner.** The SPARQL runs on the asserted triples, so the prompt
+  teaches property paths (`rdfs:subClassOf*`) and the blank-node shape of
+  restrictions. Every query is checked before it runs: it must be read-only,
+  use no `SERVICE` or `FROM`, and contain only IRIs that exist. A query that
+  fails these checks goes back to the model with the reason, up to three
+  times.
+- **Suggestions are not applied.** The grow features return Turtle. Nothing
+  changes until you post that Turtle to `/additions`; the uploaded original is
+  kept unchanged next to the working copy.
+- **Storage.** Ontologies live in `ONTO_QUERY_DATA_DIR`: `data/ontologies`
+  locally, a Docker volume in Compose. Vectors are cached there, keyed by
+  embedding model and text. A restart re-embeds nothing, and an addition
+  re-embeds only the elements whose text changed. After switching the
+  embedding model, dense search pauses until you call `/reindex` or restart.
+- **Settings.** `ONTO_QUERY_VECTOR_STORE=memory` searches the cache without
+  Postgres. `ONTO_QUERY_LOCAL_RERANK` (`auto`, `on` or `off`) and
+  `ONTO_QUERY_RERANK_MODEL` control the local reranker.
+
 ## License
 
 neemontology is a fork of NVIDIA Auto Ontology and, like it, is licensed under the [Apache License, Version 2.0](./LICENSE).

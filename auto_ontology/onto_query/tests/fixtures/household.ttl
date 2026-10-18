@@ -1,0 +1,36 @@
+@prefix h: <http://example.org/household/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://example.org/household> a owl:Ontology ;
+    rdfs:label "Household items" .
+
+h:Artifact a owl:Class ;
+    rdfs:label "Artifact"@en ;
+    skos:definition "An object made by people." .
+
+h:Utensil a owl:Class ;
+    rdfs:subClassOf h:Artifact ;
+    rdfs:label "Utensil"@en ;
+    skos:definition "An implement used in a kitchen." .
+
+h:Knife a owl:Class ;
+    rdfs:subClassOf h:Utensil ;
+    rdfs:label "Knife"@en ;
+    skos:definition "A utensil with a blade for cutting." .
+
+h:DrinkingVessel a owl:Class ;
+    rdfs:subClassOf h:Artifact ;
+    rdfs:label "Drinking vessel"@en ;
+    skos:definition "A container from which one drinks." .
+
+h:Teacup a owl:Class ;
+    rdfs:subClassOf h:DrinkingVessel ;
+    rdfs:label "Teacup"@en ;
+    skos:definition "A small cup for drinking tea." .
+
+h:Loaf a owl:Class ;
+    rdfs:subClassOf h:Artifact ;
+    rdfs:label "Loaf"@en ;
+    skos:definition "A shaped mass of baked bread." .

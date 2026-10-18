@@ -93,6 +93,10 @@ RUN python -c "from auto_ontology.server.users.permissions import permissions_fo
 # Schema migrations for the `public` schema, run by the `migrate` mode below.
 COPY --chown=auto_ontology:auto_ontology alembic/ ./alembic/
 COPY --chown=auto_ontology:auto_ontology alembic.ini ./
+# OntoQuerying keeps uploaded ontologies and their vector cache here
+# (ONTO_QUERY_DATA_DIR); docker-compose.yml mounts a volume over it. Created
+# owned by the app user so a fresh named volume inherits that ownership.
+RUN mkdir -p /app/data/ontologies && chown -R auto_ontology:auto_ontology /app/data
 
 # Dispatcher entrypoint: selects between the FastAPI server, the ingestion
 # service, and the one-shot schema migration based on the first arg.

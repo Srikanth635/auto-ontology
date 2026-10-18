@@ -1,6 +1,130 @@
 {
   "components": {
     "schemas": {
+      "AdditionsRequest": {
+        "properties": {
+          "turtle": {
+            "description": "Triples to add, in Turtle. The ontology's prefixes are predeclared.",
+            "minLength": 1,
+            "title": "Turtle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "turtle"
+        ],
+        "title": "AdditionsRequest",
+        "type": "object"
+      },
+      "AlignRequest": {
+        "properties": {
+          "judge": {
+            "default": true,
+            "title": "Judge",
+            "type": "boolean"
+          },
+          "k": {
+            "default": 5,
+            "description": "Candidates per source element.",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "K",
+            "type": "integer"
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Restrict to element kinds: class, property (all three property kinds), object_property, datatype_property, annotation_property, individual. Default: class.",
+            "title": "Kinds"
+          },
+          "max_sources": {
+            "default": 100,
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Max Sources",
+            "type": "integer"
+          },
+          "min_confidence": {
+            "default": 0.5,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Min Confidence",
+            "type": "number"
+          },
+          "offset": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_iris": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Align only these source elements.",
+            "title": "Source Iris"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "target_id"
+        ],
+        "title": "AlignRequest",
+        "type": "object"
+      },
+      "AskRequest": {
+        "properties": {
+          "max_attempts": {
+            "default": 3,
+            "maximum": 6.0,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "type": "integer"
+          },
+          "max_elements": {
+            "default": 40,
+            "maximum": 200.0,
+            "minimum": 5.0,
+            "title": "Max Elements",
+            "type": "integer"
+          },
+          "question": {
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "AskRequest",
+        "type": "object"
+      },
       "Body_import_model_api_model_import_post": {
         "properties": {
           "file": {
@@ -17,6 +141,83 @@
           }
         },
         "title": "Body_import_model_api_model_import_post",
+        "type": "object"
+      },
+      "Body_upload_ontology_api_ontologies_upload_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "format": {
+            "default": "",
+            "title": "Format",
+            "type": "string"
+          },
+          "id": {
+            "default": "",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_ontology_api_ontologies_upload_post",
+        "type": "object"
+      },
+      "CandidatesRequest": {
+        "properties": {
+          "description": {
+            "description": "What you are looking for.",
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "include_unrelated": {
+            "default": false,
+            "title": "Include Unrelated",
+            "type": "boolean"
+          },
+          "judge": {
+            "default": true,
+            "description": "Have the chat model judge each candidate.",
+            "title": "Judge",
+            "type": "boolean"
+          },
+          "k": {
+            "default": 8,
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "K",
+            "type": "integer"
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Restrict to element kinds: class, property (all three property kinds), object_property, datatype_property, annotation_property, individual.",
+            "title": "Kinds"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "CandidatesRequest",
         "type": "object"
       },
       "ChatCancelResponse": {
@@ -94,6 +295,26 @@
           "question"
         ],
         "title": "ChatRequest",
+        "type": "object"
+      },
+      "ChildrenRequest": {
+        "properties": {
+          "iri": {
+            "title": "Iri",
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "iri"
+        ],
+        "title": "ChildrenRequest",
         "type": "object"
       },
       "ColumnAttribute": {
@@ -944,6 +1165,34 @@
         "title": "ConnectionTestResponse",
         "type": "object"
       },
+      "ContextRequest": {
+        "properties": {
+          "hops": {
+            "default": 1,
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Hops",
+            "type": "integer"
+          },
+          "max_elements": {
+            "default": 40,
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Max Elements",
+            "type": "integer"
+          },
+          "question": {
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "ContextRequest",
+        "type": "object"
+      },
       "CustomAnalysis": {
         "additionalProperties": true,
         "description": "A verified SQL example, joined with the text of its ``Sql`` node.",
@@ -1545,6 +1794,34 @@
           "id"
         ],
         "title": "DatabaseSummary",
+        "type": "object"
+      },
+      "DefinitionsRequest": {
+        "properties": {
+          "iris": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Elements to define; empty = classes lacking one.",
+            "title": "Iris"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "title": "DefinitionsRequest",
         "type": "object"
       },
       "DescriptionSuggestionResponse": {
@@ -2297,6 +2574,32 @@
         "title": "IdRef",
         "type": "object"
       },
+      "IssuesRequest": {
+        "properties": {
+          "confirm_duplicates": {
+            "default": false,
+            "description": "Have the chat model review the duplicate pairs.",
+            "title": "Confirm Duplicates",
+            "type": "boolean"
+          },
+          "duplicate_threshold": {
+            "default": 0.92,
+            "maximum": 1.0,
+            "minimum": 0.5,
+            "title": "Duplicate Threshold",
+            "type": "number"
+          },
+          "max_pairs": {
+            "default": 50,
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Max Pairs",
+            "type": "integer"
+          }
+        },
+        "title": "IssuesRequest",
+        "type": "object"
+      },
       "ListResponse_DatabaseSummary_": {
         "additionalProperties": true,
         "properties": {
@@ -2857,6 +3160,44 @@
         "title": "ObjectPageResponse[TableColumns]",
         "type": "object"
       },
+      "OntologyText": {
+        "description": "An ontology sent as text rather than as a file upload.",
+        "properties": {
+          "content": {
+            "description": "The ontology source (Turtle, RDF/XML, ...).",
+            "title": "Content",
+            "type": "string"
+          },
+          "filename": {
+            "default": "",
+            "description": "Used to guess the format, e.g. 'x.ttl'.",
+            "title": "Filename",
+            "type": "string"
+          },
+          "format": {
+            "default": "",
+            "description": "rdflib format name, e.g. turtle, xml.",
+            "title": "Format",
+            "type": "string"
+          },
+          "id": {
+            "default": "",
+            "description": "Optional id; derived from the title if empty.",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "OntologyText",
+        "type": "object"
+      },
       "PagedListResponse_ColumnAttribute_": {
         "additionalProperties": true,
         "properties": {
@@ -3044,6 +3385,26 @@
           "total"
         ],
         "title": "PagedListResponse[Tag]",
+        "type": "object"
+      },
+      "PlacementRequest": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "description": "The new concept's name.",
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PlacementRequest",
         "type": "object"
       },
       "PqlAnalysis": {
@@ -3361,6 +3722,24 @@
         "title": "RuleUpdate",
         "type": "object"
       },
+      "RulesRequest": {
+        "properties": {
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Rules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rules"
+        ],
+        "title": "RulesRequest",
+        "type": "object"
+      },
       "SchemaSummary": {
         "additionalProperties": true,
         "description": "One schema of a database, with how many tables it holds.",
@@ -3430,6 +3809,52 @@
           "schemas"
         ],
         "title": "SchemasPayload",
+        "type": "object"
+      },
+      "SearchRequest": {
+        "properties": {
+          "include_deprecated": {
+            "default": false,
+            "title": "Include Deprecated",
+            "type": "boolean"
+          },
+          "k": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "K",
+            "type": "integer"
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Restrict to element kinds: class, property (all three property kinds), object_property, datatype_property, annotation_property, individual.",
+            "title": "Kinds"
+          },
+          "query": {
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "rerank": {
+            "default": true,
+            "title": "Rerank",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "SearchRequest",
         "type": "object"
       },
       "SemanticExplorationGraph": {
@@ -3572,6 +3997,20 @@
           "last_failure_at"
         ],
         "title": "SemanticStatusResponse",
+        "type": "object"
+      },
+      "SparqlRequest": {
+        "properties": {
+          "query": {
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "SparqlRequest",
         "type": "object"
       },
       "SqlAttribute": {
@@ -5597,6 +6036,42 @@
         "title": "TermsPageResponse",
         "type": "object"
       },
+      "ValidateRequest": {
+        "properties": {
+          "data": {
+            "default": "",
+            "description": "RDF data to validate; empty = the ontology's own individuals.",
+            "title": "Data",
+            "type": "string"
+          },
+          "data_format": {
+            "default": "",
+            "description": "rdflib format; guessed if empty.",
+            "title": "Data Format",
+            "type": "string"
+          },
+          "explain": {
+            "default": false,
+            "description": "Summarise the results in plain language.",
+            "title": "Explain",
+            "type": "boolean"
+          },
+          "shapes": {
+            "default": "",
+            "description": "Extra SHACL shapes in Turtle.",
+            "title": "Shapes",
+            "type": "string"
+          },
+          "use_derived": {
+            "default": true,
+            "description": "Also apply shapes derived from the ontology's axioms.",
+            "title": "Use Derived",
+            "type": "boolean"
+          }
+        },
+        "title": "ValidateRequest",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -7464,6 +7939,1223 @@
         "tags": [
           "datasources",
           "connectors"
+        ]
+      }
+    },
+    "/api/ontologies": {
+      "get": {
+        "description": "Every stored ontology, with counts and index status once loaded.",
+        "operationId": "list_ontologies_api_ontologies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Ontologies Api Ontologies Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Ontologies",
+        "tags": [
+          "onto-query"
+        ]
+      },
+      "post": {
+        "description": "Create an ontology from source text in the request body.",
+        "operationId": "create_ontology_api_ontologies_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "embed",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Embed",
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OntologyText"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Ontology Api Ontologies Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/align": {
+      "post": {
+        "description": "Match a source ontology's elements to a target's, as JSON, SSSOM and Turtle.",
+        "operationId": "align_ontologies_api_ontologies_align_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Align Ontologies Api Ontologies Align Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Align Ontologies",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/upload": {
+      "post": {
+        "description": "Upload an OWL/RDF file (Turtle, RDF/XML, N-Triples, JSON-LD, N3), parse\nand index it. Indexing embeds every element, so large files take a while.",
+        "operationId": "upload_ontology_api_ontologies_upload_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "embed",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Embed",
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_ontology_api_ontologies_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Upload Ontology Api Ontologies Upload Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}": {
+      "delete": {
+        "description": "Delete an ontology, its stored files and its vectors.",
+        "operationId": "delete_ontology_api_ontologies__ontology_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      },
+      "get": {
+        "description": "Counts, prefixes and index status of one ontology.",
+        "operationId": "get_ontology_api_ontologies__ontology_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Ontology Api Ontologies  Ontology Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/additions": {
+      "post": {
+        "description": "Add reviewed Turtle (e.g. from a /grow suggestion) to the working copy.",
+        "operationId": "add_triples_api_ontologies__ontology_id__additions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdditionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Add Triples Api Ontologies  Ontology Id  Additions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Triples",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/ask": {
+      "post": {
+        "description": "Answer a question: retrieve context, write and check SPARQL, run, answer.",
+        "operationId": "ask_api_ontologies__ontology_id__ask_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ask Api Ontologies  Ontology Id  Ask Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/candidates": {
+      "post": {
+        "description": "Elements that fit a description, each judged exact/broader/narrower/related.",
+        "operationId": "find_candidates_api_ontologies__ontology_id__candidates_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidatesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Find Candidates Api Ontologies  Ontology Id  Candidates Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find Candidates",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/context": {
+      "post": {
+        "description": "The piece of the ontology a question is about, as used by /ask.",
+        "operationId": "question_context_api_ontologies__ontology_id__context_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Question Context Api Ontologies  Ontology Id  Context Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Question Context",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/element": {
+      "get": {
+        "description": "Everything known about one element, with its indexed document.",
+        "operationId": "get_element_api_ontologies__ontology_id__element_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "iri",
+            "required": true,
+            "schema": {
+              "title": "Iri",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Element Api Ontologies  Ontology Id  Element Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Element",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/elements": {
+      "get": {
+        "description": "Browse elements by kind and name.",
+        "operationId": "list_elements_api_ontologies__ontology_id__elements_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "description": "Case-insensitive substring of the name.",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "description": "Case-insensitive substring of the name.",
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Elements Api Ontologies  Ontology Id  Elements Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Elements",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/export": {
+      "get": {
+        "description": "Download the working copy, including any additions.",
+        "operationId": "export_ontology_api_ontologies__ontology_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "turtle",
+              "enum": [
+                "turtle",
+                "xml",
+                "nt",
+                "json-ld"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/grow/children": {
+      "post": {
+        "description": "Subclasses a class is likely missing, with Turtle.",
+        "operationId": "suggest_children_api_ontologies__ontology_id__grow_children_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChildrenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Suggest Children Api Ontologies  Ontology Id  Grow Children Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suggest Children",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/grow/definitions": {
+      "post": {
+        "description": "Draft definitions for given elements or for classes lacking one.",
+        "operationId": "draft_definitions_api_ontologies__ontology_id__grow_definitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefinitionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Draft Definitions Api Ontologies  Ontology Id  Grow Definitions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Draft Definitions",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/grow/issues": {
+      "post": {
+        "description": "Duplicates, missing definitions/labels, orphans, untyped properties, cycles.",
+        "operationId": "find_issues_api_ontologies__ontology_id__grow_issues_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssuesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Find Issues Api Ontologies  Ontology Id  Grow Issues Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find Issues",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/grow/placement": {
+      "post": {
+        "description": "Where a new concept belongs (or that it already exists), with Turtle.",
+        "operationId": "suggest_placement_api_ontologies__ontology_id__grow_placement_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlacementRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Suggest Placement Api Ontologies  Ontology Id  Grow Placement Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suggest Placement",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/reindex": {
+      "post": {
+        "description": "Rebuild the index, e.g. after changing the embedding model.",
+        "operationId": "reindex_ontology_api_ontologies__ontology_id__reindex_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reindex Ontology Api Ontologies  Ontology Id  Reindex Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reindex Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/search": {
+      "post": {
+        "description": "Hybrid (embedding + BM25) search, reranked when a reranker is available.",
+        "operationId": "search_ontology_api_ontologies__ontology_id__search_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Search Ontology Api Ontologies  Ontology Id  Search Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Ontology",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/shapes/derived": {
+      "get": {
+        "description": "SHACL shapes derived from the ontology's own axioms.",
+        "operationId": "derived_shapes_api_ontologies__ontology_id__shapes_derived_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Derived Shapes Api Ontologies  Ontology Id  Shapes Derived Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Derived Shapes",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/shapes/from-rules": {
+      "post": {
+        "description": "Turn plain-language rules into SHACL using the ontology's terms.",
+        "operationId": "shapes_from_rules_api_ontologies__ontology_id__shapes_from_rules_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RulesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Shapes From Rules Api Ontologies  Ontology Id  Shapes From Rules Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Shapes From Rules",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/sparql": {
+      "post": {
+        "description": "Check and run a read-only SPARQL query against the ontology graph.",
+        "operationId": "run_sparql_api_ontologies__ontology_id__sparql_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SparqlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Sparql Api Ontologies  Ontology Id  Sparql Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Sparql",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
+    "/api/ontologies/{ontology_id}/validate": {
+      "post": {
+        "description": "Validate RDF data (or the ontology's individuals) with SHACL.",
+        "operationId": "validate_data_api_ontologies__ontology_id__validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Validate Data Api Ontologies  Ontology Id  Validate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Data",
+        "tags": [
+          "onto-query"
         ]
       }
     },

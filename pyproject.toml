@@ -47,10 +47,16 @@ dependencies = [
     # route without it.
     "python-multipart>=0.0.32",
     "langchain-anthropic>=1.0",
+    "rdflib>=7.1",
+    "pyshacl>=0.30",
+    "rank-bm25>=0.2.2",
 ]
 
 [project.optional-dependencies]
 kumo = ["kumo-relational-client[relational]>=1.0.0,<2"]
+onto-rerank = [
+    "sentence-transformers>=3.0",
+]
 
 [build-system]
 requires = ["hatchling"]
