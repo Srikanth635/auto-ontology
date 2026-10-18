@@ -98,7 +98,7 @@ export const ConnectionsView = () => {
 	if (loading) {
 		return (
 			<div className="flex h-full w-full flex-1 flex-col gap-4 p-6">
-				<div className="h-8 w-48 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800/70" />
+				<div className="h-8 w-48 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800/70" />
 				<ConnectionsInfoCardView connections={[]} loading />
 			</div>
 		);

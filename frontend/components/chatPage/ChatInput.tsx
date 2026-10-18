@@ -91,7 +91,7 @@ export const ChatInput = ({ onSend, onStop, isLoading }: ChatInputProps) => {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="border-t border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900"
+			className="border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900"
 		>
 			<div className="mx-auto flex max-w-3xl items-end gap-2">
 				<textarea
@@ -100,7 +100,7 @@ export const ChatInput = ({ onSend, onStop, isLoading }: ChatInputProps) => {
 					placeholder="Ask a Question…"
 					onInput={handleInput}
 					onKeyDown={handleKeyDown}
-					className="flex-1 resize-none rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm text-heading outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-1 focus:ring-[#76b900] dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+					className="flex-1 resize-none rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-heading outline-none transition-colors placeholder:text-secondary focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
 				/>
 
 				{isLoading ? (

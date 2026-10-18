@@ -24,19 +24,21 @@ missing `AUTH_SECRET` or `APP_URL`. Both are required.
 container 5432`). Containers always reach Postgres on 5432 on the compose
 network. Set it only when host 5432 is already taken.
 
-## NIM / chat / ingest fail, or embeddings look empty
+## Chat / ingest fail, or embeddings look empty
 
-Chat and ingest need an NVIDIA NIM key. Set `DEFAULT_MODELS_API_KEY` (legacy
-fallback: `NVIDIA_API_KEY`). Each model role is a triplet —
-`<PREFIX>_ENDPOINT`, `<PREFIX>_API_KEY`, `<PREFIX>_MODEL` — and any unset
-field falls back to `DEFAULT_MODELS_*`.
+Chat and ingest need a chat model and an embedding model. Configure them under
+**Settings → Models** (OpenAI, Anthropic, or an OpenAI-compatible server) and
+use each card's **Test** button. A role with nothing saved there falls back to
+`<PREFIX>_PROVIDER` / `_MODEL` / `_ENDPOINT` / `_API_KEY` in `.env`
+(`REASONING`, `NON_REASONING`, `EMBED`, `RERANK`), then `DEFAULT_MODELS_*`.
 
-`EMBED_ENDPOINT` and `EMBED_MODEL` **must match** between ingest and query.
-A mismatch puts stored vectors and query vectors in different spaces; answers
-look like "nothing found."
+Ingest and query always use the same embedding model, because both read the
+same setting. Changing it starts a background re-embed of every vector; until
+that finishes, answers can look like "nothing found." The Models page shows
+its progress.
 
-Confirm the triplets in `.env` are the same for the
-ingestion service and the backend.
+Stored API keys are encrypted with `AUTH_SECRET`. After changing
+`AUTH_SECRET`, enter the keys again.
 
 ## Connections: UI vs `CONNECTION_STRINGS`
 

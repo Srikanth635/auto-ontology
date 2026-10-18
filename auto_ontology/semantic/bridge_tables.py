@@ -127,8 +127,13 @@ def _pick_owner_term_id(
     if not hits:
         return terms[0]["id"]
 
+    rerank_kwargs = get_rerank_kwargs()
+    if rerank_kwargs is None:
+        # Reranking is optional and switched off: keep the first Term.
+        return terms[0]["id"]
+
     try:
-        ranked = rerank_hits(query, hits, top_n=1, **get_rerank_kwargs())
+        ranked = rerank_hits(query, hits, top_n=1, **rerank_kwargs)
     except Exception:
         logger.exception(
             "Rerank failed for bridge owner selection — falling back to first Term."

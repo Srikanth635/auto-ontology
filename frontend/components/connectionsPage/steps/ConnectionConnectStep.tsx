@@ -5,7 +5,7 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
-import { Spinner } from '@nvidia/foundations-react-core';
+import { Spinner } from '@/common/Spinner';
 import { Button } from '@/common/Button';
 import { Size, ButtonTheme } from '@/enums/button';
 import {
@@ -57,7 +57,7 @@ export const ConnectionConnectStep = ({
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-2">
-			<p className="text-sm text-body dark:text-zinc-400">
+			<p className="text-sm text-body dark:text-slate-400">
 				Connect to {connectionDisplayName[connectionType]}
 			</p>
 			<div className="flex w-full flex-col gap-3">
@@ -67,14 +67,14 @@ export const ConnectionConnectStep = ({
 					}: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
 						onFieldChange(field.key, target.value);
 					const inputClassName =
-						'rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm text-heading outline-none focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100';
+						'rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-heading outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100';
 
 					// Boolean fields render as a checkbox; the modal stores every
 					// value as a string, so 'true'/'' is the on/off representation.
 					if (field.boolean) {
 						return (
 							<label key={field.key} className="flex flex-col gap-1.5">
-								<span className="flex items-center gap-2 text-sm font-medium text-heading dark:text-zinc-200">
+								<span className="flex items-center gap-2 text-sm font-medium text-heading dark:text-slate-200">
 									<input
 										type="checkbox"
 										checked={values[field.key] === 'true'}
@@ -82,12 +82,12 @@ export const ConnectionConnectStep = ({
 											onFieldChange(field.key, target.checked ? 'true' : '')
 										}
 										data-testid={`connection-field-${field.key}`}
-										className="h-4 w-4 rounded border-zinc-300 accent-[#76b900] dark:border-zinc-600"
+										className="h-4 w-4 rounded border-slate-300 accent-brand dark:border-slate-600"
 									/>
 									{field.label}
 								</span>
 								{field.hint != null && (
-									<span className="text-xs text-secondary dark:text-zinc-400">
+									<span className="text-xs text-secondary dark:text-slate-400">
 										{field.hint}
 									</span>
 								)}
@@ -115,7 +115,7 @@ export const ConnectionConnectStep = ({
 						const encoded = values[field.key] ?? '';
 						return (
 							<label key={field.key} className="flex flex-col gap-1.5">
-								<span className="text-sm font-medium text-heading dark:text-zinc-200">
+								<span className="text-sm font-medium text-heading dark:text-slate-200">
 									{field.label}
 									{field.optional ? null : (
 										<span className="ml-0.5 text-red-500">*</span>
@@ -126,15 +126,15 @@ export const ConnectionConnectStep = ({
 									accept={field.fileAccept}
 									onChange={onFile}
 									data-testid={`connection-field-${field.key}`}
-									className={`${inputClassName} file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1 file:text-sm dark:file:bg-zinc-800 dark:file:text-zinc-200`}
+									className={`${inputClassName} file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm dark:file:bg-slate-800 dark:file:text-slate-200`}
 								/>
 								{encoded !== '' && (
-									<span className="text-xs text-secondary dark:text-zinc-400">
+									<span className="text-xs text-secondary dark:text-slate-400">
 										{`Loaded ${Math.round((encoded.length * 3) / 4 / 1024)} KB`}
 									</span>
 								)}
 								{field.hint != null && (
-									<span className="text-xs text-secondary dark:text-zinc-400">
+									<span className="text-xs text-secondary dark:text-slate-400">
 										{field.hint}
 									</span>
 								)}
@@ -145,12 +145,12 @@ export const ConnectionConnectStep = ({
 					const readOnly = readOnlyKeys.has(field.key);
 					const keepsCurrent = keepCurrentKeys.has(field.key);
 					const className = readOnly
-						? `${inputClassName} cursor-not-allowed bg-zinc-50 text-secondary dark:bg-zinc-800/60 dark:text-zinc-400`
+						? `${inputClassName} cursor-not-allowed bg-slate-50 text-secondary dark:bg-slate-800/60 dark:text-slate-400`
 						: inputClassName;
 
 					return (
 						<label key={field.key} className="flex flex-col gap-1.5">
-							<span className="text-sm font-medium text-heading dark:text-zinc-200">
+							<span className="text-sm font-medium text-heading dark:text-slate-200">
 								{field.label}
 								{field.optional || keepsCurrent ? null : (
 									<span className="ml-0.5 text-red-500">*</span>
@@ -182,12 +182,12 @@ export const ConnectionConnectStep = ({
 								/>
 							)}
 							{keepsCurrent && (
-								<span className="text-xs text-secondary dark:text-zinc-400">
+								<span className="text-xs text-secondary dark:text-slate-400">
 									Leave empty to keep the stored value.
 								</span>
 							)}
 							{field.hint != null && (
-								<span className="text-xs text-secondary dark:text-zinc-400">
+								<span className="text-xs text-secondary dark:text-slate-400">
 									{field.hint}
 								</span>
 							)}
@@ -208,7 +208,7 @@ export const ConnectionConnectStep = ({
 					</Button>
 				)}
 				{testSuccessMessage != null && (
-					<p className="text-sm text-[#5e9400] dark:text-[#8fd100]">
+					<p className="text-sm text-brand-strong dark:text-brand-light">
 						{testSuccessMessage}
 					</p>
 				)}

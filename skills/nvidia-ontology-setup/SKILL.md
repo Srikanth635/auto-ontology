@@ -46,7 +46,9 @@ Ask these if not already clear. Do not guess a default and emit a command.
 1. **Target** — Docker Compose on one machine (the default), a developer workflow
    (`--dev` / `--ds`, only when changing Auto Ontology itself), or "Auto
    Ontology is already up, I only need MCP"?
-2. **NVIDIA NIM key** — is `DEFAULT_MODELS_API_KEY` available? Chat and ingest need it.
+2. **Model provider** — which provider and key will be used (OpenAI, Anthropic,
+   or a local OpenAI-compatible server)? Chat and ingest need a chat and an
+   embedding model, set under Settings → Models after sign-in.
 3. **Admin account** — the email and password for the bootstrap admin.
    Self-service sign-up is disabled, so this is the only way to sign in.
 4. **Source database** — a connection string (`CONNECTION_STRINGS`), or will connections be added in the UI?
@@ -68,9 +70,9 @@ docker compose up -d --build
 ```
 
 `AUTH_SECRET` and `APP_URL` are required. Without them every page fails with a
-Better Auth "default secret" error. Fill `DEFAULT_MODELS_API_KEY` and a
-`CONNECTION_STRINGS` value (or plan to add connections in the UI). The full
-variable list is `.env.example`.
+Better Auth "default secret" error. Optionally set `CONNECTION_STRINGS` (or plan
+to add connections in the UI). After signing in, choose models under
+Settings → Models. The full variable list is `.env.example`.
 
 This builds `auto-ontology` and `auto-ontology-frontend`, starts Postgres,
 pgAdmin, and the ingestion service, runs two one-shot migrate jobs, and starts

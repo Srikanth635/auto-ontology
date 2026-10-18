@@ -138,7 +138,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 						href={catalogPathFromFocusId(
 							`${target.databaseId}|${target.schemaId}|${target.id}|${row.id}`,
 						)}
-						className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-zinc-100 hover:text-[#76b900] dark:hover:bg-zinc-700"
+						className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-slate-100 hover:text-brand dark:hover:bg-slate-700"
 						aria-label={`Open ${row.column_name} in Data`}
 						title={`Open ${row.column_name} in Data`}
 					>
@@ -164,7 +164,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 			cell: (row) => (
 				<NextLink
 					href={`/terms?focus=${encodeURIComponent(row.id)}`}
-					className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-zinc-100 hover:text-[#76b900] dark:hover:bg-zinc-700"
+					className="flex h-6 w-6 items-center justify-center rounded text-secondary transition-colors hover:bg-slate-100 hover:text-brand dark:hover:bg-slate-700"
 					aria-label={`Open ${row.name} term`}
 					title={`Open ${row.name} term`}
 				>
@@ -182,7 +182,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 					rows={columns}
 					rowKey={(row) => row.id}
 					pagination={columnsPage.pagination}
-					containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
+					containerClassName="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
 					emptyMessage="No Columns"
 				/>
 			);
@@ -209,7 +209,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 				rows={details.terms}
 				rowKey={(row) => row.id}
 				pagination={termsPage.pagination}
-				containerClassName="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
+				containerClassName="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
 				emptyMessage="No Terms"
 			/>
 		);
@@ -228,7 +228,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 
 	return (
 		<Modal open={target != null && type != null} onClose={onClose} className="w-full max-w-4xl">
-			<header className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-700">
+			<header className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
 				<div className="flex min-w-0 items-center gap-2">
 					<Icon
 						name={
@@ -238,7 +238,7 @@ export const DataDetailsModal = ({ target, type, onClose }: DataDetailsModalProp
 									? IconName.Terms
 									: IconName.Link
 						}
-						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
+						className="h-5 w-5 shrink-0 text-body dark:text-slate-300"
 					/>
 					<Text as="h2" variant={TextVariant.Heading}>
 						{target?.name} ({title})

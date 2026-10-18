@@ -39,28 +39,28 @@ type VariantStyle = {
 const variantStyles: Record<EmptyStateVariant, VariantStyle> = {
 	[EmptyStateVariant.Dashed]: {
 		container:
-			'min-h-[40dvh] rounded-2xl border border-dashed border-zinc-300/90 bg-white/60 p-12 dark:border-zinc-600 dark:bg-zinc-950/40',
+			'min-h-[40dvh] rounded-2xl border border-dashed border-slate-300/90 bg-white/60 p-12 dark:border-slate-600 dark:bg-slate-950/40',
 		icon: 'h-8 w-8',
-		title: 'text-sm font-medium text-body dark:text-zinc-300',
-		description: 'text-xs text-secondary dark:text-zinc-400',
+		title: 'text-sm font-medium text-body dark:text-slate-300',
+		description: 'text-xs text-secondary dark:text-slate-400',
 	},
 	[EmptyStateVariant.Borderless]: {
 		container: 'h-full flex-1 p-8',
 		icon: 'h-8 w-8',
-		title: 'text-sm font-medium text-body dark:text-zinc-300',
-		description: 'text-xs text-secondary dark:text-zinc-400',
+		title: 'text-sm font-medium text-body dark:text-slate-300',
+		description: 'text-xs text-secondary dark:text-slate-400',
 	},
 	[EmptyStateVariant.Inline]: {
 		container: 'px-6 py-8',
 		icon: 'h-6 w-6',
-		title: 'text-xs font-medium text-secondary dark:text-zinc-400',
-		description: 'text-xs text-secondary dark:text-zinc-400',
+		title: 'text-xs font-medium text-secondary dark:text-slate-400',
+		description: 'text-xs text-secondary dark:text-slate-400',
 	},
 	[EmptyStateVariant.Welcome]: {
 		container: 'h-full flex-1 px-4 py-10',
 		icon: 'h-8 w-8',
-		title: 'text-lg font-semibold text-heading dark:text-zinc-200',
-		description: 'text-sm text-secondary dark:text-zinc-400',
+		title: 'text-lg font-semibold text-heading dark:text-slate-200',
+		description: 'text-sm text-secondary dark:text-slate-400',
 	},
 };
 
@@ -96,7 +96,7 @@ export const EmptyState = ({
 				(icon && (
 					<Icon
 						name={icon}
-						className={`${styles.icon} text-disabled dark:text-zinc-600`}
+						className={`${styles.icon} text-disabled dark:text-slate-600`}
 					/>
 				))}
 			<p className={styles.title}>{title}</p>

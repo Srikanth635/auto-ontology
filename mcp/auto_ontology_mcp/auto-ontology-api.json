@@ -4566,6 +4566,376 @@
         "x-auto-ontology-proxied": false
       }
     },
+    "/api/model-settings": {
+      "get": {
+        "description": "modelSettingsApi.getAll — every model role's effective setting (admin only).\nAPI keys never leave the backend; the answer says only whether one is stored.",
+        "operationId": "get_api_model_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "summary": "modelSettingsApi.getAll — every model role's effective setting (admin only).",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/model-settings/{role}": {
+      "delete": {
+        "description": "modelSettingsApi.reset — forget a role's saved setting.",
+        "operationId": "delete_api_model_settings_role_",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingSaveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Model Setting",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      },
+      "put": {
+        "description": "modelSettingsApi.save — choose a role's provider and model. The key is stored\nencrypted, and the caller is recorded as the one who changed it.",
+        "operationId": "put_api_model_settings_role_",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingSaveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "modelSettingsApi.save — choose a role's provider and model.",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/model-settings/{role}/models": {
+      "post": {
+        "description": "modelSettingsApi.listModels — the provider's model ids, for the picker.",
+        "operationId": "post_api_model_settings_role_models",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Provider Models",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/models/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/model-settings/{role}/test": {
+      "post": {
+        "description": "modelSettingsApi.test — one small real call with an unsaved setting. Manage,\nnot read: it can use the stored key, and it spends the provider's quota.",
+        "operationId": "post_api_model_settings_role_test",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelTestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "modelSettingsApi.test — one small real call with an unsaved setting.",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/test/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/model-settings/reembed": {
+      "get": {
+        "description": "modelSettingsApi.reembedStatus — whether vectors are being rebuilt.",
+        "operationId": "get_api_model_settings_reembed",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReembedStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "summary": "Reembed Status",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/reembed/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["read"]
+        },
+        "x-auto-ontology-proxied": true
+      },
+      "post": {
+        "description": "modelSettingsApi.reembed — rebuild every vector with the current embedding model.",
+        "operationId": "post_api_model_settings_reembed",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No authenticated caller could be resolved"
+          },
+          "403": {
+            "description": "The caller lacks the required permission"
+          }
+        },
+        "summary": "Start Reembed",
+        "tags": ["model-settings"],
+        "security": [
+          {
+            "ApiToken": []
+          }
+        ],
+        "x-auto-ontology-source": "frontend/app/api/model-settings/reembed/route.ts",
+        "x-auto-ontology-permissions": {
+          "modelSettings": ["manage"]
+        },
+        "x-auto-ontology-proxied": true
+      }
+    },
     "/api/model/export": {
       "post": {
         "description": "modelInterchangeApi.exportModel — download the catalog + semantic layer as a\nYAML file. Admin-only: it can include every connection's schema.",
@@ -10213,6 +10583,245 @@
         "title": "ModelImportResponse",
         "type": "object"
       },
+      "ModelListResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": ["models"],
+        "title": "ModelListResponse",
+        "type": "object"
+      },
+      "ModelProviderInfo": {
+        "additionalProperties": true,
+        "properties": {
+          "default_base_url": {
+            "title": "Default Base Url",
+            "type": "string"
+          },
+          "key_required": {
+            "title": "Key Required",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": ["label", "default_base_url", "key_required"],
+        "title": "ModelProviderInfo",
+        "type": "object"
+      },
+      "ModelRoleInfo": {
+        "additionalProperties": true,
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          }
+        },
+        "required": ["label", "providers"],
+        "title": "ModelRoleInfo",
+        "type": "object"
+      },
+      "ModelSettingBody": {
+        "description": "What a role is set to. ``api_key`` omitted keeps the stored key.",
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "base_url": {
+            "default": "",
+            "title": "Base Url",
+            "type": "string"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "maximum": 2048,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "model": {
+            "default": "",
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": ["provider"],
+        "title": "ModelSettingBody",
+        "type": "object"
+      },
+      "ModelSettingSaveResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ModelSettingView"
+          },
+          "reembed_triggered": {
+            "title": "Reembed Triggered",
+            "type": "boolean"
+          }
+        },
+        "required": ["data", "reembed_triggered"],
+        "title": "ModelSettingSaveResponse",
+        "type": "object"
+      },
+      "ModelSettingsResponse": {
+        "additionalProperties": true,
+        "description": "Every role's effective model, plus what each role may be set to.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSettingView"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "providers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelProviderInfo"
+            },
+            "title": "Providers",
+            "type": "object"
+          },
+          "reembed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReembedStatusResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roles": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelRoleInfo"
+            },
+            "title": "Roles",
+            "type": "object"
+          }
+        },
+        "required": ["data", "roles", "providers", "reembed"],
+        "title": "ModelSettingsResponse",
+        "type": "object"
+      },
+      "ModelSettingView": {
+        "additionalProperties": true,
+        "description": "One role's effective model. The API key itself is never returned.",
+        "properties": {
+          "base_url": {
+            "title": "Base Url",
+            "type": "string"
+          },
+          "configured": {
+            "title": "Configured",
+            "type": "boolean"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "has_api_key": {
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "provider",
+          "model",
+          "base_url",
+          "dimensions",
+          "has_api_key",
+          "configured",
+          "source"
+        ],
+        "title": "ModelSettingView",
+        "type": "object"
+      },
+      "ModelTestResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": ["ok", "detail"],
+        "title": "ModelTestResponse",
+        "type": "object"
+      },
       "NodeUpdate": {
         "properties": {
           "description": {
@@ -10642,6 +11251,57 @@
         },
         "required": ["database_name"],
         "title": "PublicConnection",
+        "type": "object"
+      },
+      "ReembedStatusResponse": {
+        "additionalProperties": true,
+        "description": "Whether a re-embed pass is running, and how the last one ended.\n\nA pass rebuilds every vector after the embedding model changes. Timestamps\nare ISO 8601; ``last_error`` is set only when the last pass failed.",
+        "properties": {
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Finished At"
+          },
+          "last_started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Started At"
+          },
+          "running": {
+            "title": "Running",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "running",
+          "last_started_at",
+          "last_finished_at",
+          "last_error"
+        ],
+        "title": "ReembedStatusResponse",
         "type": "object"
       },
       "Rule": {

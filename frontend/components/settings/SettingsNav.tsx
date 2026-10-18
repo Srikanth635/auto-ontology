@@ -22,6 +22,7 @@ const SEMANTIC_INPUT_NAV_ITEM: NavItem = {
 	href: '/settings/semantic-input',
 };
 const USERS_NAV_ITEM: NavItem = { label: 'Users', href: '/settings/users' };
+const MODELS_NAV_ITEM: NavItem = { label: 'Models', href: '/settings/models' };
 const SEMANTIC_COMPILATION_NAV_ITEM: NavItem = {
 	label: 'Semantic Compilation',
 	href: '/settings/semantic-compilation',
@@ -38,8 +39,8 @@ const IMPORT_EXPORT_NAV_ITEM: NavItem = {
 function rowClassName(selected: boolean) {
 	return `flex min-h-9 items-center rounded-lg px-3 text-sm no-underline transition-colors ${
 		selected
-			? 'bg-[#76b900]/15 font-medium text-heading shadow-sm ring-1 ring-[#76b900]/30 dark:text-zinc-100'
-			: 'text-heading hover:bg-zinc-100/90 dark:text-zinc-200 dark:hover:bg-zinc-800/70'
+			? 'bg-brand/15 font-medium text-heading shadow-sm ring-1 ring-brand/30 dark:text-slate-100'
+			: 'text-heading hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800/70'
 	}`;
 }
 
@@ -61,6 +62,7 @@ export const SettingsNav = ({ connectionsEnvManaged }: SettingsNavProps) => {
 	const items: NavItem[] = [];
 	if (!connectionsEnvManaged) items.push(CONNECTIONS_NAV_ITEM);
 	items.push(
+		MODELS_NAV_ITEM,
 		ZONES_NAV_ITEM,
 		TAGS_NAV_ITEM,
 		RULES_NAV_ITEM,

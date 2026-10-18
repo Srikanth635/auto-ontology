@@ -14,8 +14,8 @@ export const SemanticNotReady = () => (
 	<EmptyState
 		variant={EmptyStateVariant.Welcome}
 		illustration={
-			<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#76b900]/15">
-				<Icon name={IconName.NvidiaLogo} className="h-6 w-6 text-[#76b900]" />
+			<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/15">
+				<Icon name={IconName.AppLogo} className="h-6 w-6 text-brand" />
 			</div>
 		}
 		title="Semantic Layer Not Ready"

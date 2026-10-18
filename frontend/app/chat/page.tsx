@@ -13,8 +13,8 @@ import { SkeletonVariant } from '@/enums/skeleton';
 // renders the chat shell background so we don't get a layout shift while
 // the client portion hydrates.
 const ChatFallback = () => (
-	<div className="flex h-full bg-white dark:bg-zinc-950" aria-hidden>
-		<aside className="hidden w-[296px] border-r border-zinc-200 p-3 dark:border-zinc-800 lg:block">
+	<div className="flex h-full bg-white dark:bg-slate-950" aria-hidden>
+		<aside className="hidden w-[296px] border-r border-slate-200 p-3 dark:border-slate-800 lg:block">
 			<SkeletonBlock className="mb-6 h-8 w-24" />
 			<SkeletonBlock variant={SkeletonVariant.RECTANGLE} className="mb-4 h-10 w-full" />
 			<SkeletonRows rows={8} />

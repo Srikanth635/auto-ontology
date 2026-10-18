@@ -105,6 +105,14 @@ __all__ = [
     "SchemasPayload",
     "SemanticExplorationGraphResponse",
     "SemanticRunningResponse",
+    "ReembedStatusResponse",
+    "ModelSettingView",
+    "ModelProviderInfo",
+    "ModelRoleInfo",
+    "ModelSettingsResponse",
+    "ModelSettingSaveResponse",
+    "ModelTestResponse",
+    "ModelListResponse",
     "SemanticStatusResponse",
     "SqlAttributeExplorationDetailsResponse",
     "SqlAttributeListResponse",
@@ -217,6 +225,71 @@ class SemanticRunningResponse(_Payload):
 
 class ChatCancelResponse(_Payload):
     cancelled: bool
+
+
+class ReembedStatusResponse(_Payload):
+    """Whether a re-embed pass is running, and how the last one ended.
+
+    A pass rebuilds every vector after the embedding model changes. Timestamps
+    are ISO 8601; ``last_error`` is set only when the last pass failed.
+    """
+
+    running: bool
+    last_started_at: str | None
+    last_finished_at: str | None
+    last_error: str | None
+
+
+class ModelSettingView(_Payload):
+    """One role's effective model. The API key itself is never returned."""
+
+    role: str
+    provider: str
+    model: str
+    base_url: str
+    dimensions: int | None
+    has_api_key: bool
+    configured: bool
+    #: ``settings`` (saved in the UI), ``environment``, ``chat`` (fast chat
+    #: using the chat model) or ``unset``.
+    source: str
+
+
+class ModelProviderInfo(_Payload):
+    label: str
+    default_base_url: str
+    key_required: bool
+
+
+class ModelRoleInfo(_Payload):
+    label: str
+    providers: list[str]
+
+
+class ModelSettingsResponse(_Payload):
+    """Every role's effective model, plus what each role may be set to."""
+
+    data: list[ModelSettingView]
+    roles: dict[str, ModelRoleInfo]
+    providers: dict[str, ModelProviderInfo]
+    reembed: ReembedStatusResponse | None
+
+
+class ModelSettingSaveResponse(_Payload):
+    data: ModelSettingView
+    #: True when saving changed the embedding model and a re-embed was started.
+    reembed_triggered: bool
+
+
+class ModelTestResponse(_Payload):
+    ok: bool
+    detail: str
+    #: Embedding only: the width the model returned for a test input.
+    dimensions: int | None = None
+
+
+class ModelListResponse(_Payload):
+    models: list[str]
 
 
 # ---------------------------------------------------------------------------

@@ -34,7 +34,8 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
 ## Key Features
 
 - **Natural-language querying** of structured data — questions are translated to
-  SQL and executed against connected databases, powered by NVIDIA NIM.
+  SQL and executed against connected databases, with the models of your choice:
+  OpenAI, Anthropic, or any OpenAI-compatible server such as Ollama or vLLM.
 - **Semantic catalog / ontology layer** over relational sources, stored in
   Postgres alongside the catalog it describes.
 - **Authentication & RBAC** —using [Better Auth](https://github.com/better-auth/better-auth).
@@ -50,38 +51,37 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
 | Ingestion worker    | FastAPI (Python 3.12+)                                                 | Ingests tabular data and writes embeddings | 3002         |
 | Postgres + pgvector | Relational Database                                                    | App metadata, the catalog and ontology, vector store | 5432 |
 
-### NVIDIA NIM
+### Models
 
-Auto Ontology uses NVIDIA NIM endpoints for inference — either the hosted
-[NVIDIA API catalog](https://build.nvidia.com) (`integrate.api.nvidia.com`) or
-self-hosted NIMs. The defaults in `.env.example` are:
+Choose a provider and model for each job under **Settings → Models**:
 
-- **LLM:** `nvidia/nemotron-3-nano-30b-a3b`
-- **Embeddings:** `nvidia/nemotron-3-embed-1b`
-- **Reranking:** `nvidia/llama-nemotron-rerank-vl-1b-v2`
+| Role | Used for | Providers |
+| --- | --- | --- |
+| Chat | Answering questions, writing SQL, building the semantic layer | OpenAI, Anthropic, OpenAI-compatible |
+| Fast chat | Entity extraction, follow-up questions, charts (defaults to Chat) | OpenAI, Anthropic, OpenAI-compatible |
+| Embeddings | Vector search over the catalog and glossary | OpenAI, OpenAI-compatible |
+| Reranking | Optional; ordering candidates when linking bridge tables | Off, or any Cohere-style `/rerank` API (Cohere, Jina, Voyage, vLLM) |
 
-The endpoints and models are configured via the `DEFAULT_MODELS_ENDPOINT`, `DEFAULT_MODELS_MODEL`,
-`EMBED_ENDPOINT`, and `EMBED_MODEL` environment variables and require a
-`DEFAULT_MODELS_API_KEY`.
+"OpenAI-compatible" covers any server that speaks the OpenAI API: Ollama,
+vLLM, LM Studio, OpenRouter, Azure OpenAI and others. Each card has **Test**
+(one small real call) and **Load models** (lists the provider's model ids).
 
-#### Model triplets
+- **Keys are stored encrypted** in Postgres with a key derived from
+  `AUTH_SECRET`, and are never sent back to the browser. Changing `AUTH_SECRET`
+  makes stored keys unreadable, so they have to be entered again.
+- **Changes apply without a restart**, from the next request.
+- **Changing the embedding model re-embeds everything** in the background, since
+  vectors from two models can't be compared. Nothing curated is lost: the
+  vectors are rebuilt from the stored catalog and glossary. Vectors are stored
+  at 2048 dimensions; a model that emits more (for example
+  `text-embedding-3-large`) needs **Dimensions** set to 2048 or fewer.
 
-Each model role is configured by a **triplet** of environment variables —
-`<PREFIX>_ENDPOINT` (URL), `<PREFIX>_API_KEY`, and `<PREFIX>_MODEL`:
+Anthropic has no embeddings API, so pair a Claude chat model with OpenAI or a
+local embedding model.
 
-| Prefix           | Role                                                        |
-| ---------------- | ----------------------------------------------------------- |
-| `DEFAULT_MODELS` | Shared default; every field below falls back to it.         |
-| `REASONING`      | Main chat / NL-to-SQL model.                                |
-| `NON_REASONING`  | Lighter model used for entity extraction.                   |
-| `EMBED`          | Text-embedding model (must match between ingest and query). |
-| `RERANK`         | Reranker used by the retrieval flow.                        |
-
-You can set a full triplet, only some of its fields, or none at all — any field
-left unset falls back to the matching `DEFAULT_MODELS_<FIELD>`. So the simplest
-setup is to fill in `DEFAULT_MODELS_*` and override per-triplet fields only where
-they differ (e.g. `EMBED_MODEL`, `NON_REASONING_MODEL`). `*_API_KEY` also falls
-back to the legacy `NVIDIA_API_KEY` for backward compatibility.
+For headless setups, a role with nothing saved in the UI falls back to
+environment variables (`REASONING_*`, `NON_REASONING_*`, `EMBED_*`, `RERANK_*`,
+each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
 
 ## Deployment
 
@@ -89,8 +89,8 @@ back to the legacy `NVIDIA_API_KEY` for backward compatibility.
 
 - **Docker** with **Docker Compose v2** (e.g. Docker Desktop on macOS/Windows,
   Docker Engine on Linux) for the local stack.
-- An **NVIDIA API key** (`nvapi-...`) for NVIDIA NIM (chat and ingestion) from
-  the NVIDIA API catalog at <https://build.nvidia.com>.
+- An API key for a model provider (OpenAI, Anthropic), or a local
+  OpenAI-compatible server such as Ollama. You enter it in the UI after sign-in.
 - Connection details for the source database(s) you want to query
   (Databricks, Postgres, Snowflake, or DuckDB).
 
@@ -103,7 +103,7 @@ back to the legacy `NVIDIA_API_KEY` for backward compatibility.
    ```
 
 2. Create your environment file (.env) from the template and fill in the values
-   (Postgres credentials, `DEFAULT_MODELS_API_KEY`, `CONNECTION_STRINGS`, etc.).
+   (Postgres credentials, `AUTH_SECRET`, the admin account, `CONNECTION_STRINGS`, etc.).
    See [`.env.example`](./.env.example) for the full list of variables:
 
    ```bash
@@ -294,8 +294,7 @@ External materials Auto Ontology interacts with at run time:
 
 | Material | When | Terms |
 | --- | --- | --- |
-| NVIDIA-hosted model APIs ([build.nvidia.com](https://build.nvidia.com), `integrate.api.nvidia.com`) for LLM, embedding, and reranking | Chat, ingestion, and semantic compilation, with the default model configuration | Terms of the NVIDIA API catalog and of each model |
-| Any other OpenAI-compatible model endpoint you configure (`*_ENDPOINT` / `*_MODEL`) | Same | Terms of that provider and model |
+| The model providers you configure under Settings → Models (OpenAI, Anthropic, or an OpenAI-compatible endpoint) | Chat, ingestion, and semantic compilation | Terms of that provider and model |
 | KumoRFM predictive-query service | Only when `KUMO_RFM_API_KEY` is set | Kumo's terms |
 | Your source databases | Ingestion, profiling, and query execution | Your agreements for those systems |
 

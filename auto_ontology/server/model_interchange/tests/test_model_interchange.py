@@ -784,9 +784,12 @@ def test_import_model_skips_flush_when_embed_false(
     assert mock_apply.call_args.kwargs["embed_buffer"] is None
 
 
-@patch("auto_ontology.server.model_interchange.embed.resolve", return_value="")
-def test_flush_import_embeddings_skips_without_api_key(
-    _mock_resolve: MagicMock,
+@patch(
+    "auto_ontology.server.model_interchange.embed.embedding_configured",
+    return_value=False,
+)
+def test_flush_import_embeddings_skips_without_an_embedding_model(
+    _mock_configured: MagicMock,
 ) -> None:
     buffer = ImportEmbedBuffer(data_rows=[{"text": "x"}])
     result = flush_import_embeddings(buffer)

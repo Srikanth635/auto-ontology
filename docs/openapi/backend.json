@@ -2851,6 +2851,267 @@
         "title": "ModelImportResponse",
         "type": "object"
       },
+      "ModelListResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "models"
+        ],
+        "title": "ModelListResponse",
+        "type": "object"
+      },
+      "ModelProviderInfo": {
+        "additionalProperties": true,
+        "properties": {
+          "default_base_url": {
+            "title": "Default Base Url",
+            "type": "string"
+          },
+          "key_required": {
+            "title": "Key Required",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "default_base_url",
+          "key_required"
+        ],
+        "title": "ModelProviderInfo",
+        "type": "object"
+      },
+      "ModelRoleInfo": {
+        "additionalProperties": true,
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "label",
+          "providers"
+        ],
+        "title": "ModelRoleInfo",
+        "type": "object"
+      },
+      "ModelSettingBody": {
+        "description": "What a role is set to. ``api_key`` omitted keeps the stored key.",
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "base_url": {
+            "default": "",
+            "title": "Base Url",
+            "type": "string"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "maximum": 2048.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "model": {
+            "default": "",
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider"
+        ],
+        "title": "ModelSettingBody",
+        "type": "object"
+      },
+      "ModelSettingSaveResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ModelSettingView"
+          },
+          "reembed_triggered": {
+            "title": "Reembed Triggered",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "reembed_triggered"
+        ],
+        "title": "ModelSettingSaveResponse",
+        "type": "object"
+      },
+      "ModelSettingView": {
+        "additionalProperties": true,
+        "description": "One role's effective model. The API key itself is never returned.",
+        "properties": {
+          "base_url": {
+            "title": "Base Url",
+            "type": "string"
+          },
+          "configured": {
+            "title": "Configured",
+            "type": "boolean"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "has_api_key": {
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "provider",
+          "model",
+          "base_url",
+          "dimensions",
+          "has_api_key",
+          "configured",
+          "source"
+        ],
+        "title": "ModelSettingView",
+        "type": "object"
+      },
+      "ModelSettingsResponse": {
+        "additionalProperties": true,
+        "description": "Every role's effective model, plus what each role may be set to.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSettingView"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "providers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelProviderInfo"
+            },
+            "title": "Providers",
+            "type": "object"
+          },
+          "reembed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReembedStatusResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roles": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelRoleInfo"
+            },
+            "title": "Roles",
+            "type": "object"
+          }
+        },
+        "required": [
+          "data",
+          "roles",
+          "providers",
+          "reembed"
+        ],
+        "title": "ModelSettingsResponse",
+        "type": "object"
+      },
+      "ModelTestResponse": {
+        "additionalProperties": true,
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "detail"
+        ],
+        "title": "ModelTestResponse",
+        "type": "object"
+      },
       "NodeUpdate": {
         "properties": {
           "description": {
@@ -3327,6 +3588,57 @@
           "database_name"
         ],
         "title": "PublicConnection",
+        "type": "object"
+      },
+      "ReembedStatusResponse": {
+        "additionalProperties": true,
+        "description": "Whether a re-embed pass is running, and how the last one ended.\n\nA pass rebuilds every vector after the embedding model changes. Timestamps\nare ISO 8601; ``last_error`` is set only when the last pass failed.",
+        "properties": {
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Finished At"
+          },
+          "last_started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Started At"
+          },
+          "running": {
+            "title": "Running",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "running",
+          "last_started_at",
+          "last_finished_at",
+          "last_error"
+        ],
+        "title": "ReembedStatusResponse",
         "type": "object"
       },
       "Rule": {
@@ -7814,6 +8126,278 @@
         "summary": "Update Group",
         "tags": [
           "users"
+        ]
+      }
+    },
+    "/api/model-settings": {
+      "get": {
+        "description": "Every model role's effective provider and model, and what each may use.\n\nAPI keys are never returned; ``has_api_key`` says whether one is stored.\n``source`` says where a role's value comes from: saved settings, the\nenvironment, the chat model (fast chat only), or nowhere yet.",
+        "operationId": "list_model_settings_api_model_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Model Settings",
+        "tags": [
+          "model-settings"
+        ]
+      }
+    },
+    "/api/model-settings/reembed": {
+      "get": {
+        "description": "Whether a re-embed pass is running, and how the last one ended.",
+        "operationId": "reembed_status_api_model_settings_reembed_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReembedStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reembed Status",
+        "tags": [
+          "model-settings"
+        ]
+      },
+      "post": {
+        "description": "Rebuild every stored vector with the current embedding model.",
+        "operationId": "start_reembed_api_model_settings_reembed_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Start Reembed",
+        "tags": [
+          "model-settings"
+        ]
+      }
+    },
+    "/api/model-settings/{role}": {
+      "delete": {
+        "description": "Forget a role's saved setting, so it falls back to the environment.",
+        "operationId": "reset_model_setting_api_model_settings__role__delete",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingSaveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Model Setting",
+        "tags": [
+          "model-settings"
+        ]
+      },
+      "put": {
+        "description": "Save a role's provider and model. The API key is stored encrypted.\n\nOmitting ``api_key`` keeps the stored key when the provider is unchanged.\nChanging the embedding model starts a background re-embed of every stored\nvector; ``reembed_triggered`` says whether one started.",
+        "operationId": "save_model_setting_api_model_settings__role__put",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelSettingSaveResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Model Setting",
+        "tags": [
+          "model-settings"
+        ]
+      }
+    },
+    "/api/model-settings/{role}/models": {
+      "post": {
+        "description": "The model ids the provider in the body offers, for the model picker.\n\nOmitting ``api_key`` uses the stored key. A provider that cannot be reached\nanswers 502 with its error.",
+        "operationId": "list_provider_models_api_model_settings__role__models_post",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Provider Models",
+        "tags": [
+          "model-settings"
+        ]
+      }
+    },
+    "/api/model-settings/{role}/test": {
+      "post": {
+        "description": "Make one small real call with a setting, without saving it.\n\n``ok`` is false, with the provider's error in ``detail``, when the call\nfails. Omitting ``api_key`` uses the stored key.",
+        "operationId": "test_model_setting_api_model_settings__role__test_post",
+        "parameters": [
+          {
+            "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
+              "title": "Role",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelSettingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelTestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Model Setting",
+        "tags": [
+          "model-settings"
         ]
       }
     },

@@ -10,13 +10,13 @@ export default function TermsPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
-					<header className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+				<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
+					<header className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
 						<Icon
 							name={IconName.Terms}
-							className="h-5 w-5 text-body dark:text-zinc-300"
+							className="h-5 w-5 text-body dark:text-slate-300"
 						/>
-						<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
+						<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-slate-100">
 							Terms
 						</h1>
 					</header>

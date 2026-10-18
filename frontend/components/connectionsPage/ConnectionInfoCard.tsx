@@ -49,12 +49,12 @@ export const ConnectionInfoCard = ({
 	const menuDisabled = disabled || menuItems.length === 0;
 
 	return (
-		<article className="flex h-fit flex-col rounded-lg border border-zinc-200/90 bg-white shadow-sm dark:border-zinc-700/90 dark:bg-zinc-950">
+		<article className="flex h-fit flex-col rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-slate-700/90 dark:bg-slate-950">
 			<header className="flex w-full items-center justify-between gap-2 px-4 py-5">
 				<div className="flex min-w-0 items-center gap-1">
 					<Icon
 						name={IconName.Database}
-						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
+						className="h-5 w-5 shrink-0 text-body dark:text-slate-300"
 					/>
 					<Text
 						as="h3"
@@ -66,7 +66,7 @@ export const ConnectionInfoCard = ({
 					{menuDisabled ? (
 						<Icon
 							name={IconName.DotsVertical}
-							className="h-4 w-4 text-disabled dark:text-zinc-600"
+							className="h-4 w-4 text-disabled dark:text-slate-600"
 						/>
 					) : (
 						<PopoverMenu

@@ -32,7 +32,7 @@ import { RuleAuthor } from './RuleAuthor';
 const SEARCH_DEBOUNCE_MS = 1000;
 
 /** The radio the export form draws, which these are the only others of. */
-const RADIO_CLASSNAME = 'mt-0.5 h-4 w-4 border-zinc-300 text-[#76b900] focus:ring-[#76b900]/30';
+const RADIO_CLASSNAME = 'mt-0.5 h-4 w-4 border-slate-300 text-brand focus:ring-brand/30';
 
 // What a delete does about the labels the rule applied. Two answers, both
 // defensible, which is why it is asked rather than decided here: the labels are
@@ -200,7 +200,7 @@ export default function RulesSettingsPage() {
 	};
 
 	return (
-		<main className="flex min-h-0 min-w-0 flex-1 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(250,250,250,0.6)_100%)] dark:bg-[linear-gradient(180deg,rgba(9,9,11,1)_0%,rgba(24,24,27,0.5)_100%)]">
+		<main className="flex min-h-0 min-w-0 flex-1 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(247,248,250,0.6)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,20,25,1)_0%,rgba(22,28,34,0.5)_100%)]">
 			<InfiniteScroll
 				className="flex-1 px-7 py-6 sm:px-10 sm:py-7"
 				onLoadMore={loadMore}
@@ -211,7 +211,7 @@ export default function RulesSettingsPage() {
 				error={rules.length > 0 ? error : null}
 			>
 				<div className="w-full space-y-5">
-					<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
+					<h1 className="text-base font-semibold text-heading dark:text-slate-100">
 						Rules
 					</h1>
 
@@ -273,14 +273,14 @@ export default function RulesSettingsPage() {
 							{rules.map((rule) => (
 								<li
 									key={rule.id}
-									className="rounded-lg border border-zinc-200/90 bg-white/90 shadow-sm ring-1 ring-zinc-950/[0.04] dark:border-zinc-700/90 dark:bg-zinc-950/50 dark:ring-white/[0.06]"
+									className="rounded-lg border border-slate-200/90 bg-white/90 shadow-sm ring-1 ring-slate-950/[0.04] dark:border-slate-700/90 dark:bg-slate-950/50 dark:ring-white/[0.06]"
 								>
 									<div className="flex items-center gap-2 px-4 py-3">
 										<Icon
 											name={IconName.Lightning}
-											className="h-4 w-4 shrink-0 text-body dark:text-zinc-300"
+											className="h-4 w-4 shrink-0 text-body dark:text-slate-300"
 										/>
-										<span className="min-w-0 flex-1 truncate text-sm font-semibold text-heading dark:text-zinc-100">
+										<span className="min-w-0 flex-1 truncate text-sm font-semibold text-heading dark:text-slate-100">
 											{rule.name}
 										</span>
 										<div className="relative w-[26px] shrink-0">
@@ -343,7 +343,7 @@ export default function RulesSettingsPage() {
 											/>
 										</div>
 									</div>
-									<div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-zinc-200/90 px-4 py-2.5 text-xs text-secondary dark:border-zinc-700/90 dark:text-zinc-400">
+									<div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-slate-200/90 px-4 py-2.5 text-xs text-secondary dark:border-slate-700/90 dark:text-slate-400">
 										<Icon
 											name={IconName.Users}
 											className="h-3.5 w-3.5 shrink-0"
@@ -352,7 +352,7 @@ export default function RulesSettingsPage() {
 										<RuleAuthor author={rule.created_by_user} />
 										<span className="ml-auto flex items-center gap-3">
 											<span>Last Modified</span>
-											<span className="text-body dark:text-zinc-300">
+											<span className="text-body dark:text-slate-300">
 												{formatDate(rule.modified)}
 											</span>
 										</span>
@@ -381,11 +381,11 @@ export default function RulesSettingsPage() {
 				<div>
 					<label
 						htmlFor="rule-name"
-						className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-zinc-100"
+						className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-slate-100"
 					>
 						<Icon
 							name={IconName.Lightning}
-							className="h-4 w-4 text-secondary dark:text-zinc-400"
+							className="h-4 w-4 text-secondary dark:text-slate-400"
 						/>
 						Rule Name
 					</label>
@@ -395,12 +395,12 @@ export default function RulesSettingsPage() {
 						value={name}
 						onChange={(event) => setName(event.target.value)}
 						placeholder="Type Rule Name"
-						className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500"
+						className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:placeholder:text-slate-500"
 					/>
 					{/* The tags and the search are on the information card, and are not
 					    editable — worth saying inside the dialog that changes the one
 					    thing about a rule that is. */}
-					<p className="mt-1.5 text-xs text-secondary dark:text-zinc-400">
+					<p className="mt-1.5 text-xs text-secondary dark:text-slate-400">
 						Renaming does not change what the rule matches or the tags it applies.
 					</p>
 				</div>
@@ -413,7 +413,7 @@ export default function RulesSettingsPage() {
 
 				{/* Footer rule, as the tag dialog has: the negative margins cancel the
 				    body's padding so it spans the modal. */}
-				<div className="-mx-6 border-t border-zinc-200 dark:border-zinc-700" />
+				<div className="-mx-6 border-t border-slate-200 dark:border-slate-700" />
 			</ModalCreateNewItem>
 
 			{/* The tags are the part worth asking about: they are on objects nobody
@@ -432,14 +432,14 @@ export default function RulesSettingsPage() {
 						<>
 							<p>{`Are you sure you want to delete "${confirmDelete.name}"? This action cannot be undone.`}</p>
 							<fieldset className="mt-4">
-								<legend className="text-xs font-medium text-heading dark:text-zinc-200">
+								<legend className="text-xs font-medium text-heading dark:text-slate-200">
 									The tags this rule applied
 								</legend>
 								<div className="mt-2 space-y-2">
 									{DELETE_OPTIONS.map((option) => (
 										<label
 											key={option.label}
-											className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200 px-3 py-2 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/80"
+											className="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/80"
 										>
 											<input
 												type="radio"
@@ -450,10 +450,10 @@ export default function RulesSettingsPage() {
 												className={RADIO_CLASSNAME}
 											/>
 											<span>
-												<span className="block text-sm font-medium text-heading dark:text-zinc-100">
+												<span className="block text-sm font-medium text-heading dark:text-slate-100">
 													{option.label}
 												</span>
-												<span className="block text-xs text-secondary dark:text-zinc-400">
+												<span className="block text-xs text-secondary dark:text-slate-400">
 													{option.description}
 												</span>
 											</span>

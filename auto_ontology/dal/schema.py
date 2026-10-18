@@ -1108,6 +1108,68 @@ semantic_compilation_history = Table(
 
 
 # ---------------------------------------------------------------------------
+# Model settings
+# ---------------------------------------------------------------------------
+#
+# Which provider and model serves each model role, chosen on the Settings ->
+# Models page. One row per role; a role with no row falls back to the
+# environment variables (see ``auto_ontology.utils.model_config``).
+#
+# ``api_key`` holds a Fernet token, never the plain key -- see
+# ``auto_ontology.infra.secrets``. It is NULL for a keyless endpoint (a local
+# Ollama, say) and for a rerank role that is switched off.
+
+
+class ModelRole(StrEnum):
+    """The jobs a model is configured for. Each is chosen independently."""
+
+    CHAT = "chat"
+    FAST_CHAT = "fast_chat"
+    EMBEDDING = "embedding"
+    RERANK = "rerank"
+
+
+class ModelProvider(StrEnum):
+    """Who serves a role. Which provider fits which role is checked in the API."""
+
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    OPENAI_COMPATIBLE = "openai_compatible"
+    RERANK_API = "rerank_api"
+    NONE = "none"
+
+
+model_setting = Table(
+    "model_setting",
+    METADATA,
+    Column("role", Text, primary_key=True),
+    Column("provider", Text, nullable=False),
+    Column("model", Text, nullable=False, server_default=""),
+    # Empty means the provider's own default endpoint.
+    Column("base_url", Text, nullable=False, server_default=""),
+    Column("api_key", Text, nullable=True),
+    # Embedding only: the vector width to ask the model for, when it can be
+    # asked (OpenAI's text-embedding-3 models). NULL means its native width.
+    Column("dimensions", Integer, nullable=True),
+    Column(
+        "updated",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    ),
+    Column("updated_by", Text, nullable=True),
+    CheckConstraint(
+        "role IN ({})".format(", ".join(f"'{r.value}'" for r in ModelRole)),
+        name="role_value",
+    ),
+    CheckConstraint(
+        "provider IN ({})".format(", ".join(f"'{p.value}'" for p in ModelProvider)),
+        name="provider_value",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
 # User groups
 # ---------------------------------------------------------------------------
 #
@@ -1416,6 +1478,9 @@ __all__ = [
     "user_group",
     "user_group__member",
     "GroupRole",
+    "ModelProvider",
+    "ModelRole",
+    "model_setting",
     "GROUP_ROLE_ADMIN",
     "GROUP_ROLE_VIEWER",
     "zone",

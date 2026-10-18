@@ -131,13 +131,13 @@ const NODE_TYPE_COLOR_DARK: Record<NodeType, string> = {
 const LABEL_COLOR_LIGHT = '#3f3f46';
 const LABEL_COLOR_DARK = '#e4e4e7';
 
-// Matches the `bg-zinc-50`/`dark:bg-zinc-950` canvas backdrop set by
+// Matches the `bg-slate-50`/`dark:bg-slate-950` canvas backdrop set by
 // `ExplorationData.tsx`, so dimmed nodes below can be pre-mixed toward it.
 const CANVAS_BACKGROUND_LIGHT = '#fafafa';
 const CANVAS_BACKGROUND_DARK = '#09090b';
 
 // Matches the light/dark surface colors used by HoverNodeCard and other
-// panels (`bg-white` / `dark:bg-zinc-900`), so Sigma's own hover label
+// panels (`bg-white` / `dark:bg-slate-900`), so Sigma's own hover label
 // background reads as an intentional themed surface instead of the
 // library's hardcoded white pill (which swallowed the light label text
 // used in dark mode above).
@@ -147,7 +147,7 @@ const HOVER_LABEL_BACKGROUND_DARK = '#18181b';
 const prefersDarkMode = () =>
 	typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-const EDGE_BRAND_COLOR = '#76b900';
+const EDGE_BRAND_COLOR = '#2a9d8f';
 
 const hexToRgb = (hex: string) => {
 	const value = hex.replace('#', '');
@@ -327,7 +327,7 @@ const NODE_TYPE_BORDER_COLOR_DIMMED_DARK: Record<NodeType, string> = {
 
 // A translucent edge that reads fine against a near-black dark canvas turns
 // almost invisible against a near-white light one at the same alpha (green
-// desaturated toward gray blends into `bg-zinc-50`) — so each theme gets its
+// desaturated toward gray blends into `bg-slate-50`) — so each theme gets its
 // own alpha rather than sharing one. Edges are thin strokes rather than
 // filled shapes, so (unlike nodes above) letting them fade via real alpha
 // reads fine.

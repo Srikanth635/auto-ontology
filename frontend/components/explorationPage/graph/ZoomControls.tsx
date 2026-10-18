@@ -54,7 +54,7 @@ export const ZoomControls = ({ controller }: ZoomControlsProps) => {
 
 	return (
 		<div className="flex items-center gap-2">
-			<div className="flex h-10 items-center rounded-lg border border-zinc-200 bg-white shadow-md dark:border-zinc-700 dark:bg-zinc-900">
+			<div className="flex h-10 items-center rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-900">
 				<Button
 					theme={ButtonTheme.Icon}
 					size={Size.LARGE}
@@ -65,7 +65,7 @@ export const ZoomControls = ({ controller }: ZoomControlsProps) => {
 				>
 					−
 				</Button>
-				<span className="w-12 text-center text-xs text-body dark:text-zinc-300">
+				<span className="w-12 text-center text-xs text-body dark:text-slate-300">
 					{Math.round(zoom * 100)}%
 				</span>
 				<Button
@@ -79,7 +79,7 @@ export const ZoomControls = ({ controller }: ZoomControlsProps) => {
 					+
 				</Button>
 			</div>
-			<div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-md dark:border-zinc-700 dark:bg-zinc-900">
+			<div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-900">
 				<Button
 					theme={ButtonTheme.Icon}
 					size={Size.LARGE}

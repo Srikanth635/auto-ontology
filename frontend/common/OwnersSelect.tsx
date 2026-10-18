@@ -12,7 +12,7 @@ export type OwnerOption = {
 };
 
 const FIELD_CLASS =
-	'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300';
+	'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300';
 
 /**
  * One owner, or nobody. Users and groups are separate groups in the list,

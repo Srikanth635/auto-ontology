@@ -45,20 +45,20 @@ export const ConnectionSelectDataStep = ({
 
 	return (
 		<div className="flex flex-col gap-2 p-2">
-			<p className="text-sm text-body dark:text-zinc-400">
+			<p className="text-sm text-body dark:text-slate-400">
 				Select databases or schemas to include in the catalog.
 			</p>
-			<ul className="flex max-h-[360px] flex-col gap-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
+			<ul className="flex max-h-[360px] flex-col gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
 				{availableDatabases.map((name) => (
 					<li key={name}>
-						<label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/80">
+						<label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/80">
 							<input
 								type="checkbox"
 								checked={selectedDatabases.includes(name)}
 								onChange={toggle(name)}
-								className="h-4 w-4 rounded border-zinc-300 text-[#76b900] focus:ring-[#76b900]/30"
+								className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/30"
 							/>
-							<span className="text-sm text-heading dark:text-zinc-200">{name}</span>
+							<span className="text-sm text-heading dark:text-slate-200">{name}</span>
 						</label>
 					</li>
 				))}

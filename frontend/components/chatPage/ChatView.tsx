@@ -5,7 +5,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Spinner } from '@nvidia/foundations-react-core';
+import { Spinner } from '@/common/Spinner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useChat } from '@/lib/useChat';
 import type { Conversation } from '@/types/chat';
@@ -212,7 +212,7 @@ export const ChatView = () => {
 	);
 
 	return (
-		<div className="flex h-full bg-white dark:bg-zinc-950">
+		<div className="flex h-full bg-white dark:bg-slate-950">
 			<ChatSidebar
 				conversations={conversations}
 				activeId={activeConvId}

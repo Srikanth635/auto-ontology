@@ -23,7 +23,7 @@ const GROUP_COLOR_CLASS: Record<string, string> = {
 
 /** Tailwind background for a group's stored hex, or a neutral swatch. */
 export const groupColorClass = (color: string | null | undefined): string =>
-	(color != null && GROUP_COLOR_CLASS[color]) || 'bg-zinc-400';
+	(color != null && GROUP_COLOR_CLASS[color]) || 'bg-slate-400';
 
 export const filterOwnersByPermission = (owners: Owner[], permission: string): Owner[] =>
 	owners.filter((owner) => owner.permissions.includes(permission));

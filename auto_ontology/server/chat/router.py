@@ -103,7 +103,7 @@ from auto_ontology.server.chat.conversation_dal import (
 from auto_ontology.server.chat.settings_dal import is_visualization_enabled
 from auto_ontology.server.chat.worker import PrewarmedWorker, get_pool
 from auto_ontology.server.identity import resolve_internal_user
-from auto_ontology.utils.llm_invoke import get_llm_client, get_non_reasoning_llm_client
+from auto_ontology.utils.llm_invoke import get_non_reasoning_llm_client
 from auto_ontology.server.responses import ChatCancelResponse
 
 logger = logging.getLogger(__name__)
@@ -126,23 +126,20 @@ SSE_RESPONSES: dict[int | str, dict[str, Any]] = {
     }
 }
 
-# Built once at import time, same fallback order as the main agent pipeline
-# (auto_ontology.retrieval.text_to_sql.main): prefer the cheaper non-reasoning model,
-# fall back to the main reasoning model. Neither client does I/O at
-# construction time, so this is safe to build eagerly; a missing API key
-# just leaves the client as ``None`` and ``_build_charts_event`` soft-fails
-# per run.
-try:
-    _non_reasoning_llm = get_non_reasoning_llm_client(max_tokens=2048)
-except (ValueError, EnvironmentError) as e:
-    logger.warning("Chart generation: failed to init non-reasoning LLM: %s", e)
-    _non_reasoning_llm = None
 
-try:
-    _reasoning_llm = get_llm_client()
-except (ValueError, EnvironmentError) as e:
-    logger.warning("Chart generation: failed to init reasoning LLM: %s", e)
-    _reasoning_llm = None
+def _chart_llm() -> Any:
+    """The client charts are drawn with: the fast model, which falls back to chat.
+
+    Built per run rather than once at import, so a model changed under
+    Settings -> Models takes effect on the next answer. ``None`` when no chat
+    model is configured; charting then soft-fails.
+    """
+    try:
+        return get_non_reasoning_llm_client(max_tokens=2048)
+    except (ValueError, EnvironmentError) as e:
+        logger.warning("Chart generation: no chat model available: %s", e)
+        return None
+
 
 # Returned as the 409 detail when a chat is attempted before the semantic
 # layer has been built.
@@ -344,7 +341,7 @@ def _build_charts_event(slot: _Slot, answer: dict[str, Any]) -> dict[str, Any] |
         return None
 
     charts: list[dict[str, Any]] | None = None
-    llm = _non_reasoning_llm or _reasoning_llm
+    llm = _chart_llm()
     if llm is not None:
         try:
             if is_visualization_enabled():

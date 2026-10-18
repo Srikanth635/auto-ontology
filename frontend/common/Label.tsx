@@ -12,13 +12,13 @@ import { Text } from '@/common/Text';
 const LABEL_BASE =
 	'inline-flex min-w-0 max-w-[min(24rem,100%)] items-center overflow-hidden rounded-full border px-3 py-1 text-xs font-medium';
 const LABEL_GREEN =
-	'border-[#76b900]/40 bg-[#76b900]/10 text-[#4d7a00] dark:border-[#76b900]/30 dark:bg-[#76b900]/15 dark:text-[#a3d63a]';
+	'border-brand/40 bg-brand/10 text-brand-strong dark:border-brand/30 dark:bg-brand/15 dark:text-brand-light';
 const LABEL_GREEN_HOVER =
-	'hover:border-[#76b900]/70 hover:bg-[#76b900]/20 hover:text-[#3d6200] dark:hover:border-[#76b900]/60 dark:hover:bg-[#76b900]/25 dark:hover:text-[#b6e05a]';
+	'hover:border-brand/70 hover:bg-brand/20 hover:text-brand-deep dark:hover:border-brand/60 dark:hover:bg-brand/25 dark:hover:text-brand-pale';
 const LABEL_NEUTRAL =
-	'border-zinc-200 bg-zinc-100 text-body dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+	'border-slate-200 bg-slate-100 text-body dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300';
 const LABEL_MUTED =
-	'border-zinc-200 bg-zinc-100 text-secondary dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500';
+	'border-slate-200 bg-slate-100 text-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500';
 
 function zoneLabelStyle(color: string): CSSProperties {
 	return { backgroundColor: `${color}26`, color, borderColor: `${color}60` };

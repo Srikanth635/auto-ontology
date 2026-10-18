@@ -15,7 +15,7 @@ export const SkeletonBlock = ({
 }: SkeletonBlockProps) => (
 	<div
 		aria-hidden
-		className={`animate-pulse bg-zinc-100 dark:bg-zinc-800/70 ${
+		className={`animate-pulse bg-slate-100 dark:bg-slate-800/70 ${
 			variant === SkeletonVariant.CIRCLE
 				? 'rounded-full'
 				: variant === SkeletonVariant.RECTANGLE
@@ -33,7 +33,7 @@ type SkeletonCardProps = {
 export const SkeletonCard = ({ className = '', rows = 3 }: SkeletonCardProps) => (
 	<div
 		aria-hidden
-		className={`rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900/50 ${className}`}
+		className={`rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900/50 ${className}`}
 	>
 		<div className="flex items-center gap-3">
 			<SkeletonBlock variant={SkeletonVariant.CIRCLE} className="h-10 w-10 shrink-0" />
@@ -76,9 +76,9 @@ type SkeletonTableProps = {
 export const SkeletonTable = ({ columns = 4, rows = 8 }: SkeletonTableProps) => (
 	<div
 		aria-hidden
-		className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700"
+		className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
 	>
-		<div className="grid grid-flow-col auto-cols-fr gap-4 bg-zinc-100 px-4 py-3 dark:bg-zinc-800">
+		<div className="grid grid-flow-col auto-cols-fr gap-4 bg-slate-100 px-4 py-3 dark:bg-slate-800">
 			{Array.from({ length: columns }).map((_, index) => (
 				<SkeletonBlock key={index} className="h-3" />
 			))}
@@ -86,7 +86,7 @@ export const SkeletonTable = ({ columns = 4, rows = 8 }: SkeletonTableProps) => 
 		{Array.from({ length: rows }).map((_, rowIndex) => (
 			<div
 				key={rowIndex}
-				className="grid grid-flow-col auto-cols-fr gap-4 border-t border-zinc-100 px-4 py-3 dark:border-zinc-800"
+				className="grid grid-flow-col auto-cols-fr gap-4 border-t border-slate-100 px-4 py-3 dark:border-slate-800"
 			>
 				{Array.from({ length: columns }).map((_, columnIndex) => (
 					<SkeletonBlock key={columnIndex} className="h-3" />
@@ -110,7 +110,7 @@ export const SkeletonSqlBlocks = ({ items = 3, withHeading = false }: SkeletonSq
 				key={index}
 				className={
 					withHeading
-						? 'rounded-lg border border-zinc-200 p-3 dark:border-zinc-700'
+						? 'rounded-lg border border-slate-200 p-3 dark:border-slate-700'
 						: undefined
 				}
 			>
@@ -120,8 +120,8 @@ export const SkeletonSqlBlocks = ({ items = 3, withHeading = false }: SkeletonSq
 						<SkeletonBlock className="h-3 w-64" />
 					</div>
 				) : null}
-				<div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-					<div className="flex items-center justify-between border-b border-zinc-200 px-3 py-2 dark:border-zinc-700">
+				<div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+					<div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-slate-700">
 						<SkeletonBlock className="h-3 w-16" />
 						<SkeletonBlock className="h-3 w-3" />
 					</div>

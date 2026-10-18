@@ -12,7 +12,7 @@ type ExplorationLoaderProps = {
 
 export const ExplorationLoader = ({ overlay = false }: ExplorationLoaderProps) => (
 	<div
-		className={`flex h-full w-full items-center justify-center bg-zinc-50 dark:bg-zinc-950${
+		className={`flex h-full w-full items-center justify-center bg-slate-50 dark:bg-slate-950${
 			overlay ? ' absolute inset-0 z-10' : ''
 		}`}
 		role="status"

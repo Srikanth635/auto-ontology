@@ -24,7 +24,7 @@ const navItems: NavItem[] = [
 	{ icon: IconName.Exploration, href: '/exploration', label: 'Exploration' },
 	{ icon: IconName.Database, href: '/data', label: 'Data' },
 	{ icon: IconName.ChartLine, href: '/analytics', label: 'Analytics', adminOnly: true },
-	// Settings is admin-only and now also contains Users and Single Sign-On
+	// Settings is admin-only and also contains Users and Models
 	// (see app/settings/*). Viewers don't see it.
 	{ icon: IconName.Settings, href: '/settings', label: 'Settings', adminOnly: true },
 ];
@@ -35,13 +35,13 @@ export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 	const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
 	return (
-		<nav className="relative h-full w-12 shrink-0 border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+		<nav className="relative h-full w-12 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
 			<div
 				onMouseEnter={() => setIsExpanded(true)}
 				onMouseLeave={() => setIsExpanded(false)}
-				className={`absolute inset-y-0 left-0 flex flex-col overflow-hidden bg-white py-3 transition-[width] duration-200 ease-out dark:bg-zinc-950 ${
+				className={`absolute inset-y-0 left-0 flex flex-col overflow-hidden bg-white py-3 transition-[width] duration-200 ease-out dark:bg-slate-950 ${
 					isExpanded
-						? 'z-30 w-56 border-r border-zinc-200 shadow-lg dark:border-zinc-800'
+						? 'z-30 w-56 border-r border-slate-200 shadow-lg dark:border-slate-800'
 						: 'w-full'
 				}`}
 			>
@@ -60,8 +60,8 @@ export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 									isExpanded ? 'w-full px-2' : 'w-9 justify-center'
 								} ${
 									isActive
-										? 'bg-[#76b900]/15 text-[#76b900]'
-										: 'text-body hover:bg-zinc-100 hover:text-heading dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
+										? 'bg-brand/15 text-brand'
+										: 'text-body hover:bg-slate-100 hover:text-heading dark:hover:bg-slate-800 dark:hover:text-slate-200'
 								}`}
 							>
 								<Icon name={item.icon} className="h-5 w-5 shrink-0" />

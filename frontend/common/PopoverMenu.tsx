@@ -42,7 +42,7 @@ export const PopoverMenu = ({ items, trigger, header, className = '' }: PopoverM
 		{({ close }) => (
 			<>
 				{header != null && (
-					<div className="mb-1 border-b border-zinc-100 pb-1 dark:border-zinc-800">
+					<div className="mb-1 border-b border-slate-100 pb-1 dark:border-slate-800">
 						{header}
 					</div>
 				)}

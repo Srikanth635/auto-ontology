@@ -8,14 +8,14 @@ import { Icon, IconName } from '@/common/icons';
 
 const PlaceholderFrame = ({ children }: { children: ReactNode }) => (
 	<div
-		className="flex h-40 w-56 flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300/90 bg-zinc-50/80 dark:border-zinc-600 dark:bg-zinc-900/40"
+		className="flex h-40 w-56 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/90 bg-slate-50/80 dark:border-slate-600 dark:bg-slate-900/40"
 		aria-hidden
 	>
 		{children}
 	</div>
 );
 
-const iconClassName = 'h-12 w-12 text-disabled dark:text-zinc-600';
+const iconClassName = 'h-12 w-12 text-disabled dark:text-slate-600';
 
 export const Placeholders = {
 	NoConnections: function NoConnections() {

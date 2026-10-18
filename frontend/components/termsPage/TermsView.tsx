@@ -134,7 +134,7 @@ const TermCard = ({
 			tabIndex={0}
 			onClick={() => onClick(term)}
 			onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick(term)}
-			className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+			className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
 		>
 			{/* Card header */}
 			<div className="flex items-start justify-between gap-3">
@@ -142,7 +142,7 @@ const TermCard = ({
 					<div className="flex min-w-0 items-center gap-2">
 						<Icon
 							name={IconName.Terms}
-							className="h-4 w-4 shrink-0 text-body dark:text-zinc-300"
+							className="h-4 w-4 shrink-0 text-body dark:text-slate-300"
 						/>
 						<Text as="h2" text={term.name} variant={TextVariant.CardTitle} fill />
 					</div>
@@ -155,7 +155,7 @@ const TermCard = ({
 					)}
 				</div>
 				<div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-					<span className="inline-flex items-center gap-1 text-sm font-semibold text-heading dark:text-zinc-100">
+					<span className="inline-flex items-center gap-1 text-sm font-semibold text-heading dark:text-slate-100">
 						<Icon name={IconName.Tag} className="h-4 w-4" />
 						Tags
 					</span>
@@ -165,7 +165,7 @@ const TermCard = ({
 						shownTags.map((tag) => <Label key={tag.id} label={tag.name} />)
 					)}
 					{hiddenTagCount > 0 ? (
-						<span className="text-xs text-secondary dark:text-zinc-400">
+						<span className="text-xs text-secondary dark:text-slate-400">
 							+{hiddenTagCount}
 						</span>
 					) : null}
@@ -178,25 +178,25 @@ const TermCard = ({
 				{term.description != null && term.description.trim() !== '' ? (
 					<Text as="p" text={term.description} lines={3} variant={TextVariant.Body} />
 				) : (
-					<p className="text-sm italic text-secondary dark:text-zinc-500">
+					<p className="text-sm italic text-secondary dark:text-slate-500">
 						No Description Available
 					</p>
 				)}
 			</div>
 
 			{/* Four-column section */}
-			<div className="mt-4 grid grid-cols-4 gap-0 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+			<div className="mt-4 grid grid-cols-4 gap-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
 				{/* Column Attributes */}
-				<div className="border-r border-zinc-200 dark:border-zinc-700">
-					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
+				<div className="border-r border-slate-200 dark:border-slate-700">
+					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
 							Column Attributes
 						</span>
 					</div>
 					<div className="flex items-center">
-						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
+						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-slate-300">
 							<span>Column Attributes</span>
-							<span className="ml-1.5 font-medium text-heading dark:text-zinc-100">
+							<span className="ml-1.5 font-medium text-heading dark:text-slate-100">
 								{columnAttributeCount}
 							</span>
 						</span>
@@ -204,16 +204,16 @@ const TermCard = ({
 				</div>
 
 				{/* SQL Attributes */}
-				<div className="border-r border-zinc-200 dark:border-zinc-700">
-					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
+				<div className="border-r border-slate-200 dark:border-slate-700">
+					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
 							SQL Attributes
 						</span>
 					</div>
 					<div className="flex items-center">
-						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
+						<span className="flex w-full items-center justify-between px-4 py-3 text-sm text-body dark:text-slate-300">
 							<span>SQL Attributes</span>
-							<span className="ml-1.5 font-medium text-heading dark:text-zinc-100">
+							<span className="ml-1.5 font-medium text-heading dark:text-slate-100">
 								{sqlAttributeCount}
 							</span>
 						</span>
@@ -221,15 +221,15 @@ const TermCard = ({
 				</div>
 
 				{/* Related Terms */}
-				<div className="border-r border-zinc-200 dark:border-zinc-700">
-					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
+				<div className="border-r border-slate-200 dark:border-slate-700">
+					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
 							Related Terms
 						</span>
 					</div>
-					<div className="flex items-center justify-between px-4 py-3 text-sm text-body dark:text-zinc-300">
+					<div className="flex items-center justify-between px-4 py-3 text-sm text-body dark:text-slate-300">
 						<span>Related Terms</span>
-						<span className="font-medium text-heading dark:text-zinc-100">
+						<span className="font-medium text-heading dark:text-slate-100">
 							{relatedCount}
 						</span>
 					</div>
@@ -237,8 +237,8 @@ const TermCard = ({
 
 				{/* Zones */}
 				<div>
-					<div className="border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-700">
-						<span className="text-xs font-semibold text-secondary dark:text-zinc-400">
+					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
+						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
 							Zones
 						</span>
 					</div>
@@ -253,7 +253,7 @@ const TermCard = ({
 								/>
 							))
 						) : (
-							<span className="text-sm text-secondary dark:text-zinc-400">-</span>
+							<span className="text-sm text-secondary dark:text-slate-400">-</span>
 						)}
 					</div>
 				</div>
@@ -286,9 +286,9 @@ const withCounts = (held: Map<string, number>, rows: TermCount[] | undefined) =>
 };
 
 const FIELD_INPUT_CLASSNAME =
-	'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500';
+	'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:placeholder:text-slate-500';
 
-const FIELD_LABEL_CLASSNAME = 'mb-1.5 block text-sm font-medium text-heading dark:text-zinc-100';
+const FIELD_LABEL_CLASSNAME = 'mb-1.5 block text-sm font-medium text-heading dark:text-slate-100';
 
 export const TermsView = () => {
 	const router = useRouter();
@@ -1380,7 +1380,7 @@ export const TermsView = () => {
 	if (focusId != null && sqlAttrId != null) {
 		const sqlAttrTitle = focusedSqlAttr?.name ?? sqlAttrId;
 		return (
-			<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
+			<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
 				<main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
 					<SinglePageView
 						key={sqlAttrId}
@@ -1499,7 +1499,7 @@ export const TermsView = () => {
 					/>
 
 					{sqlEditValidationMessage != null && (
-						<p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-body dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
+						<p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-body dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
 							{sqlEditValidationMessage}
 						</p>
 					)}
@@ -1517,7 +1517,7 @@ export const TermsView = () => {
 	if (focusId != null && colAttrId != null) {
 		const colAttrTitle = focusedColAttr?.name ?? colAttrId;
 		return (
-			<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
+			<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
 				<main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
 					<SinglePageView
 						key={colAttrId}
@@ -1573,7 +1573,7 @@ export const TermsView = () => {
 
 	if (focusId != null) {
 		return (
-			<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
+			<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
 				<main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
 					<SinglePageView
 						key={focusId}
@@ -1671,7 +1671,7 @@ export const TermsView = () => {
 					</div>
 
 					{sqlAttrValidationMessage != null && (
-						<p className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-body dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
+						<p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-body dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
 							{sqlAttrValidationMessage}
 						</p>
 					)}
@@ -1687,10 +1687,10 @@ export const TermsView = () => {
 	}
 
 	return (
-		<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
-			<header className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-				<Icon name={IconName.Terms} className="h-5 w-5 text-body dark:text-zinc-300" />
-				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
+		<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
+			<header className="flex items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+				<Icon name={IconName.Terms} className="h-5 w-5 text-body dark:text-slate-300" />
+				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-slate-100">
 					Terms
 				</h1>
 			</header>
@@ -1718,7 +1718,7 @@ export const TermsView = () => {
 				{loading && <TermsLoadingSkeleton />}
 
 				{!loading && error != null && terms.length === 0 && (
-					<div className="mx-auto max-w-lg rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 text-center shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-zinc-950/80 dark:shadow-none">
+					<div className="mx-auto max-w-lg rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 text-center shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-slate-950/80 dark:shadow-none">
 						<h2 className="text-lg font-semibold tracking-tight text-red-800 dark:text-red-300">
 							Couldn&apos;t load terms
 						</h2>

@@ -12,7 +12,7 @@ import { Size, ButtonTheme } from '@/enums/button';
 import type { UpdateUserInput, User } from '@/types/auth';
 
 const inputClass =
-	'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-[#76b900] focus:ring-1 focus:ring-[#76b900] disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-secondary dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:disabled:bg-zinc-800';
+	'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-secondary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800';
 
 type EditUserModalProps = {
 	user: User;
@@ -43,11 +43,13 @@ export const EditUserModal = ({
 					onEdit({ name: name.trim(), role });
 				}}
 			>
-				<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">Edit user</h2>
-				<p className="text-xs text-secondary dark:text-zinc-400">{user.email}</p>
+				<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
+					Edit user
+				</h2>
+				<p className="text-xs text-secondary dark:text-slate-400">{user.email}</p>
 
 				<label className="block space-y-1.5" htmlFor="edit-user-name">
-					<span className="text-xs font-medium text-body dark:text-zinc-300">Name</span>
+					<span className="text-xs font-medium text-body dark:text-slate-300">Name</span>
 					<input
 						id="edit-user-name"
 						className={inputClass}
@@ -60,7 +62,7 @@ export const EditUserModal = ({
 				</label>
 
 				<label className="block space-y-1.5" htmlFor="edit-user-role">
-					<span className="text-xs font-medium text-body dark:text-zinc-300">Role</span>
+					<span className="text-xs font-medium text-body dark:text-slate-300">Role</span>
 					<select
 						id="edit-user-role"
 						className={inputClass}

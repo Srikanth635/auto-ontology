@@ -14,13 +14,13 @@ export type SqlBlockProps = {
 
 export const SqlBlock = ({ sql, label = 'SQL', className }: SqlBlockProps) => (
 	<div
-		className={`group relative overflow-hidden rounded-lg bg-zinc-900 dark:bg-zinc-950 ${className ?? ''}`}
+		className={`group relative overflow-hidden rounded-lg bg-slate-900 dark:bg-slate-950 ${className ?? ''}`}
 	>
-		<div className="flex items-center justify-between border-b border-zinc-700 px-3 py-1.5">
-			<span className="text-xs font-medium text-zinc-400">{label}</span>
+		<div className="flex items-center justify-between border-b border-slate-700 px-3 py-1.5">
+			<span className="text-xs font-medium text-slate-400">{label}</span>
 			<CopyButton text={sql} />
 		</div>
-		<pre className="p-3 text-xs leading-relaxed whitespace-pre-wrap wrap-anywhere text-[#76b900]">
+		<pre className="p-3 text-xs leading-relaxed whitespace-pre-wrap wrap-anywhere text-brand">
 			<code>{sql}</code>
 		</pre>
 	</div>
@@ -44,10 +44,10 @@ export const SqlEditor = ({
 	className,
 }: SqlEditorProps) => (
 	<div
-		className={`overflow-hidden rounded-lg bg-zinc-900 transition-colors focus-within:ring-2 focus-within:ring-[#76b900]/30 dark:bg-zinc-950 ${className ?? ''}`}
+		className={`overflow-hidden rounded-lg bg-slate-900 transition-colors focus-within:ring-2 focus-within:ring-brand/30 dark:bg-slate-950 ${className ?? ''}`}
 	>
-		<div className="flex items-center justify-between border-b border-zinc-700 px-3 py-1.5">
-			<span className="text-xs font-medium text-zinc-400">{label}</span>
+		<div className="flex items-center justify-between border-b border-slate-700 px-3 py-1.5">
+			<span className="text-xs font-medium text-slate-400">{label}</span>
 		</div>
 		<textarea
 			value={value}
@@ -56,7 +56,7 @@ export const SqlEditor = ({
 			rows={rows}
 			spellCheck={false}
 			aria-label={label}
-			className="block w-full resize-y bg-transparent p-3 font-mono text-xs leading-relaxed text-[#76b900] outline-none placeholder:text-zinc-500"
+			className="block w-full resize-y bg-transparent p-3 font-mono text-xs leading-relaxed text-brand outline-none placeholder:text-slate-500"
 		/>
 	</div>
 );

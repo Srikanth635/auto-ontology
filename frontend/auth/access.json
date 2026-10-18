@@ -15,7 +15,8 @@
 		"visualization": ["read", "manage"],
 		"pii": ["read", "manage"],
 		"modelInterchange": ["export", "import"],
-		"apiToken": ["manage"]
+		"apiToken": ["manage"],
+		"modelSettings": ["read", "manage"]
 	},
 	"viewer": {
 		"acronym": ["read"],

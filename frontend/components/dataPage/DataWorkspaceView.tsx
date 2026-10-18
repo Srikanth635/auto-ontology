@@ -408,7 +408,7 @@ export function DataWorkspaceView() {
 	if (loadError) {
 		return (
 			<div className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-				<div className="rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-zinc-950/80 dark:shadow-none">
+				<div className="rounded-2xl border border-red-200/80 bg-white/90 px-8 py-10 shadow-xl shadow-red-100/50 dark:border-red-900/50 dark:bg-slate-950/80 dark:shadow-none">
 					<div
 						className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-2xl dark:bg-red-950/80"
 						aria-hidden
@@ -429,7 +429,7 @@ export function DataWorkspaceView() {
 	if (loading && databases.length === 0) {
 		return (
 			<div className="flex h-full flex-1" role="status" aria-label="Loading databases">
-				<aside className="w-72 border-r border-zinc-200 p-4 dark:border-zinc-800">
+				<aside className="w-72 border-r border-slate-200 p-4 dark:border-slate-800">
 					<SkeletonBlock className="mb-5 h-6 w-24" />
 					<SkeletonRows rows={8} />
 				</aside>

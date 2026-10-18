@@ -4,11 +4,11 @@
     {
       "id": "setup-eval-001-underspecified",
       "prompt": "Use the nvidia-ontology-setup skill to handle this request safely: Install Auto Ontology for me.",
-      "expected_output": "The request is underspecified, so the agent asks the required questions before running a command: target (Docker Compose on one machine as the default install, a developer --dev/--ds workflow, or MCP-only against an existing instance), whether DEFAULT_MODELS_API_KEY is available, the bootstrap admin account, source database / CONNECTION_STRINGS vs UI connections, and for Compose whether host port 5432 is free. It does not guess a target and run it silently.",
+      "expected_output": "The request is underspecified, so the agent asks the required questions before running a command: target (Docker Compose on one machine as the default install, a developer --dev/--ds workflow, or MCP-only against an existing instance), which model provider and key will be used, the bootstrap admin account, source database / CONNECTION_STRINGS vs UI connections, and for Compose whether host port 5432 is free. It does not guess a target and run it silently.",
       "assertions": [
         "Loads nvidia-ontology-setup before choosing an installation path",
         "Asks which target is wanted \u2014 Compose, a developer workflow, or MCP-only \u2014 and presents Compose as the default install",
-        "Asks about DEFAULT_MODELS_API_KEY / NIM credentials",
+        "Asks which model provider and key will be used",
         "Does not silently assume defaults and emit a single install command"
       ],
       "expected_skill": "nvidia-ontology-setup",

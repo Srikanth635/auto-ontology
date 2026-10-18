@@ -189,7 +189,7 @@ export const UsersManager = () => {
 		<div className="h-full overflow-auto p-6">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-4">
-					<h1 className="mb-1 text-lg font-semibold text-heading dark:text-zinc-100">
+					<h1 className="mb-1 text-lg font-semibold text-heading dark:text-slate-100">
 						Users
 					</h1>
 					<p className="text-xs text-secondary">

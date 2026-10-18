@@ -112,3 +112,30 @@ def trigger_reset(database_name: str) -> None:
         ).raise_for_status()
     except Exception:
         logger.exception("Failed to trigger reset via %s", url)
+
+
+def trigger_reembed() -> bool:
+    """Ask the ingestion service to rebuild every vector (best-effort).
+
+    Returns whether the service accepted the request, so the caller can tell
+    the user a re-embed did not start.
+    """
+    url = f"{_base_url()}/reembed"
+    try:
+        httpx.post(url, timeout=_REQUEST_TIMEOUT).raise_for_status()
+        return True
+    except Exception:
+        logger.exception("Failed to trigger re-embed via %s", url)
+        return False
+
+
+def get_reembed_status() -> dict[str, Any] | None:
+    """The ingestion service's re-embed status, or ``None`` when unreachable."""
+    url = f"{_base_url()}/reembed/status"
+    try:
+        response = httpx.get(url, timeout=_REQUEST_TIMEOUT)
+        response.raise_for_status()
+        return response.json()
+    except Exception as exc:
+        logger.warning("Failed to query re-embed status via %s: %s", url, exc)
+        return None

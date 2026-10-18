@@ -135,7 +135,7 @@ export const Popover = ({
 					<div
 						ref={panelRef}
 						style={position}
-						className={`fixed z-[1000] rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 ${panelClassName}`}
+						className={`fixed z-[1000] rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 ${panelClassName}`}
 					>
 						{children({ close: () => setPosition(null) })}
 					</div>,

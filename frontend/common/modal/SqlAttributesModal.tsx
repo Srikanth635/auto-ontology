@@ -37,7 +37,7 @@ const TruncatedDescription = ({ text }: { text: string | null }) => {
 	const value = text?.trim() ?? '';
 
 	if (value === '') {
-		return <span className="italic text-secondary dark:text-zinc-500">No Description</span>;
+		return <span className="italic text-secondary dark:text-slate-500">No Description</span>;
 	}
 
 	return <Text text={value} />;
@@ -74,11 +74,11 @@ export const SqlAttributesModal = ({ term, onClose }: SqlAttributesModalProps) =
 
 	return (
 		<Modal open={term != null} onClose={onClose} className="w-full max-w-2xl">
-			<header className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-700">
+			<header className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
 				<div className="flex min-w-0 items-center gap-2">
 					<Icon
 						name={IconName.Link}
-						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
+						className="h-5 w-5 shrink-0 text-body dark:text-slate-300"
 					/>
 					<Text as="h2" variant={TextVariant.Heading}>
 						{term?.name} — SQL Attributes ({total})
@@ -118,10 +118,10 @@ export const SqlAttributesModal = ({ term, onClose }: SqlAttributesModalProps) =
 						{attributes.map((attr) => (
 							<li
 								key={attr.id}
-								className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700"
+								className="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
 							>
 								<Text as="h3" text={attr.name} variant={TextVariant.Heading} />
-								<div className="mt-1 max-w-md text-xs text-secondary dark:text-zinc-400">
+								<div className="mt-1 max-w-md text-xs text-secondary dark:text-slate-400">
 									<TruncatedDescription text={attr.description} />
 								</div>
 								<SqlBlock

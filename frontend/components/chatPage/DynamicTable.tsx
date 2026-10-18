@@ -30,7 +30,7 @@ export const DynamicTable = ({ table }: DynamicTableProps) => {
 				header: col,
 				truncate: true,
 				maxWidthClass: 'max-w-[240px]',
-				className: 'text-body dark:text-zinc-300',
+				className: 'text-body dark:text-slate-300',
 				cell: (row) => row[col],
 				title: (row) => row[col],
 			})),
@@ -49,10 +49,10 @@ export const DynamicTable = ({ table }: DynamicTableProps) => {
 			layout="auto"
 			textClassName="text-xs"
 			cellClassName="px-3 py-2"
-			containerClassName="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+			containerClassName="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
 			theadClassName={`sticky top-0 ${TABLE_THEAD_CLASSNAME}`}
-			bodyClassName="text-body dark:text-zinc-300"
-			rowClassName="border-b border-zinc-100 last:border-b-0 dark:border-zinc-800"
+			bodyClassName="text-body dark:text-slate-300"
+			rowClassName="border-b border-slate-100 last:border-b-0 dark:border-slate-800"
 			scrollClassName="max-h-[478px] overflow-auto"
 			pagination={pagination}
 		/>

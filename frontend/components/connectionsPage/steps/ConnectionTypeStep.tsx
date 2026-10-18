@@ -23,9 +23,9 @@ export const ConnectionTypeStep = ({ onSelect }: ConnectionTypeStepProps) => (
 				<OptionCard key={type} onClick={() => onSelect(type)}>
 					<Icon
 						name={IconName.Database}
-						className="h-8 w-8 text-body dark:text-zinc-300"
+						className="h-8 w-8 text-body dark:text-slate-300"
 					/>
-					<span className="text-sm font-medium text-heading dark:text-zinc-100">
+					<span className="text-sm font-medium text-heading dark:text-slate-100">
 						{connectionDisplayName[type]}
 					</span>
 				</OptionCard>

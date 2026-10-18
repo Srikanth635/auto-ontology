@@ -5,7 +5,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { TooltipProvider } from '@nvidia/foundations-react-core';
 import {
 	HydrationBoundary,
 	QueryClient,
@@ -42,10 +41,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: {
-		default: 'Auto Ontology — NVIDIA',
+		default: 'Auto Ontology',
 		template: 'Auto Ontology - %s',
 	},
-	description: 'NVIDIA Auto Ontology',
+	description:
+		'Auto Ontology — a semantic layer and natural-language querying for your databases',
 	icons: {
 		icon: '/favicon.svg',
 	},
@@ -91,7 +91,7 @@ export default async function RootLayout({
 }>) {
 	const session = await getCurrentSession();
 	const isAdmin = session?.user.role === Role.Admin;
-	// Injected at runtime by the Helm chart from the chart version (.Chart.Version).
+	// Optional: set APP_VERSION to show a version in the user menu.
 	const appVersion = process.env.APP_VERSION;
 	const pathname = (await headers()).get('x-auto-ontology-pathname') ?? '';
 	const showAppChrome = Boolean(session) && !isLoginOrOauthPath(pathname);
@@ -103,26 +103,24 @@ export default async function RootLayout({
 			lang="en"
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
 		>
-			<body className="flex h-full flex-col bg-white text-heading dark:bg-zinc-950 dark:text-zinc-100">
+			<body className="flex h-full flex-col bg-canvas text-heading dark:text-slate-100">
 				<QueryProvider>
-					<TooltipProvider openDelayDuration={400} skipDelayDuration={0}>
-						{showAppChrome ? (
-							// Only the signed-in app reads the shared lists; the login
-							// and consent screens have no picker to fill and no session
-							// to read them with.
-							<HydrationBoundary state={prefetchSharedData(userId)}>
-								<BreadcrumbProvider>
-									<AppTopBar version={appVersion} />
-									<div className="flex min-h-0 flex-1">
-										<NavRail isAdmin={isAdmin} />
-										<div className="min-w-0 flex-1">{children}</div>
-									</div>
-								</BreadcrumbProvider>
-							</HydrationBoundary>
-						) : (
-							children
-						)}
-					</TooltipProvider>
+					{showAppChrome ? (
+						// Only the signed-in app reads the shared lists; the login
+						// and consent screens have no picker to fill and no session
+						// to read them with.
+						<HydrationBoundary state={prefetchSharedData(userId)}>
+							<BreadcrumbProvider>
+								<AppTopBar version={appVersion} />
+								<div className="flex min-h-0 flex-1">
+									<NavRail isAdmin={isAdmin} />
+									<div className="min-w-0 flex-1">{children}</div>
+								</div>
+							</BreadcrumbProvider>
+						</HydrationBoundary>
+					) : (
+						children
+					)}
 				</QueryProvider>
 			</body>
 		</html>

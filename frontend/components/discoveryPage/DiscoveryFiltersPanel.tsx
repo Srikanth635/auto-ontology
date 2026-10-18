@@ -103,8 +103,8 @@ type FilterRowProps = {
 const FilterRow = ({ icon, title, changed, children }: FilterRowProps) => (
 	<div className="flex items-center justify-between gap-2 px-4 py-1">
 		<span className="flex min-w-0 items-center gap-1.5">
-			<Icon name={icon} className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400" />
-			<span className="truncate text-sm text-body dark:text-zinc-300">{title}</span>
+			<Icon name={icon} className="h-4 w-4 shrink-0 text-secondary dark:text-slate-400" />
+			<span className="truncate text-sm text-body dark:text-slate-300">{title}</span>
 			{changed && (
 				<span
 					className="h-1.5 w-1.5 shrink-0 self-start rounded-full bg-red-500"
@@ -164,7 +164,7 @@ const ObjectsFilter = ({
 					<span className="truncate">{selectionSummary(selected)}</span>
 					<Icon
 						name={IconName.ChevronRight}
-						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-zinc-400"
+						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-slate-400"
 					/>
 				</SelectButton>
 			)}
@@ -172,7 +172,7 @@ const ObjectsFilter = ({
 			{() => (
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
-						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
+						<span className="text-xs font-medium text-secondary dark:text-slate-400">
 							Filter By
 						</span>
 						<Button
@@ -189,17 +189,17 @@ const ObjectsFilter = ({
 						return (
 							<label
 								key={type}
-								className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-body hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+								className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-body hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
 							>
 								<input
 									type="checkbox"
 									checked={checked}
 									onChange={() => toggleType(type)}
-									className="h-4 w-4 shrink-0 accent-[#76b900]"
+									className="h-4 w-4 shrink-0 accent-brand"
 								/>
 								<Icon
 									name={SEARCH_TYPE_ICON[type]}
-									className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400"
+									className="h-4 w-4 shrink-0 text-secondary dark:text-slate-400"
 								/>
 								<span className="truncate">{SEARCH_TYPE_TAB_LABEL[type]}</span>
 							</label>
@@ -218,12 +218,12 @@ type TagOptionProps = {
 };
 
 const TagOption = ({ label, checked, onToggle }: TagOptionProps) => (
-	<label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-body hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800">
+	<label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-body hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
 		<input
 			type="checkbox"
 			checked={checked}
 			onChange={onToggle}
-			className="h-4 w-4 shrink-0 accent-[#76b900]"
+			className="h-4 w-4 shrink-0 accent-brand"
 		/>
 		<span className="truncate">{label}</span>
 	</label>
@@ -317,7 +317,7 @@ const TagsFilter = ({
 					<span className="truncate">{summary}</span>
 					<Icon
 						name={IconName.ChevronRight}
-						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-zinc-400"
+						className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-slate-400"
 					/>
 				</SelectButton>
 			)}
@@ -325,7 +325,7 @@ const TagsFilter = ({
 			{() => (
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
-						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
+						<span className="text-xs font-medium text-secondary dark:text-slate-400">
 							Filter By
 						</span>
 						<Button
@@ -365,7 +365,7 @@ const TagsFilter = ({
 								/>
 							))}
 						{emptyMessage !== null && (
-							<p className="px-2 py-1.5 text-xs text-secondary dark:text-zinc-400">
+							<p className="px-2 py-1.5 text-xs text-secondary dark:text-slate-400">
 								{emptyMessage}
 							</p>
 						)}
@@ -396,12 +396,15 @@ export const DiscoveryFiltersPanel = ({
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<div className="flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+			<div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
 				<span className="flex items-center gap-1.5">
-					<span className="text-base font-semibold text-heading dark:text-zinc-100">
+					<span className="text-base font-semibold text-heading dark:text-slate-100">
 						Filters
 					</span>
-					<Icon name={IconName.Filter} className="h-4 w-4 text-body dark:text-zinc-300" />
+					<Icon
+						name={IconName.Filter}
+						className="h-4 w-4 text-body dark:text-slate-300"
+					/>
 				</span>
 				{changedCount > 0 && (
 					<Button

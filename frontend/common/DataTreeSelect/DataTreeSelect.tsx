@@ -13,7 +13,7 @@ import { getTableType } from '@/components/dataPage/get-table-type';
 import { Text } from '@/common/Text';
 
 const treeRowClassName =
-	'flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm text-heading hover:bg-zinc-100/90 dark:text-zinc-200 dark:hover:bg-zinc-800/70';
+	'flex min-h-9 items-center gap-2 rounded-lg px-2 text-sm text-heading hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800/70';
 
 export type DataTreeSelectProps = {
 	databases: Database[];
@@ -338,7 +338,7 @@ export const DataTreeSelect = ({
 				onClick={() => {
 					void onToggle();
 				}}
-				className="inline-flex w-4 shrink-0 cursor-pointer items-center justify-center rounded text-[10px] text-secondary hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80"
+				className="inline-flex w-4 shrink-0 cursor-pointer items-center justify-center rounded text-[10px] text-secondary hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
 				aria-label={isOpen ? 'Collapse' : 'Expand'}
 			>
 				{loadingIds[id] ? '…' : hasChildren ? (isOpen ? '▼' : '▶') : '·'}
@@ -353,14 +353,14 @@ export const DataTreeSelect = ({
 					}
 				}}
 				onChange={onSelectionChange}
-				className={`h-4 w-4 cursor-pointer border-zinc-300 text-[#76b900] focus:ring-[#76b900]/40 dark:border-zinc-600 ${
+				className={`h-4 w-4 cursor-pointer border-slate-300 text-brand focus:ring-brand/40 dark:border-slate-600 ${
 					singleSelect ? '' : 'rounded'
 				}`}
 			/>
 			<span className="inline-flex shrink-0" title={catalogNodeInfo[node].title} aria-hidden>
 				<Icon
 					name={catalogNodeInfo[node].icon}
-					className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
+					className="h-4 w-4 text-slate-500 dark:text-slate-400"
 				/>
 			</span>
 			<Text text={label} />
@@ -390,7 +390,7 @@ export const DataTreeSelect = ({
 		<div
 			className={
 				framed
-					? 'rounded-lg border border-zinc-200/90 bg-white/90 p-2 dark:border-zinc-700/90 dark:bg-zinc-950/40'
+					? 'rounded-lg border border-slate-200/90 bg-white/90 p-2 dark:border-slate-700/90 dark:bg-slate-950/40'
 					: ''
 			}
 		>

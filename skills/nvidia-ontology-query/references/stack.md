@@ -23,19 +23,19 @@ Credential order on every `/api` route (`frontend/auth/resolve-user.ts`):
 
 A revoked API token is a 401; it is not retried as another credential.
 
-## Nemotron / NIM (deployment config)
+## Models (deployment config)
 
-Auto Ontology calls NVIDIA NIM for chat, embeddings, and rerank. That is `.env`
-configuration, not a Nemotron training or customize integration.
+Chat, embeddings and reranking use whichever providers an admin chose under
+Settings → Models: OpenAI, Anthropic, or any OpenAI-compatible server. That is
+configuration, not a model training or fine-tuning integration.
 
-Triplets: `<PREFIX>_ENDPOINT`, `<PREFIX>_API_KEY`, `<PREFIX>_MODEL`. Unset
-fields fall back to `DEFAULT_MODELS_*`. Prefixes: `DEFAULT_MODELS`,
-`REASONING` (NL-to-SQL), `NON_REASONING` (entity extraction), `EMBED`,
-`RERANK`. `*_API_KEY` also falls back to `NVIDIA_API_KEY`.
+Roles: chat (NL-to-SQL), fast chat (entity extraction; defaults to chat),
+embeddings, and optional reranking. A role with nothing saved falls back to
+`REASONING_*` / `NON_REASONING_*` / `EMBED_*` / `RERANK_*` env vars, then
+`DEFAULT_MODELS_*`.
 
-`EMBED_ENDPOINT` + `EMBED_MODEL` must be the same at ingest and query.
-Defaults in `.env.example` include a Nemotron embed model id; changing it
-without re-ingest breaks retrieval.
+Ingest and query share one embedding setting. Changing it re-embeds every
+vector in the background (`GET /api/model-settings/reembed` reports progress).
 
 ## cuOpt (partner-wired)
 

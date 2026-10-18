@@ -34,6 +34,7 @@ from auto_ontology.server.datasources.router import router as datasources_router
 from auto_ontology.server.exploration.router import router as exploration_router  # noqa: E402
 from auto_ontology.server.health.router import router as health_router  # noqa: E402
 from auto_ontology.server.metadata.router import router as metadata_router  # noqa: E402
+from auto_ontology.server.model_settings.router import router as model_settings_router  # noqa: E402
 from auto_ontology.server.rules.router import router as rules_router  # noqa: E402
 from auto_ontology.server.semantic_compilation.router import (  # noqa: E402
     router as semantic_compilation_router,
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
         model_interchange_router, prefix="/api", tags=["model-interchange"]
     )
     app.include_router(search_router, prefix="/api", tags=["search"])
+    app.include_router(model_settings_router, prefix="/api", tags=["model-settings"])
 
     return app
 

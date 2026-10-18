@@ -29,6 +29,7 @@ const applicationStatements = {
 	pii: ['read', 'manage'],
 	modelInterchange: ['export', 'import'],
 	apiToken: ['manage'],
+	modelSettings: ['read', 'manage'],
 } as const satisfies Record<string, readonly string[]>;
 
 type ApplicationStatements = typeof applicationStatements;

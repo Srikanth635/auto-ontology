@@ -17,7 +17,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
-from auto_ontology.utils.model_config import resolve
+from auto_ontology.dal.schema import ModelProvider, ModelRole
+from auto_ontology.utils.model_config import ResolvedModel, get_model
 
 logger = logging.getLogger(__name__)
 
@@ -182,75 +183,56 @@ def _is_retryable(e: Exception) -> bool:
     )
 
 
-class _TimeoutSession(_requests.Session):
-    """requests.Session that enforces a default timeout on every request."""
-
-    def __init__(self, timeout: float = LLM_INVOKE_TIMEOUT_S, **kwargs):
-        super().__init__(**kwargs)
-        self._default_timeout = timeout
-
-    def request(self, method, url, **kwargs):
-        kwargs.setdefault("timeout", self._default_timeout)
-        return super().request(method, url, **kwargs)
-
-
 T = TypeVar("T", bound=BaseModel)
 
-# Main (reasoning) model triplet. Each field falls back to DEFAULT_MODELS_<field>
-# (and the API key additionally to the legacy NVIDIA_API_KEY) when unset.
-_BASE_URL = resolve("REASONING", "ENDPOINT")
-_MODEL_NAME = resolve("REASONING", "MODEL")
-_API_KEY = resolve("REASONING", "API_KEY")
 
-# Non-reasoning model. Kept fully separate (key/endpoint/model) so it can point at
-# a different endpoint than the main model (e.g. inference vs integrate API). Each
-# field falls back to DEFAULT_MODELS_<field> when unset.
-_NON_REASONING_BASE_URL = resolve("NON_REASONING", "ENDPOINT")
-_NON_REASONING_MODEL_NAME = resolve("NON_REASONING", "MODEL")
-_NON_REASONING_API_KEY = resolve("NON_REASONING", "API_KEY")
-
-
-def _build_client(
+def build_chat_client(
+    resolved: ResolvedModel,
     *,
-    model: str,
-    api_key: str,
-    base_url: str,
-    temperature: float,
-    max_tokens: int,
+    temperature: float = 0.0,
+    max_tokens: int = 8192,
+    model: str | None = None,
 ) -> BaseChatModel:
-    """Build a chat client for the given model/endpoint.
+    """Build a chat client for *resolved*, whichever provider serves it.
 
-    OpenAI-family models (``openai/``, ``azure/``, ``aws/`` prefixes) go through
-    ``ChatOpenAI``, which supports structured output. Everything else uses
-    ``ChatNVIDIA``.
+    * ``openai`` and ``openai_compatible`` go through ``ChatOpenAI``; the latter
+      only adds its own ``base_url`` (Ollama, vLLM, LM Studio, OpenRouter, Azure
+      and other OpenAI-style servers).
+    * ``anthropic`` goes through ``ChatAnthropic``.
+
+    OpenAI's own reasoning models reject any explicit temperature, so none is
+    sent to the ``openai`` provider and its server default applies.
     """
-    if model.startswith(("openai/", "azure/", "aws/")):
-        from langchain_openai import ChatOpenAI
+    resolved.require()
+    model_name = model or resolved.model
+    if resolved.provider == ModelProvider.ANTHROPIC:
+        from langchain_anthropic import ChatAnthropic
 
-        return ChatOpenAI(
-            model=model,
-            api_key=api_key,
-            base_url=base_url,
-            # temperature omitted: gpt-5.x/o-series reject any explicit value and
-            # only allow the server default (1). Unset => langchain sends no
-            # temperature field, so the provider default applies.
-            # temperature=temperature,
+        return ChatAnthropic(
+            model=model_name,
+            api_key=resolved.api_key,
+            base_url=resolved.endpoint,
+            temperature=temperature,
             max_tokens=max_tokens,
             timeout=LLM_INVOKE_TIMEOUT_S,
             max_retries=0,
         )
 
-    from langchain_nvidia_ai_endpoints import ChatNVIDIA
+    from langchain_openai import ChatOpenAI
 
-    client = ChatNVIDIA(
-        model=model,
-        api_key=api_key,
-        base_url=base_url,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    client._client.get_session_fn = lambda: _TimeoutSession(LLM_INVOKE_TIMEOUT_S)
-    return client
+    kwargs: dict = {
+        "model": model_name,
+        # A keyless local server still needs a non-empty string here; the
+        # client refuses to start without one.
+        "api_key": resolved.api_key or "unused",
+        "base_url": resolved.endpoint,
+        "max_tokens": max_tokens,
+        "timeout": LLM_INVOKE_TIMEOUT_S,
+        "max_retries": 0,
+    }
+    if resolved.provider == ModelProvider.OPENAI_COMPATIBLE:
+        kwargs["temperature"] = temperature
+    return ChatOpenAI(**kwargs)
 
 
 def get_llm_client(
@@ -259,22 +241,16 @@ def get_llm_client(
     temperature: float = 0.0,
     max_tokens: int = 8192,
 ) -> BaseChatModel:
-    """Create an LLM client for the main reasoning model.
+    """A client for the main (``chat``) model configured under Settings -> Models.
 
-    Parameters
-    ----------
-    model : str | None
-        Override the default ``REASONING_MODEL`` env var for this client.
+    Raises :class:`~auto_ontology.utils.model_config.ModelNotConfiguredError`
+    (an ``EnvironmentError``) when no chat model is configured.
     """
-    if not _API_KEY:
-        raise EnvironmentError("REASONING_API_KEY is not set")
-
-    return _build_client(
-        model=model or _MODEL_NAME,
-        api_key=_API_KEY,
-        base_url=_BASE_URL,
+    return build_chat_client(
+        get_model(ModelRole.CHAT),
         temperature=temperature,
         max_tokens=max_tokens,
+        model=model,
     )
 
 
@@ -284,26 +260,12 @@ def get_non_reasoning_llm_client(
     temperature: float = 0.0,
     max_tokens: int = 8192,
 ) -> BaseChatModel:
-    """Create an LLM client for the non-reasoning model.
-
-    Uses ``NON_REASONING_API_KEY`` / ``NON_REASONING_ENDPOINT`` /
-    ``NON_REASONING_MODEL`` so it can target a different endpoint than the
-    main agent model.
-
-    Parameters
-    ----------
-    model : str | None
-        Override the default ``NON_REASONING_MODEL`` env var for this client.
-    """
-    if not _NON_REASONING_API_KEY:
-        raise EnvironmentError("NON_REASONING_API_KEY is not set")
-
-    return _build_client(
-        model=model or _NON_REASONING_MODEL_NAME,
-        api_key=_NON_REASONING_API_KEY,
-        base_url=_NON_REASONING_BASE_URL,
+    """A client for the ``fast_chat`` model, which falls back to ``chat`` when unset."""
+    return build_chat_client(
+        get_model(ModelRole.FAST_CHAT),
         temperature=temperature,
         max_tokens=max_tokens,
+        model=model,
     )
 
 
@@ -347,6 +309,10 @@ def _structured_output_kwargs(llm: BaseChatModel) -> dict:
     omitting it succeeds. The model still calls the tool without being forced to, and
     the caller retries if it ever answers without one.
     """
+    # The native Anthropic client already structures output through tool calling;
+    # the workaround below is for Claude reached through an OpenAI-style gateway.
+    if type(llm).__name__ == "ChatAnthropic":
+        return {}
     model = str(getattr(llm, "model_name", "") or getattr(llm, "model", "") or "")
     lowered = model.lower()
     if "anthropic" in lowered or "claude" in lowered:

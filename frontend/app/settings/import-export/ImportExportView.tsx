@@ -61,9 +61,9 @@ const downloadBlob = (blob: Blob, filename: string) => {
 const createdCountEntries = (counts: ImportEntityCounts): [string, number][] =>
 	Object.entries(counts).filter(([, value]) => value > 0);
 
-const checkboxClassName = 'h-4 w-4 rounded border-zinc-300 text-[#76b900] focus:ring-[#76b900]/30';
+const checkboxClassName = 'h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/30';
 
-const radioClassName = 'mt-0.5 h-4 w-4 border-zinc-300 text-[#76b900] focus:ring-[#76b900]/30';
+const radioClassName = 'mt-0.5 h-4 w-4 border-slate-300 text-brand focus:ring-brand/30';
 
 const isYamlFile = (file: File): boolean => /\.ya?ml$/i.test(file.name);
 
@@ -208,12 +208,12 @@ export const ImportExportView = () => {
 
 	return (
 		<div className="mx-auto w-full max-w-2xl space-y-6">
-			<h1 className="text-lg font-semibold text-heading dark:text-zinc-100">
+			<h1 className="text-lg font-semibold text-heading dark:text-slate-100">
 				Import / Export
 			</h1>
 
-			<section className="rounded-lg border border-zinc-200 p-5 dark:border-zinc-700">
-				<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
+			<section className="rounded-lg border border-slate-200 p-5 dark:border-slate-700">
+				<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
 					Export Model
 				</h2>
 				<p className="mt-1 text-xs text-secondary">
@@ -222,14 +222,14 @@ export const ImportExportView = () => {
 				</p>
 
 				<fieldset className="mt-4">
-					<legend className="text-xs font-medium text-heading dark:text-zinc-200">
+					<legend className="text-xs font-medium text-heading dark:text-slate-200">
 						Format
 					</legend>
 					<div className="mt-2 grid gap-2 sm:grid-cols-2">
 						{FORMAT_OPTIONS.map(({ value, description }) => (
 							<label
 								key={value}
-								className="flex cursor-pointer items-start gap-2 rounded-lg border border-zinc-200 px-3 py-2 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/80"
+								className="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/80"
 							>
 								<input
 									type="radio"
@@ -240,7 +240,7 @@ export const ImportExportView = () => {
 									className={radioClassName}
 								/>
 								<span>
-									<span className="block text-sm font-medium text-heading dark:text-zinc-100">
+									<span className="block text-sm font-medium text-heading dark:text-slate-100">
 										{FORMAT_LABEL[value]}
 									</span>
 									<span className="block text-xs text-secondary">
@@ -253,9 +253,9 @@ export const ImportExportView = () => {
 				</fieldset>
 
 				{exportFormat === ModelFormat.OSSIE ? (
-					<div className="mt-3 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+					<div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 						<div className="flex flex-col">
-							<span className="text-sm font-medium text-heading dark:text-zinc-100">
+							<span className="text-sm font-medium text-heading dark:text-slate-100">
 								Include Ontology and Mapping
 							</span>
 							<span className="text-xs text-secondary">
@@ -281,22 +281,22 @@ export const ImportExportView = () => {
 					<p className="mt-4 text-sm text-secondary">No Databases Found.</p>
 				) : (
 					<div className="mt-4 space-y-2">
-						<label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/80">
+						<label className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/80">
 							<input
 								type="checkbox"
 								checked={allSelected}
 								onChange={toggleSelectAll}
 								className={checkboxClassName}
 							/>
-							<span className="text-sm font-medium text-heading dark:text-zinc-200">
+							<span className="text-sm font-medium text-heading dark:text-slate-200">
 								{allSelected ? 'Deselect all' : 'Select all'}
 							</span>
 						</label>
-						<div className="max-h-56 overflow-y-auto rounded-md border border-zinc-100 dark:border-zinc-800">
+						<div className="max-h-56 overflow-y-auto rounded-md border border-slate-100 dark:border-slate-800">
 							{databases.map((db) => (
 								<label
 									key={db.id}
-									className="flex cursor-pointer items-center gap-3 border-b border-zinc-100 px-3 py-2 last:border-b-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/80"
+									className="flex cursor-pointer items-center gap-3 border-b border-slate-100 px-3 py-2 last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/80"
 								>
 									<input
 										type="checkbox"
@@ -304,7 +304,7 @@ export const ImportExportView = () => {
 										onChange={() => toggleDatabase(db.id)}
 										className={checkboxClassName}
 									/>
-									<span className="text-sm text-heading dark:text-zinc-200">
+									<span className="text-sm text-heading dark:text-slate-200">
 										{db.name}
 									</span>
 								</label>
@@ -345,8 +345,8 @@ export const ImportExportView = () => {
 				</div>
 			</section>
 
-			<section className="rounded-lg border border-zinc-200 p-5 dark:border-zinc-700">
-				<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
+			<section className="rounded-lg border border-slate-200 p-5 dark:border-slate-700">
+				<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
 					Import Model
 				</h2>
 				<p className="mt-1 text-xs text-secondary">
@@ -369,9 +369,9 @@ export const ImportExportView = () => {
 					<p className="mt-2 text-sm text-red-600 dark:text-red-400">{importError}</p>
 				) : null}
 
-				<div className="mt-4 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+				<div className="mt-4 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 					<div className="flex flex-col">
-						<span className="text-sm font-medium text-heading dark:text-zinc-100">
+						<span className="text-sm font-medium text-heading dark:text-slate-100">
 							Replace Existing Data
 						</span>
 						<span className="text-xs text-secondary">
@@ -386,9 +386,9 @@ export const ImportExportView = () => {
 					/>
 				</div>
 
-				<div className="mt-3 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+				<div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 					<div className="flex flex-col">
-						<span className="text-sm font-medium text-heading dark:text-zinc-100">
+						<span className="text-sm font-medium text-heading dark:text-slate-100">
 							Regenerate Embeddings
 						</span>
 						<span className="text-xs text-secondary">
@@ -403,8 +403,8 @@ export const ImportExportView = () => {
 				</div>
 
 				{importSummary ? (
-					<div className="mt-3 rounded-lg border border-[#76b900]/30 bg-[#76b900]/5 p-3 text-xs text-body dark:text-zinc-300">
-						<p className="font-medium text-heading dark:text-zinc-100">
+					<div className="mt-3 rounded-lg border border-brand/30 bg-brand/5 p-3 text-xs text-body dark:text-slate-300">
+						<p className="font-medium text-heading dark:text-slate-100">
 							Import Summary
 						</p>
 						<ul className="mt-1.5 space-y-0.5">

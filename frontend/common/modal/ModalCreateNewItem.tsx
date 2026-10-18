@@ -40,8 +40,8 @@ export const ModalCreateNewItem = ({
 	secondaryAction,
 }: ModalCreateNewItemProps) => (
 	<Modal open={open} onClose={onClose} className={className}>
-		<div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-700">
-			<h3 className="text-base font-semibold text-heading dark:text-zinc-100">{title}</h3>
+		<div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+			<h3 className="text-base font-semibold text-heading dark:text-slate-100">{title}</h3>
 			<Button
 				onClick={onClose}
 				theme={ButtonTheme.Icon}

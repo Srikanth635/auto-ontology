@@ -68,9 +68,9 @@ const TaggedByCell = ({ item }: { item: TagItem }) => {
 			<span className="flex min-w-0 items-center gap-1.5" title={item.rule.name}>
 				<Icon
 					name={IconName.Lightning}
-					className="h-3.5 w-3.5 shrink-0 text-body dark:text-zinc-300"
+					className="h-3.5 w-3.5 shrink-0 text-body dark:text-slate-300"
 				/>
-				<span className="min-w-0 truncate text-body dark:text-zinc-300">
+				<span className="min-w-0 truncate text-body dark:text-slate-300">
 					{item.rule.name}
 				</span>
 			</span>
@@ -85,11 +85,11 @@ const TaggedByCell = ({ item }: { item: TagItem }) => {
 		<span className="flex min-w-0 items-center gap-2" title={label}>
 			<span
 				aria-hidden="true"
-				className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${known ? 'bg-[#76b900] text-white' : 'bg-zinc-200 text-secondary dark:bg-zinc-700 dark:text-zinc-400'}`}
+				className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${known ? 'bg-brand text-white' : 'bg-slate-200 text-secondary dark:bg-slate-700 dark:text-slate-400'}`}
 			>
 				{label.charAt(0).toUpperCase()}
 			</span>
-			<span className="min-w-0 truncate text-body dark:text-zinc-300">{label}</span>
+			<span className="min-w-0 truncate text-body dark:text-slate-300">{label}</span>
 		</span>
 	);
 };
@@ -104,9 +104,9 @@ const COLUMNS: TableColumn<TagItem>[] = [
 			<span className="flex min-w-0 items-center gap-2">
 				<Icon
 					name={TYPE_ICONS[item.type]}
-					className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-500"
+					className="h-4 w-4 shrink-0 text-secondary dark:text-slate-500"
 				/>
-				<span className="min-w-0 truncate text-heading dark:text-zinc-200">
+				<span className="min-w-0 truncate text-heading dark:text-slate-200">
 					{item.name}
 				</span>
 			</span>
@@ -117,7 +117,7 @@ const COLUMNS: TableColumn<TagItem>[] = [
 		header: 'Type',
 		width: 'w-44',
 		nowrap: true,
-		className: 'text-body dark:text-zinc-400',
+		className: 'text-body dark:text-slate-400',
 		cell: (item) => TYPE_LABELS[item.type],
 	},
 	{
@@ -125,7 +125,7 @@ const COLUMNS: TableColumn<TagItem>[] = [
 		header: 'Location',
 		truncate: true,
 		title: (item) => item.path ?? '',
-		className: 'text-body dark:text-zinc-400',
+		className: 'text-body dark:text-slate-400',
 		// Only a term has no location: it is a glossary entry, not a catalog object.
 		cell: (item) => item.path ?? '—',
 	},
@@ -141,7 +141,7 @@ const COLUMNS: TableColumn<TagItem>[] = [
 		header: 'Tagged',
 		width: 'w-32',
 		nowrap: true,
-		className: 'text-secondary dark:text-zinc-400',
+		className: 'text-secondary dark:text-slate-400',
 		cell: (item) => formatDate(item.tagged),
 	},
 ];
@@ -258,13 +258,13 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 				<div className="flex items-center gap-2">
 					<Icon
 						name={IconName.Tag}
-						className="h-5 w-5 shrink-0 text-body dark:text-zinc-300"
+						className="h-5 w-5 shrink-0 text-body dark:text-slate-300"
 					/>
 					{tag == null ? (
 						<SkeletonBlock className="h-5 w-48" />
 					) : (
 						<>
-							<h1 className="min-w-0 truncate text-base font-semibold text-heading dark:text-zinc-100">
+							<h1 className="min-w-0 truncate text-base font-semibold text-heading dark:text-slate-100">
 								{tag.name}
 							</h1>
 							{/* How many objects carry the tag, which a scrolled list
@@ -273,7 +273,7 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 							    Withheld until a page has landed, since a list that
 							    failed to load has no count rather than a count of
 							    none. */}
-							<span className="ml-auto shrink-0 text-xs text-secondary dark:text-zinc-400">
+							<span className="ml-auto shrink-0 text-xs text-secondary dark:text-slate-400">
 								{itemsLoading || itemsError != null ? null : `${total} tagged · `}
 								Created {formatDate(tag.created)}
 							</span>
@@ -299,7 +299,7 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 						rows={items}
 						rowKey={(item) => `${item.type}:${item.id}`}
 						onRowClick={handleRowClick}
-						containerClassName="rounded-lg border border-zinc-200/90 bg-white/90 shadow-sm ring-1 ring-zinc-950/[0.04] dark:border-zinc-700/90 dark:bg-zinc-950/50 dark:ring-white/[0.06]"
+						containerClassName="rounded-lg border border-slate-200/90 bg-white/90 shadow-sm ring-1 ring-slate-950/[0.04] dark:border-slate-700/90 dark:bg-slate-950/50 dark:ring-white/[0.06]"
 					/>
 				) : null}
 
@@ -309,7 +309,7 @@ export const TagDetailView = ({ tagId }: TagDetailViewProps) => {
 						icon={IconName.Tag}
 						title="Nothing is tagged with this tag"
 						description="Terms, tables, columns, column attributes and SQL attributes carrying this tag will be listed here."
-						className="rounded-lg border border-dashed border-zinc-300/90 bg-white/70 dark:border-zinc-600 dark:bg-zinc-900/30"
+						className="rounded-lg border border-dashed border-slate-300/90 bg-white/70 dark:border-slate-600 dark:bg-slate-900/30"
 					/>
 				) : null}
 			</div>

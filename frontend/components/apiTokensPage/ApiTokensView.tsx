@@ -28,7 +28,7 @@ const EXPIRY_OPTIONS: { label: string; days?: number }[] = [
 ];
 
 const inputClassName =
-	'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-[#76b900] focus:ring-1 focus:ring-[#76b900] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100';
+	'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
 
 const isExpired = (token: ApiToken): boolean =>
 	token.expires_at != null && new Date(token.expires_at).getTime() <= Date.now();
@@ -128,7 +128,7 @@ export const ApiTokensView = () => {
 			header: 'Name',
 			truncate: true,
 			cell: (token) => (
-				<span className="font-medium text-heading dark:text-zinc-100">
+				<span className="font-medium text-heading dark:text-slate-100">
 					{token.name ?? 'Unnamed'}
 				</span>
 			),
@@ -139,7 +139,7 @@ export const ApiTokensView = () => {
 			width: 'w-44',
 			nowrap: true,
 			cell: (token) => (
-				<code className="font-mono text-xs text-secondary dark:text-zinc-400">
+				<code className="font-mono text-xs text-secondary dark:text-slate-400">
 					{token.start ? `${token.start}…` : '—'}
 				</code>
 			),
@@ -197,14 +197,14 @@ export const ApiTokensView = () => {
 	];
 
 	return (
-		<main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(250,250,250,0.6)_100%)] px-7 py-6 sm:px-10 sm:py-7 dark:bg-[linear-gradient(180deg,rgba(9,9,11,1)_0%,rgba(24,24,27,0.5)_100%)]">
+		<main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(247,248,250,0.6)_100%)] px-7 py-6 sm:px-10 sm:py-7 dark:bg-[linear-gradient(180deg,rgba(15,20,25,1)_0%,rgba(22,28,34,0.5)_100%)]">
 			<div className="w-full max-w-4xl space-y-5">
 				<div className="flex items-start justify-between gap-4">
 					<div className="min-w-0">
-						<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
+						<h1 className="text-base font-semibold text-heading dark:text-slate-100">
 							API Tokens
 						</h1>
-						<p className="mt-1 text-xs text-secondary dark:text-zinc-400">
+						<p className="mt-1 text-xs text-secondary dark:text-slate-400">
 							Call the Auto Ontology API from scripts without signing in. A token acts
 							as you — it can do exactly what your account can, and nothing more.
 						</p>
@@ -216,13 +216,13 @@ export const ApiTokensView = () => {
 				</div>
 
 				{freshToken ? (
-					<div className="rounded-lg border border-[#76b900]/40 bg-[#76b900]/5 p-4">
+					<div className="rounded-lg border border-brand/40 bg-brand/5 p-4">
 						<div className="flex items-start justify-between gap-3">
 							<div className="min-w-0">
-								<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
+								<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
 									Copy your token now
 								</h2>
-								<p className="mt-1 text-xs text-body dark:text-zinc-400">
+								<p className="mt-1 text-xs text-body dark:text-slate-400">
 									Auto Ontology stores only a hash of it, so this is the one and
 									only time it can be shown. Send it as the <code>x-api-key</code>{' '}
 									header.
@@ -236,8 +236,8 @@ export const ApiTokensView = () => {
 								Done
 							</Button>
 						</div>
-						<div className="group mt-3 flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-2 dark:bg-zinc-950">
-							<code className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-100">
+						<div className="group mt-3 flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 dark:bg-slate-950">
+							<code className="min-w-0 flex-1 truncate font-mono text-xs text-slate-100">
 								{freshToken}
 							</code>
 							<CopyButton text={freshToken} className="opacity-100" />
@@ -246,7 +246,7 @@ export const ApiTokensView = () => {
 				) : null}
 
 				{loading ? (
-					<p className="text-sm text-secondary dark:text-zinc-400">Loading…</p>
+					<p className="text-sm text-secondary dark:text-slate-400">Loading…</p>
 				) : null}
 
 				{!loading && tokens.length === 0 ? (
@@ -269,12 +269,12 @@ export const ApiTokensView = () => {
 				className="w-full max-w-md"
 			>
 				<div className="space-y-4 p-5">
-					<h2 className="text-sm font-semibold text-heading dark:text-zinc-100">
+					<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
 						New API token
 					</h2>
 
 					<label className="block space-y-1.5">
-						<span className="text-xs font-medium text-body dark:text-zinc-300">
+						<span className="text-xs font-medium text-body dark:text-slate-300">
 							Name
 						</span>
 						<input
@@ -287,7 +287,7 @@ export const ApiTokensView = () => {
 					</label>
 
 					<label className="block space-y-1.5">
-						<span className="text-xs font-medium text-body dark:text-zinc-300">
+						<span className="text-xs font-medium text-body dark:text-slate-300">
 							Expires
 						</span>
 						<select

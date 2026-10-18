@@ -2,16 +2,20 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Text embedding against the configured NIM / inference-api endpoint.
+"""Text embedding against the configured provider's OpenAI-style ``/embeddings`` API.
 
-Both endpoints speak the OpenAI ``/embeddings`` API, plus three NVIDIA fields
-sent through ``extra_body``. ``input_type`` is the one that matters: NVIDIA's
-embedding models are asymmetric, so a stored row must be embedded as a
-``passage`` and a search string as a ``query``. Mixing them up raises no error
--- it just makes every search worse.
+OpenAI and every OpenAI-compatible server (Ollama, vLLM, LM Studio, OpenRouter,
+Azure) speak the same request, so one client serves them all.
 
-Ingest and query MUST use the same model; a mismatch produces garbage results
-or a dimension error from pgvector.
+Every vector is stored at :data:`VECTOR_DIM` dimensions, whatever the model
+emits. A shorter vector is zero-padded, which changes neither its norm nor its
+dot product with another padded vector, so cosine ranking is exactly what the
+model produced. A model that emits more than :data:`VECTOR_DIM` has to be asked
+for fewer (``dimensions``, which OpenAI's text-embedding-3 models accept).
+
+Ingest and query MUST use the same model: vectors from two models are not
+comparable even at the same width. Changing the embedding model therefore
+re-embeds everything (see ``auto_ontology.ingestion_service.reembed``).
 """
 
 from __future__ import annotations
@@ -28,7 +32,8 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import httpx
 from openai import APIStatusError, Omit, OpenAI
 
-from auto_ontology.utils.model_config import resolve
+from auto_ontology.dal.schema import ModelRole
+from auto_ontology.utils.model_config import get_model
 from auto_ontology.vdb.records import write_embedded_rows
 
 if TYPE_CHECKING:
@@ -41,9 +46,8 @@ logger = logging.getLogger(__name__)
 InputType = Literal["passage", "query"]
 
 # Each field falls back to DEFAULT_MODELS_<field>.
-_EMBED_ENDPOINT = resolve("EMBED", "ENDPOINT")
-_EMBED_MODEL = resolve("EMBED", "MODEL")
-_EMBED_API_KEY = resolve("EMBED", "API_KEY")
+#: The width of every stored vector; see the module docstring.
+VECTOR_DIM = 2048
 
 # Per-request retries inside the client, for 408/409/429/5xx and dropped
 # connections. They back off for seconds; the chunk-level retry below is the
@@ -80,6 +84,8 @@ class EmbedParams:
     model_name: str
     embed_invoke_url: str
     api_key: str = field(default="", repr=False)
+    #: Width to request from the model, or ``None`` for its native width.
+    dimensions: int | None = None
     embed_modality: str = "text"
     inference_batch_size: int = 32
     nim_http_max_concurrent: int = 32
@@ -87,18 +93,37 @@ class EmbedParams:
 
 
 def get_embed_params() -> EmbedParams:
+    """Parameters for the embedding model configured under Settings -> Models."""
+    resolved = get_model(ModelRole.EMBEDDING)
     return EmbedParams(
-        embed_invoke_url=_EMBED_ENDPOINT,
-        model_name=_EMBED_MODEL,
-        api_key=_EMBED_API_KEY,
+        embed_invoke_url=resolved.endpoint,
+        model_name=resolved.model,
+        api_key=resolved.api_key,
+        dimensions=resolved.dimensions,
     )
+
+
+def embedding_configured() -> bool:
+    """Whether an embedding model is configured, so embedding can be attempted."""
+    return get_model(ModelRole.EMBEDDING).configured
+
+
+def _fit(vector: list[float]) -> list[float]:
+    """*vector* at exactly :data:`VECTOR_DIM` dimensions; see the module docstring."""
+    if len(vector) > VECTOR_DIM:
+        raise ValueError(
+            f"The embedding model returned {len(vector)} dimensions; at most "
+            f"{VECTOR_DIM} can be stored. Set Dimensions to {VECTOR_DIM} or fewer "
+            "under Settings -> Models, or choose another model."
+        )
+    return vector + [0.0] * (VECTOR_DIM - len(vector))
 
 
 # ---------------------------------------------------------------------------
 # Client
 # ---------------------------------------------------------------------------
 
-# A keyless self-hosted NIM expects no Authorization header, and the client
+# A keyless local server (Ollama, vLLM) expects no Authorization header, and the client
 # only sends none when the header is omitted per request.
 _NO_AUTH = {"Authorization": Omit()}
 
@@ -147,6 +172,10 @@ def embed_texts(
 ) -> list[list[float] | None]:
     """Embed *texts*, returning one vector per text in the same order.
 
+    *input_type* says whether the texts are stored rows or a search query. The
+    OpenAI-style API has no field for it, so it is accepted for the callers'
+    benefit and not sent.
+
     Blank texts are not sent and come back as ``None``. Raises the client's
     error when a request fails after its retries -- an
     :class:`openai.APIStatusError` carries the HTTP status in its message.
@@ -170,13 +199,9 @@ def embed_texts(
             model=params.model_name,
             input=[stripped[i] for i in indices],
             encoding_format="float",
-            extra_body={
-                "input_type": input_type,
-                "truncate": "END",
-                "modality": params.embed_modality,
-            },
             timeout=timeout or params.request_timeout_s,
             extra_headers=None if params.api_key else _NO_AUTH,
+            **({"dimensions": params.dimensions} if params.dimensions else {}),
         )
         returned = [item.index for item in response.data]
         if sorted(returned) != list(range(len(indices))):
@@ -188,7 +213,7 @@ def embed_texts(
                 f"for {len(indices)} input(s)."
             )
         for item in response.data:
-            vectors[indices[item.index]] = list(item.embedding)
+            vectors[indices[item.index]] = _fit(list(item.embedding))
 
     if len(batches) == 1:
         _embed_batch(batches[0])

@@ -59,15 +59,15 @@ export const ProgressBar = ({
 				aria-valuemax={isIndeterminate ? undefined : 100}
 				aria-valuenow={isIndeterminate ? undefined : displayPercent}
 				aria-valuetext={isIndeterminate ? undefined : `${displayPercent}%`}
-				className={`overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700 ${trackSizeClasses[size]}`}
+				className={`overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700 ${trackSizeClasses[size]}`}
 			>
 				{isIndeterminate ? (
 					<div
-						className={`${trackSizeClasses[size]} w-1/3 rounded-full bg-[#76b900] motion-safe:animate-progress-indeterminate`}
+						className={`${trackSizeClasses[size]} w-1/3 rounded-full bg-brand motion-safe:animate-progress-indeterminate`}
 					/>
 				) : (
 					<div
-						className={`${trackSizeClasses[size]} rounded-full bg-[#76b900] transition-[width] duration-300 ease-out`}
+						className={`${trackSizeClasses[size]} rounded-full bg-brand transition-[width] duration-300 ease-out`}
 						style={{ width: `${displayPercent}%` }}
 					/>
 				)}

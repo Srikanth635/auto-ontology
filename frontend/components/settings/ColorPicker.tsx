@@ -25,7 +25,7 @@ export const ColorPicker = ({
 	colors,
 	value,
 	onChange,
-	fallbackColorClass = 'bg-zinc-400',
+	fallbackColorClass = 'bg-slate-400',
 }: ColorPickerProps) => {
 	const selectedColorClass =
 		colors.find((color) => color.value === value)?.colorClass ?? fallbackColorClass;

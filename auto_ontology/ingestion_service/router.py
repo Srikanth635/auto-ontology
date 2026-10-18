@@ -19,9 +19,11 @@ from auto_ontology.ingestion_service.ingest import (
     trigger_ingest,
     trigger_reset_semantic,
 )
+from auto_ontology.ingestion_service.reembed import reembed_status, trigger_reembed
 from auto_ontology.server.health.checks import check_schema, check_store
 from auto_ontology.server.responses import (
     HealthResponse,
+    ReembedStatusResponse,
     SemanticRunningResponse,
     StatusResponse,
 )
@@ -156,3 +158,20 @@ async def semantic_stop(request: Request) -> dict[str, str]:
     """
     request.app.state.semantic_scheduler.abort()
     return {"status": "accepted"}
+
+
+@router.post("/reembed", status_code=202, response_model=StatusResponse)
+async def reembed() -> dict[str, str]:
+    """Rebuild every stored vector with the current embedding model.
+
+    Runs in the background. Called when the embedding model changes; a request
+    made while a pass is running queues one more pass after it.
+    """
+    trigger_reembed()
+    return {"status": "accepted"}
+
+
+@router.get("/reembed/status", response_model=ReembedStatusResponse)
+async def reembed_state() -> dict[str, Any]:
+    """Whether a re-embed pass is running, and how the last one ended."""
+    return reembed_status()

@@ -28,7 +28,7 @@ const iconColorClass: Record<ToastVariant, string> = {
 	[ToastVariant.Error]: 'text-red-600 dark:text-red-400',
 	[ToastVariant.Success]: 'text-emerald-600 dark:text-emerald-400',
 	[ToastVariant.Info]: 'text-sky-600 dark:text-sky-400',
-	[ToastVariant.Loading]: 'text-[#76b900]',
+	[ToastVariant.Loading]: 'text-brand',
 };
 
 const VariantIcon = ({ variant }: { variant: ToastVariant }) => {
@@ -112,14 +112,14 @@ export const Toast = ({
 			aria-live="polite"
 			className="pointer-events-none fixed inset-x-0 bottom-[3%] z-[100] flex justify-center px-4"
 		>
-			<div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
+			<div className="pointer-events-auto flex max-w-md items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-lg dark:border-slate-700 dark:bg-slate-800">
 				<VariantIcon variant={variant} />
 				{resolvedTitle ? (
-					<span className="text-sm font-semibold text-heading dark:text-zinc-100">
+					<span className="text-sm font-semibold text-heading dark:text-slate-100">
 						{resolvedTitle}
 					</span>
 				) : null}
-				<span className="text-sm text-heading dark:text-zinc-200">
+				<span className="text-sm text-heading dark:text-slate-200">
 					{capitalizeFirst(message)}
 				</span>
 				<Button

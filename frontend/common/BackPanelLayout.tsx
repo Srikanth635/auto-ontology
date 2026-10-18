@@ -104,9 +104,9 @@ export const BackPanelLayout = ({
 	const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), []);
 
 	return (
-		<div className={`flex h-full w-full bg-white dark:bg-zinc-950 ${className}`}>
+		<div className={`flex h-full w-full bg-white dark:bg-slate-950 ${className}`}>
 			<aside
-				className={`flex h-full shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 ${collapsed ? collapsedWidthClass : expandedWidthClass}`}
+				className={`flex h-full shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 ${collapsed ? collapsedWidthClass : expandedWidthClass}`}
 			>
 				{collapsed ? (
 					<div className="flex h-full w-8 min-w-[32px] flex-col items-center bg-transparent pt-1">
@@ -119,7 +119,7 @@ export const BackPanelLayout = ({
 					</div>
 				) : (
 					<div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
-						<div className="flex h-6 shrink-0 items-center justify-end border-b border-zinc-200/80 px-1 dark:border-zinc-700">
+						<div className="flex h-6 shrink-0 items-center justify-end border-b border-slate-200/80 px-1 dark:border-slate-700">
 							<PanelCollapseToggle
 								collapsed={false}
 								onToggle={toggleCollapsed}

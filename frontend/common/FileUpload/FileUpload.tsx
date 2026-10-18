@@ -100,20 +100,20 @@ export const FileUpload = ({
 			onDrop={handleDrop}
 			aria-disabled={disabled || undefined}
 			aria-label={ariaLabel}
-			className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors focus-visible:ring-2 focus-visible:ring-[#76b900]/40 focus-visible:outline-none ${
+			className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none ${
 				disabled
-					? 'cursor-default border-zinc-200 opacity-60 dark:border-zinc-800'
+					? 'cursor-default border-slate-200 opacity-60 dark:border-slate-800'
 					: `cursor-pointer ${
 							isDragOver
-								? 'border-[#76b900] bg-[#76b900]/5'
-								: 'border-zinc-300 hover:border-zinc-400 dark:border-zinc-600 dark:hover:border-zinc-500'
+								? 'border-brand bg-brand/5'
+								: 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500'
 						}`
 			} ${className}`}
 		>
-			<Icon name={IconName.Upload} className="h-6 w-6 text-secondary dark:text-zinc-500" />
+			<Icon name={IconName.Upload} className="h-6 w-6 text-secondary dark:text-slate-500" />
 			{value ? (
 				<div className="flex items-center gap-2">
-					<span className="text-sm font-medium text-heading dark:text-zinc-200">
+					<span className="text-sm font-medium text-heading dark:text-slate-200">
 						{value.name}
 					</span>
 					<Button
@@ -133,8 +133,8 @@ export const FileUpload = ({
 				</div>
 			) : (
 				<>
-					<p className="text-sm text-body dark:text-zinc-300">
-						<span className="font-medium text-[#5e9400] dark:text-[#a3d63a]">
+					<p className="text-sm text-body dark:text-slate-300">
+						<span className="font-medium text-brand-strong dark:text-brand-light">
 							{label}
 						</span>{' '}
 						or drag and drop

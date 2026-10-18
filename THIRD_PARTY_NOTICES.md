@@ -31,7 +31,7 @@ build artifact — see `pyproject.toml`, `frontend/package.json`, and the
 | HTTPX | >=0.28.1 | BSD-3-Clause | https://github.com/encode/httpx |
 | kumo-relational-client (`kumo-relational-client[relational]`) | >=1.0.0,<2 | Apache-2.0 — see note below | https://github.com/NVIDIA/kumo-relational-client |
 | langchain-core | >=1.6.1 | MIT | https://github.com/langchain-ai/langchain |
-| langchain-nvidia-ai-endpoints | >=1.4.3 | MIT | https://github.com/langchain-ai/langchain-nvidia |
+| langchain-anthropic | >=1.0 | MIT | https://github.com/langchain-ai/langchain |
 | langchain-openai | >=1.3.0,<1.3.5 | MIT | https://github.com/langchain-ai/langchain |
 | langchain-postgres | >=0.0.17 | MIT | https://github.com/langchain-ai/langchain-postgres |
 | LangGraph | >=1.2.11 | MIT | https://github.com/langchain-ai/langgraph |

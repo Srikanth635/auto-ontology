@@ -8,27 +8,27 @@ import { ButtonTheme, Size } from '@/enums/button';
 
 const themeClasses: Record<ButtonTheme, string> = {
 	[ButtonTheme.Primary]:
-		'border border-transparent bg-[#76b900] text-white hover:bg-[#5e9400] disabled:bg-zinc-100 disabled:text-disabled dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500',
+		'border border-transparent bg-brand text-white hover:bg-brand-strong disabled:bg-slate-100 disabled:text-disabled dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
 	[ButtonTheme.Secondary]:
-		'border border-zinc-300 bg-white text-body hover:border-[#76b900] hover:bg-[#76b900]/10 hover:text-[#5e9400] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-[#76b900]/20 dark:hover:text-[#a3d63a] disabled:border-transparent disabled:bg-zinc-100 disabled:text-disabled dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500',
+		'border border-slate-300 bg-white text-body hover:border-brand hover:bg-brand/10 hover:text-brand-strong dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-brand/20 dark:hover:text-brand-light disabled:border-transparent disabled:bg-slate-100 disabled:text-disabled dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
 	[ButtonTheme.Outline]:
-		'border border-[#76b900] bg-white text-[#5e9400] hover:bg-[#5e9400] hover:text-white dark:bg-zinc-900 dark:hover:bg-[#5e9400] disabled:border-zinc-300 disabled:bg-transparent disabled:text-disabled dark:disabled:border-zinc-600 dark:disabled:text-zinc-500',
+		'border border-brand bg-white text-brand-strong hover:bg-brand-strong hover:text-white dark:bg-slate-900 dark:hover:bg-brand-strong disabled:border-slate-300 disabled:bg-transparent disabled:text-disabled dark:disabled:border-slate-600 dark:disabled:text-slate-500',
 	[ButtonTheme.Danger]:
-		'border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:bg-zinc-100 disabled:text-disabled dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500',
+		'border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:bg-slate-100 disabled:text-disabled dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
 	[ButtonTheme.DangerOutline]:
-		'border border-red-500 bg-white text-red-600 hover:bg-red-600 hover:text-white dark:border-red-500 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-600 disabled:border-zinc-300 disabled:bg-white disabled:text-disabled dark:disabled:border-zinc-600 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500',
+		'border border-red-500 bg-white text-red-600 hover:bg-red-600 hover:text-white dark:border-red-500 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-600 disabled:border-slate-300 disabled:bg-white disabled:text-disabled dark:disabled:border-slate-600 dark:disabled:bg-slate-900 dark:disabled:text-slate-500',
 	[ButtonTheme.DangerSubtle]:
-		'border border-red-300 bg-white text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950/30 disabled:border-zinc-300 disabled:bg-white disabled:text-disabled dark:disabled:border-zinc-600 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500',
+		'border border-red-300 bg-white text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-950/30 disabled:border-slate-300 disabled:bg-white disabled:text-disabled dark:disabled:border-slate-600 dark:disabled:bg-slate-900 dark:disabled:text-slate-500',
 	[ButtonTheme.Minimal]:
-		'border border-transparent bg-transparent text-body hover:bg-[#76b900]/10 hover:text-[#5e9400] dark:text-zinc-300 dark:hover:bg-[#76b900]/20 dark:hover:text-[#a3d63a] disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-zinc-500',
+		'border border-transparent bg-transparent text-body hover:bg-brand/10 hover:text-brand-strong dark:text-slate-300 dark:hover:bg-brand/20 dark:hover:text-brand-light disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-slate-500',
 	[ButtonTheme.Icon]:
-		'border border-transparent bg-transparent text-secondary hover:bg-[#76b900]/10 hover:text-[#5e9400] dark:hover:bg-[#76b900]/20 dark:hover:text-[#a3d63a] disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-zinc-600',
+		'border border-transparent bg-transparent text-secondary hover:bg-brand/10 hover:text-brand-strong dark:hover:bg-brand/20 dark:hover:text-brand-light disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-slate-600',
 	[ButtonTheme.IconNeutral]:
-		'border border-transparent bg-transparent text-secondary hover:bg-zinc-100 hover:text-body dark:hover:bg-zinc-700 dark:hover:text-zinc-200 disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-zinc-600',
+		'border border-transparent bg-transparent text-secondary hover:bg-slate-100 hover:text-body dark:hover:bg-slate-700 dark:hover:text-slate-200 disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-slate-600',
 	[ButtonTheme.IconDanger]:
-		'border border-transparent bg-transparent text-secondary hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-zinc-600',
+		'border border-transparent bg-transparent text-secondary hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 disabled:text-disabled disabled:hover:bg-transparent dark:disabled:text-slate-600',
 	[ButtonTheme.Soft]:
-		'border border-[#76b900]/40 bg-white text-[#4d7a00] hover:bg-[#76b900]/10 dark:border-[#76b900]/40 dark:bg-zinc-900 dark:text-[#a3d63a] dark:hover:bg-[#76b900]/15 disabled:border-zinc-300 disabled:bg-white disabled:text-disabled dark:disabled:border-zinc-600 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500',
+		'border border-brand/40 bg-white text-brand-strong hover:bg-brand/10 dark:border-brand/40 dark:bg-slate-900 dark:text-brand-light dark:hover:bg-brand/15 disabled:border-slate-300 disabled:bg-white disabled:text-disabled dark:disabled:border-slate-600 dark:disabled:bg-slate-900 dark:disabled:text-slate-500',
 };
 
 const sizeClasses: Record<Size, string> = {

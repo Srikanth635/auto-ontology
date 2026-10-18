@@ -18,22 +18,23 @@ type ThemeClasses = {
 };
 
 const listItemBase = 'flex w-full cursor-pointer text-left text-sm transition-colors';
-const listItemSelected = 'bg-zinc-100 font-medium text-heading dark:bg-zinc-800 dark:text-zinc-100';
+const listItemSelected =
+	'bg-slate-100 font-medium text-heading dark:bg-slate-800 dark:text-slate-100';
 
 const themeClasses: Record<SelectButtonTheme, ThemeClasses> = {
 	[SelectButtonTheme.Avatar]: {
-		base: 'flex h-8 w-8 items-center justify-center rounded-full bg-[#76b900] text-xs font-semibold text-white transition-colors hover:bg-[#5e9400]',
+		base: 'flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white transition-colors hover:bg-brand-strong',
 	},
 	[SelectButtonTheme.ListItem]: {
 		base: `${listItemBase} items-center gap-2 rounded-md px-3 py-2`,
 		selected: listItemSelected,
-		unselected: 'text-body hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800',
+		unselected: 'text-body hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
 		danger: 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40',
 	},
 	[SelectButtonTheme.ListItemLink]: {
 		base: `${listItemBase} items-center justify-between gap-2 rounded-md px-4 py-3`,
 		selected: listItemSelected,
-		unselected: 'text-body hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800/40',
+		unselected: 'text-body hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/40',
 	},
 	[SelectButtonTheme.ListItemTwoLine]: {
 		// The extra right padding keeps the two text rows clear of the trailing
@@ -45,15 +46,16 @@ const themeClasses: Record<SelectButtonTheme, ThemeClasses> = {
 		base: `${listItemBase} flex-col items-stretch rounded-lg px-3 py-2 pr-8`,
 		selected: listItemSelected,
 		unselected:
-			'text-body hover:bg-zinc-100 hover:text-black dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100',
+			'text-body hover:bg-slate-100 hover:text-black dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100',
 	},
 	[SelectButtonTheme.SelectField]: {
-		base: 'flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-left text-sm text-body transition-colors hover:border-zinc-400 focus:border-[#76b900] focus:outline-none focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200',
+		base: 'flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm text-body transition-colors hover:border-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200',
 	},
 	[SelectButtonTheme.Switcher]: {
 		base: 'cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-		selected: 'bg-white text-heading shadow-sm dark:bg-zinc-700 dark:text-zinc-100',
-		unselected: 'text-secondary hover:text-heading dark:text-zinc-400 dark:hover:text-zinc-200',
+		selected: 'bg-white text-heading shadow-sm dark:bg-slate-700 dark:text-slate-100',
+		unselected:
+			'text-secondary hover:text-heading dark:text-slate-400 dark:hover:text-slate-200',
 	},
 };
 

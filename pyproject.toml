@@ -36,9 +36,7 @@ dependencies = [
     # harness.
     "openai==2.44.0",
     # Imported directly but previously only installed transitively. Declared so
-    # dropping whatever carried them cannot break an import;
-    # langchain-nvidia-ai-endpoints arrived solely via nemo-retriever.
-    "langchain-nvidia-ai-endpoints>=1.4.3",
+    # dropping whatever carried them cannot break an import.
     "langchain-core>=1.6.1",
     "sqlglot>=30.17.0",
     "numpy>=2.5.2",
@@ -48,6 +46,7 @@ dependencies = [
     # Not imported, but FastAPI refuses to register the model-import upload
     # route without it.
     "python-multipart>=0.0.32",
+    "langchain-anthropic>=1.0",
 ]
 
 [project.optional-dependencies]

@@ -5,7 +5,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Spinner } from '@nvidia/foundations-react-core';
+import { Spinner } from '@/common/Spinner';
 import { CertificationBadge, CERTIFICATION_LABEL } from '@/common/CertificationBadge';
 import { PopoverMenu } from '@/common/PopoverMenu';
 import { Icon, IconName } from '@/common/icons';
@@ -59,7 +59,7 @@ export const CertificationSelect = ({
 		},
 		{
 			label: 'Certified',
-			icon: <Icon name={IconName.Certification} className="h-4 w-4 text-[#76b900]" />,
+			icon: <Icon name={IconName.Certification} className="h-4 w-4 text-brand" />,
 			onClick: () => {
 				void select(true);
 			},

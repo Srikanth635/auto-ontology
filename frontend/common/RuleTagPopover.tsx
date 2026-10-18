@@ -182,15 +182,15 @@ const RuleTagForm = ({
 
 	return (
 		<>
-			<div className="flex items-baseline gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+			<div className="flex items-baseline gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
 				<Icon
 					name={IconName.Lightning}
-					className="h-4 w-4 shrink-0 self-center text-body dark:text-zinc-300"
+					className="h-4 w-4 shrink-0 self-center text-body dark:text-slate-300"
 				/>
-				<h3 className="text-sm font-semibold text-heading dark:text-zinc-100">
+				<h3 className="text-sm font-semibold text-heading dark:text-slate-100">
 					Create a New Rule Based Tag
 				</h3>
-				<span className="text-xs text-secondary dark:text-zinc-400">
+				<span className="text-xs text-secondary dark:text-slate-400">
 					({itemsToTagLabel(itemsCount, matchedCount)})
 				</span>
 			</div>
@@ -199,7 +199,7 @@ const RuleTagForm = ({
 				<div>
 					<label
 						htmlFor="rule-name"
-						className="mb-1.5 block text-sm font-semibold text-heading dark:text-zinc-100"
+						className="mb-1.5 block text-sm font-semibold text-heading dark:text-slate-100"
 					>
 						Rule Name
 					</label>
@@ -212,19 +212,19 @@ const RuleTagForm = ({
 						autoFocus
 						// Same frame and height as the search field below it, so the two
 						// controls in this panel read as one set.
-						className="h-9 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500"
+						className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300 dark:placeholder:text-slate-500"
 					/>
-					<p className="mt-1.5 text-xs text-secondary dark:text-zinc-400">
+					<p className="mt-1.5 text-xs text-secondary dark:text-slate-400">
 						Every item this search matches is labelled with these tags, and so is every
 						item that matches it later.
 					</p>
 				</div>
 
 				<div>
-					<p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-zinc-100">
+					<p className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-slate-100">
 						<Icon
 							name={IconName.Tag}
-							className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400"
+							className="h-4 w-4 shrink-0 text-secondary dark:text-slate-400"
 						/>
 						Add Tag/s…
 					</p>
@@ -259,7 +259,7 @@ const RuleTagForm = ({
 						    narrows the list — would make the whole panel jump. Long tag
 						    lists scroll in here, with the scrollbar's gutter always
 						    reserved so the chips do not shift when it appears. */}
-						<div className="h-[120px] overflow-y-auto rounded-lg border border-zinc-200 p-2 [scrollbar-gutter:stable] dark:border-zinc-700">
+						<div className="h-[120px] overflow-y-auto rounded-lg border border-slate-200 p-2 [scrollbar-gutter:stable] dark:border-slate-700">
 							{loading ? (
 								<div className="flex flex-wrap gap-2" role="status">
 									{SKELETON_TAG_WIDTHS.map((width, index) => (
@@ -293,13 +293,13 @@ const RuleTagForm = ({
 										void handleCreateTag();
 									}}
 									disabled={creating}
-									className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-[#4d7a00] transition-colors hover:bg-[#76b900]/10 disabled:cursor-default disabled:opacity-60 dark:text-[#a3d63a] dark:hover:bg-[#76b900]/15"
+									className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-brand-strong transition-colors hover:bg-brand/10 disabled:cursor-default disabled:opacity-60 dark:text-brand-light dark:hover:bg-brand/15"
 								>
 									<Icon name={IconName.Plus} className="h-4 w-4 shrink-0" />
 									{`${trimmedSearch} (Create Tag - Max. ${MAX_TAG_NAME_LENGTH})`}
 								</button>
 							) : (
-								<p className="px-2 text-xs text-secondary dark:text-zinc-400">
+								<p className="px-2 text-xs text-secondary dark:text-slate-400">
 									{options.length === 0
 										? 'No tags exist yet'
 										: unselected.length === 0
@@ -318,11 +318,11 @@ const RuleTagForm = ({
 				) : null}
 			</div>
 
-			<div className="flex items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3 dark:border-zinc-700">
+			<div className="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
 				<Link
 					href="/settings/rules"
 					onClick={onNavigate}
-					className="inline-flex items-center gap-1.5 text-xs text-secondary no-underline transition-colors hover:text-[#4d7a00] dark:text-zinc-400 dark:hover:text-[#a3d63a]"
+					className="inline-flex items-center gap-1.5 text-xs text-secondary no-underline transition-colors hover:text-brand-strong dark:text-slate-400 dark:hover:text-brand-light"
 				>
 					<Icon name={IconName.Tag} className="h-3.5 w-3.5 shrink-0" />
 					Manage Rule Based Tags

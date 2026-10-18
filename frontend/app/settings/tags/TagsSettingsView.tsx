@@ -59,7 +59,7 @@ const modifiedLabel = (tag: Tag): string =>
  * — because the table aligns cells to their top edge. Without it the dates
  * would sit a few pixels above the avatar beside them.
  */
-const CELL_LINE = 'text-xs leading-5 text-secondary dark:text-zinc-400';
+const CELL_LINE = 'text-xs leading-5 text-secondary dark:text-slate-400';
 
 /**
  * Who an author column names, with the initial the rest of the app draws a
@@ -79,7 +79,7 @@ const TagAuthorCell = ({ author }: { author: TagAuthor | null | undefined }) => 
 		<span className="flex min-w-0 items-center gap-2">
 			<span
 				aria-hidden="true"
-				className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${name === '' ? 'bg-zinc-200 text-secondary dark:bg-zinc-700 dark:text-zinc-400' : 'bg-[#76b900] text-white'}`}
+				className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${name === '' ? 'bg-slate-200 text-secondary dark:bg-slate-700 dark:text-slate-400' : 'bg-brand text-white'}`}
 			>
 				{label.charAt(0).toUpperCase()}
 			</span>
@@ -251,12 +251,12 @@ const TagsList = () => {
 				>
 					<Icon
 						name={IconName.Tag}
-						className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-500"
+						className="h-4 w-4 shrink-0 text-secondary dark:text-slate-500"
 					/>
 					<Text text={tag.name} />
 				</Link>
 			),
-			className: 'text-heading dark:text-zinc-200',
+			className: 'text-heading dark:text-slate-200',
 		},
 		{
 			key: 'created_by',
@@ -352,7 +352,7 @@ const TagsList = () => {
 			>
 				<div className="w-full space-y-5">
 					<div className="flex items-center gap-3">
-						<h1 className="text-base font-semibold text-heading dark:text-zinc-100">
+						<h1 className="text-base font-semibold text-heading dark:text-slate-100">
 							Tags
 						</h1>
 						{tags.length > 0 || searching ? (
@@ -405,8 +405,8 @@ const TagsList = () => {
 							rowKey={(tag) => tag.id}
 							onRowClick={(tag) => router.push(tagPath(tag.id))}
 							rowClickIsPointerShortcut
-							containerClassName="overflow-hidden rounded-lg border border-zinc-200/90 bg-white/90 shadow-sm ring-1 ring-zinc-950/[0.04] dark:border-zinc-700/90 dark:bg-zinc-950/50 dark:ring-white/[0.06]"
-							bodyClassName="divide-y divide-zinc-200/90 dark:divide-zinc-700/90"
+							containerClassName="overflow-hidden rounded-lg border border-slate-200/90 bg-white/90 shadow-sm ring-1 ring-slate-950/[0.04] dark:border-slate-700/90 dark:bg-slate-950/50 dark:ring-white/[0.06]"
+							bodyClassName="divide-y divide-slate-200/90 dark:divide-slate-700/90"
 						/>
 					) : null}
 
@@ -432,7 +432,7 @@ const TagsList = () => {
 											onClick: openCreateModal,
 										}
 							}
-							className="rounded-lg border border-dashed border-zinc-300/90 bg-white/70 dark:border-zinc-600 dark:bg-zinc-900/30"
+							className="rounded-lg border border-dashed border-slate-300/90 bg-white/70 dark:border-slate-600 dark:bg-slate-900/30"
 						/>
 					) : null}
 				</div>
@@ -450,14 +450,14 @@ const TagsList = () => {
 				<div>
 					<label
 						htmlFor="tag-name"
-						className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-zinc-100"
+						className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-heading dark:text-slate-100"
 					>
 						<Icon
 							name={IconName.Tag}
-							className="h-4 w-4 text-secondary dark:text-zinc-400"
+							className="h-4 w-4 text-secondary dark:text-slate-400"
 						/>
 						Tag Name
-						<span className="font-normal text-secondary dark:text-zinc-500">
+						<span className="font-normal text-secondary dark:text-slate-500">
 							(Max. {MAX_TAG_NAME_LENGTH})
 						</span>
 					</label>
@@ -474,7 +474,7 @@ const TagsList = () => {
 							setSubmitError(null);
 						}}
 						placeholder="Type Tag Name"
-						className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary dark:bg-zinc-900 dark:text-zinc-300 dark:placeholder:text-zinc-500 ${submitError == null ? 'border-zinc-300 focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600' : 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400/30'}`}
+						className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary dark:bg-slate-900 dark:text-slate-300 dark:placeholder:text-slate-500 ${submitError == null ? 'border-slate-300 focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600' : 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/30 dark:border-red-500 dark:focus:border-red-400 dark:focus:ring-red-400/30'}`}
 					/>
 				</div>
 
@@ -486,7 +486,7 @@ const TagsList = () => {
 
 				{/* Footer rule. Negative margins cancel the modal body's padding so it
 				    spans the full width, as the dialog's header rule does. */}
-				<div className="-mx-6 border-t border-zinc-200 dark:border-zinc-700" />
+				<div className="-mx-6 border-t border-slate-200 dark:border-slate-700" />
 			</ModalCreateNewItem>
 
 			<ConfirmModal
@@ -510,7 +510,7 @@ const TagsList = () => {
 export const TagsSettingsSkeleton = () => (
 	<main className={TAGS_PANEL_CLASSNAME}>
 		<div className={`w-full space-y-5 ${TAGS_PANEL_PADDING}`}>
-			<h1 className="text-base font-semibold text-heading dark:text-zinc-100">Tags</h1>
+			<h1 className="text-base font-semibold text-heading dark:text-slate-100">Tags</h1>
 			<div className="py-2" role="status" aria-label="Loading tags">
 				<SkeletonRows rows={4} />
 			</div>

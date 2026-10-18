@@ -5,7 +5,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Tooltip } from '@nvidia/foundations-react-core';
+import { Tooltip } from '@/common/Tooltip';
 import { TextVariant } from '@/enums/text';
 
 type TextElement = 'span' | 'p' | 'div' | 'h1' | 'h2' | 'h3' | 'h4';
@@ -54,20 +54,20 @@ const CLAMP_CLASS = {
 const VARIANT_CLASS: Record<TextVariant, string> = {
 	[TextVariant.Inherit]: '',
 	[TextVariant.PageTitle]:
-		'text-2xl font-semibold tracking-tight text-heading dark:text-zinc-100',
-	[TextVariant.CardTitle]: 'text-base font-semibold tracking-tight text-body dark:text-zinc-100',
-	[TextVariant.Heading]: 'text-sm font-semibold text-heading dark:text-zinc-100',
-	[TextVariant.Subheading]: 'text-sm font-medium text-heading dark:text-zinc-100',
-	[TextVariant.Body]: 'text-sm text-body dark:text-zinc-300',
+		'text-2xl font-semibold tracking-tight text-heading dark:text-slate-100',
+	[TextVariant.CardTitle]: 'text-base font-semibold tracking-tight text-body dark:text-slate-100',
+	[TextVariant.Heading]: 'text-sm font-semibold text-heading dark:text-slate-100',
+	[TextVariant.Subheading]: 'text-sm font-medium text-heading dark:text-slate-100',
+	[TextVariant.Body]: 'text-sm text-body dark:text-slate-300',
 	[TextVariant.Strong]: 'font-medium',
-	[TextVariant.Caption]: 'text-xs text-secondary dark:text-zinc-500',
-	[TextVariant.Detail]: 'text-xs leading-5 text-secondary dark:text-zinc-400',
-	[TextVariant.Label]: 'text-xs font-semibold text-secondary dark:text-zinc-400',
+	[TextVariant.Caption]: 'text-xs text-secondary dark:text-slate-500',
+	[TextVariant.Detail]: 'text-xs leading-5 text-secondary dark:text-slate-400',
+	[TextVariant.Label]: 'text-xs font-semibold text-secondary dark:text-slate-400',
 	[TextVariant.Overline]:
-		'text-xs font-semibold uppercase tracking-wide text-secondary dark:text-zinc-400',
+		'text-xs font-semibold uppercase tracking-wide text-secondary dark:text-slate-400',
 };
 const TOOLTIP_CLASS =
-	'z-[1000] block max-h-[60vh] max-w-[min(500px,90vw)] overflow-y-auto whitespace-pre-wrap wrap-anywhere rounded-lg border border-zinc-200 bg-white p-2 text-xs leading-5 text-body shadow-xl dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+	'z-[1000] block max-h-[60vh] max-w-[min(500px,90vw)] overflow-y-auto whitespace-pre-wrap wrap-anywhere rounded-lg border border-slate-200 bg-white p-2 text-xs leading-5 text-body shadow-xl dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300';
 
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
 export const Text = ({
@@ -130,10 +130,8 @@ export const Text = ({
 	// are never clipped.
 	if (tooltip === '') return line;
 
-	// Open delay and skip window come from the `TooltipProvider` the root layout
-	// puts around the app, so they stay consistent with every other tooltip.
 	return (
-		<Tooltip slotContent={tooltip} side="bottom" align="start" className={TOOLTIP_CLASS}>
+		<Tooltip content={tooltip} className={TOOLTIP_CLASS}>
 			{line}
 		</Tooltip>
 	);

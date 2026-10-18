@@ -10,8 +10,12 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from auto_ontology.utils.embedding import EmbedParams, batch_embed
-from auto_ontology.utils.model_config import resolve
+from auto_ontology.utils.embedding import (
+    EmbedParams,
+    batch_embed,
+    embedding_configured,
+    get_embed_params,
+)
 from auto_ontology.utils.sample_values import stringify_sample_values
 from auto_ontology.vdb import get_semantic_vdb
 from auto_ontology.vdb.postgres import PostgresVDB
@@ -94,19 +98,14 @@ def build_semantic_embedder(
     reset: bool,
 ) -> SemanticEmbedder | None:
     """Construct an embedder bound to the semantic VDB, or None when disabled."""
-    api_key = resolve("EMBED", "API_KEY")
-    if not api_key:
+    if not embedding_configured():
         logger.warning(
-            "EMBED_API_KEY / DEFAULT_MODELS_API_KEY not set — "
+            "No embedding model configured (Settings -> Models) — "
             "semantic VDB embedding disabled"
         )
         return None
 
-    embed_params = EmbedParams(
-        embed_invoke_url=resolve("EMBED", "ENDPOINT"),
-        model_name=resolve("EMBED", "MODEL"),
-        api_key=api_key,
-    )
+    embed_params = get_embed_params()
     vdb = get_semantic_vdb(database_name=database_name, reset=reset)
     return SemanticEmbedder(
         database_name=database_name,

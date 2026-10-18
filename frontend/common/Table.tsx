@@ -4,13 +4,7 @@
 
 'use client';
 
-import {
-	PaginationArrowButton,
-	PaginationItemRangeText,
-	PaginationNavigationGroup,
-	PaginationPageList,
-	PaginationRoot,
-} from '@nvidia/foundations-react-core';
+import { Pagination } from '@/common/Pagination';
 
 import { EmptyState } from '@/common/EmptyState';
 import { Text } from '@/common/Text';
@@ -18,14 +12,14 @@ import { EmptyStateVariant } from '@/enums/emptyState';
 import type { TableColumn, TableProps } from '@/types/table';
 
 const DEFAULT_CONTAINER =
-	'overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900';
+	'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
 
 export const TABLE_THEAD_CLASSNAME =
-	'border-b border-zinc-200 bg-zinc-50 text-left text-xs font-semibold text-body dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-400';
+	'border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold text-body dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400';
 
-const DEFAULT_TBODY = 'divide-y divide-zinc-100 dark:divide-zinc-800';
+const DEFAULT_TBODY = 'divide-y divide-slate-100 dark:divide-slate-800';
 
-const DEFAULT_ROW = 'transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40';
+const DEFAULT_ROW = 'transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40';
 
 const cx = (...classes: (string | false | undefined)[]) => classes.filter(Boolean).join(' ');
 
@@ -169,22 +163,14 @@ export const Table = <T,>({
 		<div className={cx(containerClassName ?? DEFAULT_CONTAINER, className)}>
 			{scrollClassName ? <div className={scrollClassName}>{tableElement}</div> : tableElement}
 			{pagination && (
-				<PaginationRoot
+				<Pagination
 					totalItems={pagination.totalItems}
 					pageSize={pagination.pageSize}
 					page={pagination.page}
 					onPageChange={pagination.onPageChange}
-					className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800"
-				>
-					<PaginationNavigationGroup withTabs>
-						<PaginationArrowButton direction="previous" />
-						<PaginationPageList />
-						<PaginationArrowButton direction="next" />
-					</PaginationNavigationGroup>
-					<PaginationItemRangeText
-						rangeTextFormatFn={pagination.rangeTextFormatFn ?? defaultRangeText}
-					/>
-				</PaginationRoot>
+					rangeTextFormatFn={pagination.rangeTextFormatFn ?? defaultRangeText}
+					className="border-t border-slate-200 px-4 py-3 dark:border-slate-800"
+				/>
 			)}
 		</div>
 	);

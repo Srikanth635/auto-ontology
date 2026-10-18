@@ -71,20 +71,20 @@ const ConsentForm = () => {
 	return (
 		<div className="flex w-full max-w-md flex-col gap-5">
 			<div className="space-y-2 text-center">
-				<h1 className="text-xl font-semibold text-heading dark:text-zinc-100">
+				<h1 className="text-xl font-semibold text-heading dark:text-slate-100">
 					Authorize MCP access
 				</h1>
-				<p className="text-sm text-body dark:text-zinc-400">
+				<p className="text-sm text-body dark:text-slate-400">
 					{clientId} is requesting access to Auto Ontology as your account.
 				</p>
 			</div>
 
 			{scopes.length ? (
-				<div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700">
-					<p className="mb-2 text-xs font-medium text-body dark:text-zinc-400">
+				<div className="rounded-md border border-slate-200 p-4 dark:border-slate-700">
+					<p className="mb-2 text-xs font-medium text-body dark:text-slate-400">
 						Requested access
 					</p>
-					<ul className="space-y-1 text-sm text-heading dark:text-zinc-200">
+					<ul className="space-y-1 text-sm text-heading dark:text-slate-200">
 						{scopes.map((scope) => (
 							<li key={scope}>{scope}</li>
 						))}
@@ -119,11 +119,11 @@ const ConsentForm = () => {
 };
 
 const ConsentPage = () => (
-	<div className="flex h-full w-full items-center justify-center bg-white p-6 dark:bg-zinc-950">
+	<div className="flex h-full w-full items-center justify-center bg-white p-6 dark:bg-slate-950">
 		<div className="flex flex-col items-center gap-6">
 			<div className="flex items-center gap-2">
-				<Icon name={IconName.NvidiaLogo} className="h-6 w-6" />
-				<span className="text-lg font-semibold text-heading dark:text-zinc-100">
+				<Icon name={IconName.AppLogo} className="h-6 w-6 text-brand" />
+				<span className="text-lg font-semibold text-heading dark:text-slate-100">
 					Auto Ontology
 				</span>
 			</div>

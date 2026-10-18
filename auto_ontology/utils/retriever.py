@@ -32,9 +32,17 @@ class Retriever:
     the ``where`` filter.
     """
 
-    def __init__(self, vdb: PostgresVDB, embed_params: EmbedParams) -> None:
+    def __init__(
+        self, vdb: PostgresVDB, embed_params: EmbedParams | None = None
+    ) -> None:
         self.vdb_kwargs: dict[str, Any] = {"vdb": vdb}
-        self.embed_params = embed_params
+        # None means "whatever is configured right now", read per query, so a
+        # long-lived retriever follows a change made under Settings -> Models.
+        self._embed_params = embed_params
+
+    @property
+    def embed_params(self) -> EmbedParams:
+        return self._embed_params or get_embed_params()
 
     @property
     def vdb(self) -> PostgresVDB:
@@ -83,7 +91,7 @@ def get_data_objects_retriever() -> Retriever:
     """Singleton retriever for the tabular / data-layer collection."""
     global _data_retriever
     if _data_retriever is None:
-        _data_retriever = Retriever(get_data_vdb(), get_embed_params())
+        _data_retriever = Retriever(get_data_vdb())
     return _data_retriever
 
 
@@ -91,7 +99,7 @@ def get_semantic_objects_retriever() -> Retriever:
     """Singleton retriever for the semantic-layer (taxonomies) collection."""
     global _semantic_retriever
     if _semantic_retriever is None:
-        _semantic_retriever = Retriever(get_semantic_vdb(), get_embed_params())
+        _semantic_retriever = Retriever(get_semantic_vdb())
     return _semantic_retriever
 
 

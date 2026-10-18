@@ -34,9 +34,9 @@ const GROUP_COLORS: readonly ColorOption[] = [
 const DEFAULT_GROUP_COLOR = GROUP_COLORS[0].value;
 
 const inputClassName =
-	'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-[#76b900] focus:ring-1 focus:ring-[#76b900] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100';
+	'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-heading outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
 
-const labelClassName = 'mb-1.5 block text-sm font-semibold text-heading dark:text-zinc-100';
+const labelClassName = 'mb-1.5 block text-sm font-semibold text-heading dark:text-slate-100';
 
 type Draft = {
 	id: string | null;
@@ -57,7 +57,7 @@ const emptyDraft = (): Draft => ({
 });
 
 const colorClassFor = (value: string): string =>
-	GROUP_COLORS.find((color) => color.value === value)?.colorClass ?? 'bg-zinc-400';
+	GROUP_COLORS.find((color) => color.value === value)?.colorClass ?? 'bg-slate-400';
 
 const asRole = (role: string): Role => (role === Role.Admin ? Role.Admin : Role.Viewer);
 
@@ -298,7 +298,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 		<section className="mt-10">
 			<div className="mb-4 flex items-start justify-between gap-4">
 				<div>
-					<h2 className="text-lg font-semibold text-heading dark:text-zinc-100">
+					<h2 className="text-lg font-semibold text-heading dark:text-slate-100">
 						Groups
 					</h2>
 					<p className="mt-1 text-xs text-secondary">
@@ -349,7 +349,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 						<div>
 							<label htmlFor="group-name" className={labelClassName}>
 								Name
-								<span className="ml-2 font-normal text-secondary dark:text-zinc-500">
+								<span className="ml-2 font-normal text-secondary dark:text-slate-500">
 									(Max. {MAX_GROUP_NAME_LENGTH})
 								</span>
 							</label>
@@ -413,7 +413,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 							) : sortedUsers.length === 0 ? (
 								<p className="text-xs text-secondary">No users to add.</p>
 							) : (
-								<ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
+								<ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
 									{sortedUsers.map((user) => {
 										const checked = draft.userIds.includes(user.id);
 										const label = user.name || user.email;
@@ -421,13 +421,13 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 											Boolean(user.name) && user.name !== user.email;
 										return (
 											<li key={user.id}>
-												<label className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+												<label className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/60">
 													<input
 														type="checkbox"
 														checked={checked}
 														onChange={() => toggleMember(user.id)}
 													/>
-													<span className="min-w-0 truncate text-heading dark:text-zinc-100">
+													<span className="min-w-0 truncate text-heading dark:text-slate-100">
 														{label}
 													</span>
 													{showEmail ? (
@@ -450,7 +450,7 @@ export const GroupsSection = ({ users, usersLoading, refreshToken }: GroupsSecti
 								{submitError}
 							</div>
 						) : null}
-						<div className="-mx-6 border-t border-zinc-200 dark:border-zinc-700" />
+						<div className="-mx-6 border-t border-slate-200 dark:border-slate-700" />
 					</>
 				) : null}
 			</ModalCreateNewItem>

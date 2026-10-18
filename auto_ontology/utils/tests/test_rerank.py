@@ -53,7 +53,7 @@ def server(
     return _install
 
 
-def test_the_inference_api_schema(server: Server) -> None:
+def test_the_rerank_api_schema(server: Server) -> None:
     seen = server(
         {
             "results": [
@@ -88,34 +88,25 @@ def test_the_inference_api_schema(server: Server) -> None:
     ]
 
 
-def test_the_nim_schema(server: Server) -> None:
-    seen = server(
-        {"rankings": [{"index": 1, "logit": 4.0}, {"index": 0, "logit": -2.0}]}
+def test_a_base_url_gets_the_rerank_path(server: Server) -> None:
+    seen = server({"results": []})
+    rerank_hits(
+        "q", _HITS, rerank_invoke_url="http://localhost:8015/v1/", model_name="m"
     )
+    assert str(seen[0].url) == "http://localhost:8015/v1/rerank"
 
-    ranked = rerank_hits(
-        "fruit",
-        _HITS[:2],
-        rerank_invoke_url="https://nim.example/v1/retrieval/x/reranking",
-        model_name="m",
-        top_n=1,
+
+def test_reranking_is_off_until_configured(monkeypatch) -> None:
+    from auto_ontology.dal.schema import ModelProvider, ModelRole
+    from auto_ontology.utils import rerank
+    from auto_ontology.utils.model_config import ResolvedModel
+
+    monkeypatch.setattr(
+        rerank,
+        "get_model",
+        lambda role: ResolvedModel(ModelRole.RERANK, ModelProvider.NONE, ""),
     )
-
-    [request] = seen
-    assert "authorization" not in request.headers
-    assert json.loads(request.content) == {
-        "model": "m",
-        "query": {"text": "fruit"},
-        "passages": [{"text": "apples"}, {"text": "bananas"}],
-        "truncate": "END",
-    }
-    assert [h["id"] for h in ranked] == ["b"]
-
-
-def test_a_base_url_gets_the_nim_ranking_path(server: Server) -> None:
-    seen = server({"rankings": []})
-    rerank_hits("q", _HITS, rerank_invoke_url="http://localhost:8015/", model_name="m")
-    assert str(seen[0].url) == "http://localhost:8015/v1/ranking"
+    assert rerank.get_rerank_kwargs() is None
 
 
 def test_an_endpoint_error_reaches_the_caller(server: Server) -> None:

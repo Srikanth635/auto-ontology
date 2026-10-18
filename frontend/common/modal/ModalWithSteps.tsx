@@ -41,11 +41,11 @@ enum StepStatus {
 }
 
 const stepStatusClass: Record<StepStatus, string> = {
-	[StepStatus.DISABLED]: 'pointer-events-none text-secondary dark:text-zinc-600',
-	[StepStatus.ACTIVE]: 'pointer-events-none font-medium text-heading dark:text-zinc-100',
+	[StepStatus.DISABLED]: 'pointer-events-none text-secondary dark:text-slate-600',
+	[StepStatus.ACTIVE]: 'pointer-events-none font-medium text-heading dark:text-slate-100',
 	[StepStatus.COMPLETED]:
-		'cursor-pointer text-body hover:rounded-lg hover:bg-zinc-100 hover:text-[#76b900] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-[#8fd100]',
-	[StepStatus.INACTIVE]: 'pointer-events-none text-secondary dark:text-zinc-500',
+		'cursor-pointer text-body hover:rounded-lg hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-brand-light',
+	[StepStatus.INACTIVE]: 'pointer-events-none text-secondary dark:text-slate-500',
 };
 
 const getStepStatus = (index: number, activeStep: number, disabledSteps: number[]): StepStatus => {
@@ -77,10 +77,10 @@ export const ModalWithSteps = ({
 
 	return (
 		<Modal open={open} onClose={onClose} className={className}>
-			<div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-700">
+			<div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
 				<div className="flex items-center gap-2">
-					<Icon name={titleIcon} className="h-5 w-5 text-body dark:text-zinc-300" />
-					<h3 className="text-sm font-semibold text-heading dark:text-zinc-100">
+					<Icon name={titleIcon} className="h-5 w-5 text-body dark:text-slate-300" />
+					<h3 className="text-sm font-semibold text-heading dark:text-slate-100">
 						{title}
 					</h3>
 				</div>
@@ -120,7 +120,7 @@ export const ModalWithSteps = ({
 							{index < steps.length - 1 && (
 								<Icon
 									name={IconName.ChevronRight}
-									className="h-3.5 w-3.5 shrink-0 text-disabled dark:text-zinc-600"
+									className="h-3.5 w-3.5 shrink-0 text-disabled dark:text-slate-600"
 									aria-hidden
 								/>
 							)}
@@ -129,7 +129,7 @@ export const ModalWithSteps = ({
 				})}
 			</nav>
 
-			<div className="border-t border-zinc-200 dark:border-zinc-700" />
+			<div className="border-t border-slate-200 dark:border-slate-700" />
 
 			<div
 				ref={contentRef}
@@ -138,7 +138,7 @@ export const ModalWithSteps = ({
 				{children}
 			</div>
 
-			<div className="border-t border-zinc-200 dark:border-zinc-700" />
+			<div className="border-t border-slate-200 dark:border-slate-700" />
 
 			<div className="flex min-h-[60px] items-center gap-3 px-4 py-3">
 				{alert != null && (

@@ -11,7 +11,7 @@ export default function DataPage() {
 		<Suspense
 			fallback={
 				<div className="flex h-screen" role="status" aria-label="Loading data workspace">
-					<aside className="w-72 border-r border-zinc-200 p-4 dark:border-zinc-800">
+					<aside className="w-72 border-r border-slate-200 p-4 dark:border-slate-800">
 						<SkeletonBlock className="mb-5 h-6 w-24" />
 						<SkeletonRows rows={8} />
 					</aside>

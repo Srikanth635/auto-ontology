@@ -171,7 +171,7 @@ conversation ownership before retrying.
 
 ## See also
 
-- [stack.md](references/stack.md) — AI-Q, Nemotron, cuOpt (what exists vs
+- [stack.md](references/stack.md) — auth, models, cuOpt (what exists vs
   what partners wire)
 - [query-validation.md](references/query-validation.md) — material intent, SQL,
   rows, and answer checks

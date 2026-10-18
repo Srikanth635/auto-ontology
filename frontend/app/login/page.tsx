@@ -16,7 +16,7 @@ import { resumeAuthorizeFromApp } from '@/auth/oauth-loopback';
 import { SkeletonVariant } from '@/enums/skeleton';
 
 const inputClass =
-	'w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-[#76b900] focus:ring-2 focus:ring-[#76b900]/30 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300';
+	'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-body outline-none transition-colors placeholder:text-secondary focus:border-brand focus:ring-2 focus:ring-brand/30 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300';
 
 const LoginLoading = () => (
 	<div
@@ -102,7 +102,10 @@ const LoginForm = () => {
 	return (
 		<form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
 			<div className="flex flex-col gap-1.5">
-				<label htmlFor="email" className="text-xs font-medium text-body dark:text-zinc-400">
+				<label
+					htmlFor="email"
+					className="text-xs font-medium text-body dark:text-slate-400"
+				>
 					Email
 				</label>
 				<input
@@ -118,7 +121,7 @@ const LoginForm = () => {
 			<div className="flex flex-col gap-1.5">
 				<label
 					htmlFor="password"
-					className="text-xs font-medium text-body dark:text-zinc-400"
+					className="text-xs font-medium text-body dark:text-slate-400"
 				>
 					Password
 				</label>
@@ -148,11 +151,11 @@ const LoginForm = () => {
 };
 
 const LoginPage = () => (
-	<div className="flex h-full w-full items-center justify-center bg-white p-6 dark:bg-zinc-950">
+	<div className="flex h-full w-full items-center justify-center bg-white p-6 dark:bg-slate-950">
 		<div className="flex flex-col items-center gap-6">
 			<div className="flex items-center gap-2">
-				<Icon name={IconName.NvidiaLogo} className="h-6 w-6" />
-				<span className="text-lg font-semibold text-heading dark:text-zinc-100">
+				<Icon name={IconName.AppLogo} className="h-6 w-6 text-brand" />
+				<span className="text-lg font-semibold text-heading dark:text-slate-100">
 					Auto Ontology
 				</span>
 			</div>

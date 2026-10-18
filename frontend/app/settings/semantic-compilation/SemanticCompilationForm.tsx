@@ -134,7 +134,7 @@ export const SemanticCompilationForm = ({
 	return (
 		<div className="h-full overflow-auto p-6">
 			<div className="mx-auto max-w-xl">
-				<h1 className="mb-1 text-lg font-semibold text-heading dark:text-zinc-100">
+				<h1 className="mb-1 text-lg font-semibold text-heading dark:text-slate-100">
 					Semantic Compilation
 				</h1>
 				<p className="mb-4 text-xs text-secondary">
@@ -144,8 +144,8 @@ export const SemanticCompilationForm = ({
 				</p>
 
 				{!hasDatabases && (
-					<div className="mb-3 flex items-center rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
-						<span className="text-sm font-medium text-heading dark:text-zinc-100">
+					<div className="mb-3 flex items-center rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
+						<span className="text-sm font-medium text-heading dark:text-slate-100">
 							Please connect any data source
 						</span>
 					</div>
@@ -154,9 +154,9 @@ export const SemanticCompilationForm = ({
 				{hasDatabases && (
 					<>
 						{enabled && hasHistory && (
-							<div className="mb-3 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+							<div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 								<div className="flex flex-col">
-									<span className="text-sm font-medium text-heading dark:text-zinc-100">
+									<span className="text-sm font-medium text-heading dark:text-slate-100">
 										{running && 'Semantic compilation is running'}
 										{!running && failed && 'Semantic compilation failed'}
 										{!running && !failed && 'Semantic compilation is ready'}
@@ -176,7 +176,7 @@ export const SemanticCompilationForm = ({
 								</div>
 								{running ? (
 									<span title="Semantic Compilation Is Running">
-										<Spinner className="h-4 w-4 shrink-0 text-[#76b900]" />
+										<Spinner className="h-4 w-4 shrink-0 text-brand" />
 									</span>
 								) : failed ? (
 									<span
@@ -187,7 +187,7 @@ export const SemanticCompilationForm = ({
 									</span>
 								) : (
 									<span
-										className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#76b900]/15 text-[#76b900]"
+										className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand/15 text-brand"
 										title="Semantic Compilation Is Ready"
 									>
 										<Icon name={IconName.Check} className="h-3 w-3" />
@@ -197,8 +197,8 @@ export const SemanticCompilationForm = ({
 						)}
 
 						{!enabled && (
-							<div className="mb-3 flex items-center rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
-								<span className="text-sm font-medium text-heading dark:text-zinc-100">
+							<div className="mb-3 flex items-center rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
+								<span className="text-sm font-medium text-heading dark:text-slate-100">
 									You can enable the semantic compilation
 								</span>
 							</div>
@@ -207,9 +207,9 @@ export const SemanticCompilationForm = ({
 						{/* Above the compilation toggle on purpose: this is a property of
 						    how compilation runs, so it can be set before turning
 						    compilation on, and stays editable afterwards. */}
-						<div className="mb-3 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+						<div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 							<div className="flex flex-col pr-4">
-								<span className="text-sm font-medium text-heading dark:text-zinc-100">
+								<span className="text-sm font-medium text-heading dark:text-slate-100">
 									Distinct Value Scanning
 								</span>
 								<span className="text-xs text-secondary">
@@ -226,9 +226,9 @@ export const SemanticCompilationForm = ({
 							/>
 						</div>
 
-						<div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+						<div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 							<div className="flex flex-col">
-								<span className="text-sm font-medium text-heading dark:text-zinc-100">
+								<span className="text-sm font-medium text-heading dark:text-slate-100">
 									Enable Semantic Compilation
 								</span>
 								<span className="text-xs text-secondary">
@@ -244,9 +244,9 @@ export const SemanticCompilationForm = ({
 						</div>
 
 						{enabled && (
-							<div className="mt-3 flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+							<div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
 								<div className="flex flex-col">
-									<span className="text-sm font-medium text-heading dark:text-zinc-100">
+									<span className="text-sm font-medium text-heading dark:text-slate-100">
 										Reset Semantic Layer
 									</span>
 									<span className="text-xs text-secondary">

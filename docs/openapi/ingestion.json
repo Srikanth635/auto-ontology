@@ -14,6 +14,57 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "ReembedStatusResponse": {
+        "additionalProperties": true,
+        "description": "Whether a re-embed pass is running, and how the last one ended.\n\nA pass rebuilds every vector after the embedding model changes. Timestamps\nare ISO 8601; ``last_error`` is set only when the last pass failed.",
+        "properties": {
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Finished At"
+          },
+          "last_started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Started At"
+          },
+          "running": {
+            "title": "Running",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "running",
+          "last_started_at",
+          "last_finished_at",
+          "last_error"
+        ],
+        "title": "ReembedStatusResponse",
+        "type": "object"
+      },
       "SemanticRunningResponse": {
         "additionalProperties": true,
         "description": "The ingestion service's own status endpoint: whether a compilation pass\nis executing right now, when the last one finished successfully, and when\nit last failed (only set if more recent than the last success).",
@@ -195,6 +246,44 @@
           }
         },
         "summary": "Ingest Delete"
+      }
+    },
+    "/reembed": {
+      "post": {
+        "description": "Rebuild every stored vector with the current embedding model.\n\nRuns in the background. Called when the embedding model changes; a request\nmade while a pass is running queues one more pass after it.",
+        "operationId": "reembed_reembed_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reembed"
+      }
+    },
+    "/reembed/status": {
+      "get": {
+        "description": "Whether a re-embed pass is running, and how the last one ended.",
+        "operationId": "reembed_state_reembed_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReembedStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reembed State"
       }
     },
     "/semantic/compile": {

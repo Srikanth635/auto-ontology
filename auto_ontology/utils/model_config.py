@@ -2,99 +2,275 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Shared resolution of model-endpoint env var triplets.
+"""Which provider and model serves each model role, resolved at call time.
 
-Every triplet (``REASONING``, ``NON_REASONING``, ``EMBED``, ``RERANK``) exposes
-three fields — ``ENDPOINT`` (URL), ``API_KEY``, and ``MODEL`` — as
-``<PREFIX>_<FIELD>`` env vars. Any field left unset falls back to the
-corresponding ``DEFAULT_MODELS_<FIELD>``, so a single ``DEFAULT_MODELS_*`` triplet
-can supply the shared endpoint/key/model for all of them. Each field also falls
-back to its legacy pre-triplet env var name (``NVIDIA_API_KEY`` / ``BASE_URL`` /
-``MODEL_NAME``) for backward compatibility.
+There are four roles (:class:`~auto_ontology.dal.schema.ModelRole`):
 
-When even ``DEFAULT_MODELS_<FIELD>`` is unset, a built-in default is used. There
-are two sets — one for ``sk-`` inference-api keys and one for ``nvapi-``
-integrate/build.nvidia.com keys — and the set is chosen from the API key that
-applies to the same triplet.
+* ``chat`` -- the main model: text-to-SQL, semantic compilation, descriptions.
+* ``fast_chat`` -- a cheaper model for entity extraction, follow-up rewriting
+  and charts. Falls back to ``chat`` when it is not set.
+* ``embedding`` -- turns catalog and glossary text into vectors.
+* ``rerank`` -- optional; orders candidates in bridge-table detection.
+
+A role is resolved, in order, from:
+
+1. its row in ``model_setting``, written by Settings -> Models in the UI;
+2. environment variables ``<PREFIX>_PROVIDER`` / ``_MODEL`` / ``_ENDPOINT`` /
+   ``_API_KEY`` (``<PREFIX>`` is ``REASONING``, ``NON_REASONING``, ``EMBED`` or
+   ``RERANK``), each falling back to ``DEFAULT_MODELS_<FIELD>``;
+3. nothing -- the role is unconfigured and callers say so.
+
+Results are cached for a few seconds per process, so a change saved in the UI
+reaches every service (backend, chat workers, ingestion) without a restart.
+The backend also drops its cache the moment a setting is saved.
 """
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
+import time
+from dataclasses import dataclass, field
 
-# Built-in endpoint/model defaults, selected by the triplet's API key prefix.
-# Keyed by ``<PREFIX>_<FIELD>``. API keys are intentionally absent (they have no
-# safe hardcoded default and fall back to ``DEFAULT_MODELS_API_KEY`` /
-# ``NVIDIA_API_KEY`` instead).
-_DEFAULTS_BY_KEY_PREFIX: dict[str, dict[str, str]] = {
-    # inference-api.nvidia.com (sk-... keys).
-    "sk-": {
-        "REASONING_ENDPOINT": "https://inference-api.nvidia.com/v1",
-        "REASONING_MODEL": "aws/anthropic/bedrock-claude-opus-4-8",
-        "NON_REASONING_ENDPOINT": "https://inference-api.nvidia.com/v1",
-        "NON_REASONING_MODEL": "aws/anthropic/bedrock-claude-sonnet-5-5",
-        "EMBED_ENDPOINT": "https://inference-api.nvidia.com/v1",
-        "EMBED_MODEL": "nvidia/nvidia/nemotron-3-embed-1b",
-        "RERANK_ENDPOINT": "https://inference-api.nvidia.com/v1/rerank",
-        "RERANK_MODEL": "nvidia/nvidia/llama-nemotron-rerank-vl-1b-v2",
-    },
-    # integrate.api.nvidia.com / build.nvidia.com (nvapi-... keys).
-    "nvapi-": {
-        "REASONING_ENDPOINT": "https://integrate.api.nvidia.com/v1",
-        "REASONING_MODEL": "nvidia/nemotron-3-nano-30b-a3b",
-        "NON_REASONING_ENDPOINT": "https://integrate.api.nvidia.com/v1",
-        "NON_REASONING_MODEL": "nvidia/nemotron-3-nano-30b-a3b",
-        "EMBED_ENDPOINT": "https://integrate.api.nvidia.com/v1",
-        "EMBED_MODEL": "nvidia/nemotron-3-embed-1b",
-        "RERANK_ENDPOINT": (
-            "https://ai.api.nvidia.com/v1/retrieval/nvidia/"
-            "llama-nemotron-rerank-vl-1b-v2/reranking"
-        ),
-        "RERANK_MODEL": "nvidia/llama-nemotron-rerank-vl-1b-v2",
-    },
+from auto_ontology.dal.schema import ModelProvider, ModelRole
+
+logger = logging.getLogger(__name__)
+
+#: How long a resolved role is reused before the database is read again.
+CACHE_TTL_S = 10.0
+
+#: Environment-variable prefix for each role.
+ENV_PREFIX: dict[ModelRole, str] = {
+    ModelRole.CHAT: "REASONING",
+    ModelRole.FAST_CHAT: "NON_REASONING",
+    ModelRole.EMBEDDING: "EMBED",
+    ModelRole.RERANK: "RERANK",
 }
 
-# Default set to use when the API key matches no known prefix (or is unset).
-_FALLBACK_KEY_PREFIX = "sk-"
-
-
-# Legacy (pre-triplet) env var names, still honored so existing deployments and
-# --set nvidiaApiKey / BASE_URL / MODEL_NAME configs keep working.
-_LEGACY_ENV: dict[str, str] = {
-    "API_KEY": "NVIDIA_API_KEY",
-    "ENDPOINT": "BASE_URL",
-    "MODEL": "MODEL_NAME",
+#: The providers each role may use.
+ROLE_PROVIDERS: dict[ModelRole, tuple[ModelProvider, ...]] = {
+    ModelRole.CHAT: (
+        ModelProvider.OPENAI,
+        ModelProvider.ANTHROPIC,
+        ModelProvider.OPENAI_COMPATIBLE,
+    ),
+    ModelRole.FAST_CHAT: (
+        ModelProvider.OPENAI,
+        ModelProvider.ANTHROPIC,
+        ModelProvider.OPENAI_COMPATIBLE,
+    ),
+    ModelRole.EMBEDDING: (ModelProvider.OPENAI, ModelProvider.OPENAI_COMPATIBLE),
+    ModelRole.RERANK: (ModelProvider.NONE, ModelProvider.RERANK_API),
 }
 
+#: Endpoint used when a setting leaves ``base_url`` empty.
+DEFAULT_BASE_URL: dict[ModelProvider, str] = {
+    ModelProvider.OPENAI: "https://api.openai.com/v1",
+    ModelProvider.ANTHROPIC: "https://api.anthropic.com",
+}
 
-def _default(field: str) -> str:
-    """Shared default for *field*: ``DEFAULT_MODELS_<field>`` then the legacy name."""
-    value = os.environ.get(f"DEFAULT_MODELS_{field}", "")
-    if not value and field in _LEGACY_ENV:
-        value = os.environ.get(_LEGACY_ENV[field], "")
-    return value
-
-
-def _resolve_api_key(prefix: str) -> str:
-    """Effective API key for *prefix* (own env var, else the shared default)."""
-    return os.environ.get(f"{prefix}_API_KEY", "") or _default("API_KEY")
-
-
-def _builtin_default(prefix: str, key: str) -> str:
-    """Built-in default for ``<prefix>_<field>``, chosen by the key prefix."""
-    api_key = _resolve_api_key(prefix)
-    for key_prefix, defaults in _DEFAULTS_BY_KEY_PREFIX.items():
-        if api_key.startswith(key_prefix):
-            return defaults.get(key, "")
-    return _DEFAULTS_BY_KEY_PREFIX[_FALLBACK_KEY_PREFIX].get(key, "")
+#: Providers that refuse a request without a key. The others may be keyless
+#: (a local Ollama or vLLM, for instance).
+KEY_REQUIRED: frozenset[ModelProvider] = frozenset(
+    {ModelProvider.OPENAI, ModelProvider.ANTHROPIC}
+)
 
 
-def resolve(prefix: str, field: str) -> str:
-    """Resolve one triplet field.
+class ModelNotConfiguredError(EnvironmentError):
+    """A role has no usable provider and model. The message says how to fix it."""
 
-    Order of precedence: the ``<prefix>_<field>`` env var, then the shared
-    ``DEFAULT_MODELS_<field>``, then a built-in default chosen by whether the
-    triplet's API key is an ``sk-`` or ``nvapi-`` key.
-    """
-    key = f"{prefix}_{field}"
-    return os.environ.get(key, "") or _default(field) or _builtin_default(prefix, key)
+
+@dataclass(frozen=True)
+class ResolvedModel:
+    """A role's effective configuration. The key stays out of ``repr``."""
+
+    role: ModelRole
+    provider: ModelProvider
+    model: str
+    base_url: str = ""
+    api_key: str = field(default="", repr=False)
+    dimensions: int | None = None
+    #: ``settings``, ``environment``, ``chat`` (fast_chat borrowing chat) or ``unset``.
+    source: str = "unset"
+
+    @property
+    def endpoint(self) -> str:
+        """``base_url``, or the provider's default when it is empty."""
+        return self.base_url or DEFAULT_BASE_URL.get(self.provider, "")
+
+    @property
+    def configured(self) -> bool:
+        if self.provider == ModelProvider.NONE or not self.model:
+            return False
+        if self.provider in KEY_REQUIRED and not self.api_key:
+            return False
+        if self.provider in (ModelProvider.OPENAI_COMPATIBLE, ModelProvider.RERANK_API):
+            return bool(self.base_url)
+        return True
+
+    def require(self) -> ResolvedModel:
+        """Return self, or raise :class:`ModelNotConfiguredError`."""
+        if not self.configured:
+            raise ModelNotConfiguredError(
+                f"No {self.role.value.replace('_', ' ')} model is configured. "
+                "Choose one under Settings -> Models."
+            )
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Environment fallback
+# ---------------------------------------------------------------------------
+
+
+def _env(prefix: str, name: str) -> str:
+    return (
+        os.environ.get(f"{prefix}_{name}", "")
+        or os.environ.get(f"DEFAULT_MODELS_{name}", "")
+    ).strip()
+
+
+def _infer_provider(role: ModelRole, endpoint: str) -> ModelProvider:
+    if role == ModelRole.RERANK:
+        return ModelProvider.RERANK_API if endpoint else ModelProvider.NONE
+    if "anthropic.com" in endpoint:
+        return ModelProvider.ANTHROPIC
+    if not endpoint or "api.openai.com" in endpoint:
+        return ModelProvider.OPENAI
+    return ModelProvider.OPENAI_COMPATIBLE
+
+
+def _from_env(role: ModelRole) -> ResolvedModel | None:
+    prefix = ENV_PREFIX[role]
+    # The rerank role reads only its own variables: DEFAULT_MODELS_* names a
+    # chat endpoint, which is never a rerank endpoint.
+    if role == ModelRole.RERANK:
+        endpoint = os.environ.get("RERANK_ENDPOINT", "").strip()
+        model = os.environ.get("RERANK_MODEL", "").strip()
+        api_key = os.environ.get("RERANK_API_KEY", "").strip()
+        provider_name = os.environ.get("RERANK_PROVIDER", "").strip()
+    else:
+        endpoint = _env(prefix, "ENDPOINT")
+        model = _env(prefix, "MODEL")
+        api_key = _env(prefix, "API_KEY")
+        provider_name = _env(prefix, "PROVIDER")
+    if not (endpoint or model or api_key or provider_name):
+        return None
+    try:
+        provider = (
+            ModelProvider(provider_name)
+            if provider_name
+            else _infer_provider(role, endpoint)
+        )
+    except ValueError:
+        logger.warning("%s_PROVIDER=%r is not a known provider", prefix, provider_name)
+        return None
+    dimensions = os.environ.get("EMBED_DIMENSIONS", "").strip()
+    return ResolvedModel(
+        role=role,
+        provider=provider,
+        model=model,
+        base_url=endpoint,
+        api_key=api_key,
+        dimensions=int(dimensions)
+        if role == ModelRole.EMBEDDING and dimensions.isdigit()
+        else None,
+        source="environment",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Database
+# ---------------------------------------------------------------------------
+
+
+def _from_row(row: dict) -> ResolvedModel:
+    from auto_ontology.infra.secrets import decrypt_secret
+
+    return ResolvedModel(
+        role=ModelRole(row["role"]),
+        provider=ModelProvider(row["provider"]),
+        model=row.get("model") or "",
+        base_url=row.get("base_url") or "",
+        api_key=decrypt_secret(row.get("api_key") or "") or "",
+        dimensions=row.get("dimensions"),
+        source="settings",
+    )
+
+
+def _from_db(role: ModelRole) -> ResolvedModel | None:
+    from auto_ontology.dal.model_settings import get_model_setting
+
+    try:
+        row = get_model_setting(role.value)
+    except Exception as exc:  # noqa: BLE001 -- fall back to env when unreadable
+        # Before the first migration, or with Postgres briefly unreachable, the
+        # environment is still a usable answer.
+        logger.debug("model_setting unreadable (%s); using the environment", exc)
+        return None
+    return _from_row(row) if row else None
+
+
+# ---------------------------------------------------------------------------
+# Resolution and cache
+# ---------------------------------------------------------------------------
+
+_cache: dict[ModelRole, tuple[float, ResolvedModel]] = {}
+_cache_lock = threading.Lock()
+
+
+def _resolve_uncached(role: ModelRole) -> ResolvedModel:
+    resolved = _from_db(role) or _from_env(role)
+    if resolved is not None:
+        return resolved
+    if role == ModelRole.FAST_CHAT:
+        chat = get_model(ModelRole.CHAT)
+        return ResolvedModel(
+            role=role,
+            provider=chat.provider,
+            model=chat.model,
+            base_url=chat.base_url,
+            api_key=chat.api_key,
+            source="chat" if chat.configured else "unset",
+        )
+    return ResolvedModel(
+        role=role,
+        provider=ModelProvider.NONE
+        if role == ModelRole.RERANK
+        else ModelProvider.OPENAI,
+        model="",
+    )
+
+
+def get_model(role: ModelRole | str) -> ResolvedModel:
+    """The effective configuration for *role* (possibly unconfigured)."""
+    role = ModelRole(role)
+    now = time.monotonic()
+    with _cache_lock:
+        cached = _cache.get(role)
+        if cached is not None and now - cached[0] < CACHE_TTL_S:
+            return cached[1]
+    resolved = _resolve_uncached(role)
+    with _cache_lock:
+        _cache[role] = (now, resolved)
+    return resolved
+
+
+def invalidate_model_cache() -> None:
+    """Forget every cached role, so the next lookup reads the database."""
+    with _cache_lock:
+        _cache.clear()
+
+
+__all__ = [
+    "CACHE_TTL_S",
+    "DEFAULT_BASE_URL",
+    "ENV_PREFIX",
+    "KEY_REQUIRED",
+    "ModelNotConfiguredError",
+    "ROLE_PROVIDERS",
+    "ResolvedModel",
+    "get_model",
+    "invalidate_model_cache",
+]

@@ -6,8 +6,11 @@
 
 The endpoint is replaced by an ``httpx.MockTransport`` under the real OpenAI
 client, so what is asserted is the request that actually goes over the wire:
-the NVIDIA fields riding in the body, the auth header, batching, ordering and
-which failures are retried.
+a plain OpenAI-style body, the auth header, batching, ordering and which
+failures are retried.
+
+The stored vector width is shrunk to the test vectors' own two dimensions, so
+equality checks read naturally; padding is tested on its own below.
 """
 
 from __future__ import annotations
@@ -35,9 +38,14 @@ from auto_ontology.utils.embedding import (
 Handler = Callable[[httpx.Request], httpx.Response]
 
 
+@pytest.fixture(autouse=True)
+def _two_dimensional_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(embedding, "VECTOR_DIM", 2)
+
+
 def _params(**overrides: Any) -> EmbedParams:
     fields: dict[str, Any] = {
-        "model_name": "nvidia/embed",
+        "model_name": "text-embedding-test",
         "embed_invoke_url": "https://embed.example/v1",
         "api_key": "sk-test",
     }
@@ -90,7 +98,9 @@ def endpoint(
 
 
 @pytest.mark.parametrize("input_type", ["passage", "query"])
-def test_the_request_carries_the_nvidia_fields(endpoint, input_type: str) -> None:
+def test_the_request_is_a_plain_openai_embedding_request(
+    endpoint, input_type: str
+) -> None:
     seen = endpoint(_ok)
 
     vectors = embed_texts(["  orders  "], _params(), input_type)
@@ -99,14 +109,36 @@ def test_the_request_carries_the_nvidia_fields(endpoint, input_type: str) -> Non
     [request] = seen
     assert request.url.path == "/v1/embeddings"
     assert request.headers["authorization"] == "Bearer sk-test"
+    # No provider-specific fields: OpenAI rejects a body that carries any.
     assert json.loads(request.content) == {
-        "model": "nvidia/embed",
+        "model": "text-embedding-test",
         "input": ["orders"],
         "encoding_format": "float",
-        "input_type": input_type,
-        "truncate": "END",
-        "modality": "text",
     }
+
+
+def test_dimensions_are_requested_when_configured(endpoint) -> None:
+    seen = endpoint(_ok)
+    embed_texts(["orders"], _params(dimensions=2), "passage")
+    assert json.loads(seen[0].content)["dimensions"] == 2
+
+
+def test_a_shorter_vector_is_zero_padded_to_the_stored_width(
+    endpoint, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(embedding, "VECTOR_DIM", 5)
+    endpoint(_ok)
+    [vector] = embed_texts(["orders"], _params(), "passage")
+    assert vector == [*_vector("orders"), 0.0, 0.0, 0.0]
+
+
+def test_a_wider_vector_than_can_be_stored_is_an_error(
+    endpoint, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(embedding, "VECTOR_DIM", 1)
+    endpoint(_ok)
+    with pytest.raises(ValueError, match="at most 1 can be stored"):
+        embed_texts(["orders"], _params(), "passage")
 
 
 @pytest.mark.parametrize(

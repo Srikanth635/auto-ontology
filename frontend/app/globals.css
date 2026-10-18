@@ -4,21 +4,48 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* Load Tailwind. @nvidia/foundations-react-core ships no standalone base.css. */
+/* Load Tailwind. */
 @import 'tailwindcss';
 
 @theme {
-	--color-foreground: #09090b;
+	--color-foreground: #0f1419;
+
+	/*
+	 * Slate and teal. The brand teal is the only accent; every other tone is a
+	 * cool blue-grey. Redefining Tailwind's own slate scale keeps `slate-*`
+	 * classes on this palette rather than Tailwind's default, bluer slate.
+	 */
+	--color-brand: #2a9d8f;
+	--color-brand-strong: #21867a;
+	--color-brand-deep: #17594f;
+	--color-brand-light: #5cc4b5;
+	--color-brand-pale: #a8dcd4;
+	--color-brand-soft: #e3f4f1;
+
+	/* The app background behind cards: #f7f8fa, and #0f1419 in dark mode. */
+	--color-canvas: #f7f8fa;
+
+	--color-slate-50: #f7f8fa;
+	--color-slate-100: #eef1f4;
+	--color-slate-200: #dde3ea;
+	--color-slate-300: #c7d0da;
+	--color-slate-400: #94a1b0;
+	--color-slate-500: #677585;
+	--color-slate-600: #4a5766;
+	--color-slate-700: #34404d;
+	--color-slate-800: #222b35;
+	--color-slate-900: #161c22;
+	--color-slate-950: #0f1419;
 
 	/*
 	 * Design-system text tones (text-heading / text-body / text-secondary /
 	 * text-disabled). The palette only defines light-mode values, so dark mode
-	 * keeps its per-component `dark:text-zinc-*` overrides.
+	 * keeps its per-component `dark:text-slate-*` overrides.
 	 */
-	--color-heading: #252a30;
-	--color-body: #4c5054;
-	--color-secondary: #85878a;
-	--color-disabled: #b3b4b7;
+	--color-heading: #1e2a36;
+	--color-body: #3c4855;
+	--color-secondary: #6b7785;
+	--color-disabled: #a7b1bc;
 
 	--animate-progress-indeterminate: progress-indeterminate 1.4s ease-in-out infinite;
 }
@@ -48,143 +75,8 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--color-foreground: #fafafa;
-	}
-}
-
-/* Spinner layout tweaks (@nvidia/foundations-react-core Spinner). */
-.nv-spinner {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.75rem;
-}
-.nv-spinner--size-medium > div:first-child {
-	height: 4rem;
-}
-.nv-spinner-arrow {
-	fill: var(--color-foreground);
-	animation: single-page-spinner-arrow 1s infinite;
-}
-@keyframes single-page-spinner-arrow {
-	0%,
-	100% {
-		opacity: 0.1;
-	}
-	30% {
-		opacity: 1;
-	}
-}
-
-/*
- * Pagination (@nvidia/foundations-react-core Pagination, kind="tabs").
- * The package ships no base styles and renders its chevrons as an icon font
- * that isn't loaded here, so the green design language — including the arrow
- * glyphs — lives in this stylesheet.
- */
-.nv-pagination-root {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	font-size: 0.875rem;
-	color: var(--color-body);
-}
-
-.nv-pagination-navigation-group {
-	display: flex;
-	align-items: center;
-	gap: 0.25rem;
-}
-
-.nv-pagination-arrow-button,
-.nv-pagination-page-list .nv-tabs-trigger {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: 2rem;
-	width: 2rem;
-	padding: 0;
-	border: 0;
-	border-radius: 9999px;
-	background: transparent;
-	color: inherit;
-	font-size: 0.875rem;
-	font-weight: 500;
-	line-height: 1;
-	cursor: pointer;
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease;
-}
-
-.nv-pagination-arrow-button:hover:not(:disabled),
-.nv-pagination-page-list .nv-tabs-trigger:hover {
-	background-color: #f4f4f5; /* zinc-100 */
-}
-
-.nv-pagination-arrow-button:disabled {
-	cursor: not-allowed;
-	opacity: 0.3;
-}
-
-/* The arrow chevron is an empty icon-font <i>; paint it with a mask instead. */
-.nv-pagination-arrow-button .nv-icon {
-	display: inline-block;
-	height: 1rem;
-	width: 1rem;
-	background-color: currentColor;
-	-webkit-mask: center / contain no-repeat;
-	mask: center / contain no-repeat;
-	-webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Cpath%20d='M6.22%204.22a.75.75%200%20011.06%200l3.25%203.25a.75.75%200%20010%201.06l-3.25%203.25a.75.75%200%2001-1.06-1.06L8.94%208%206.22%205.28a.75.75%200%20010-1.06z'/%3E%3C/svg%3E");
-	mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Cpath%20d='M6.22%204.22a.75.75%200%20011.06%200l3.25%203.25a.75.75%200%20010%201.06l-3.25%203.25a.75.75%200%2001-1.06-1.06L8.94%208%206.22%205.28a.75.75%200%20010-1.06z'/%3E%3C/svg%3E");
-}
-
-.nv-pagination-arrow-button .nv-icon-chevron-left {
-	transform: rotate(180deg);
-}
-
-/* Tabs-based page numbers: keep them on a single unclipped row. */
-.nv-pagination-page-list,
-.nv-pagination-page-list .nv-tabs-scroll-container {
-	overflow: visible;
-}
-
-.nv-pagination-page-list .nv-tabs-list {
-	display: flex;
-	align-items: center;
-	gap: 0.25rem;
-}
-
-.nv-pagination-page-list .nv-tabs-content {
-	display: none;
-}
-
-/* Each trigger renders a hidden width-reservation copy of its label; without
- * the design system's base CSS it shows as a duplicate digit (e.g. "11"). */
-.nv-pagination-page-list .nv-tabs-trigger [data-preserve-spacing] {
-	display: none;
-}
-
-.nv-pagination-page-list .nv-tabs-trigger[data-state='active'] {
-	background-color: rgba(118, 185, 0, 0.15);
-	color: #76b900; /* NVIDIA green */
-}
-
-.nv-pagination-item-range-text {
-	white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-	.nv-pagination-root {
-		color: #a1a1aa; /* zinc-400 */
-	}
-	.nv-pagination-arrow-button,
-	.nv-pagination-page-list .nv-tabs-trigger {
-		color: #d4d4d8; /* zinc-300 */
-	}
-	.nv-pagination-arrow-button:hover:not(:disabled),
-	.nv-pagination-page-list .nv-tabs-trigger:hover {
-		background-color: #27272a; /* zinc-800 */
+		--color-foreground: #f1f4f7;
+		--color-canvas: #0f1419;
 	}
 }
 
@@ -218,24 +110,23 @@ body {
 
 /* ── ResultChart (agent-authored ```chart fences) ─────────────────────── */
 :root {
-	--color-brand: #76b900;
-	--result-chart-neutral: #8c8c95;
+	--result-chart-neutral: #8492a2;
 	--result-chart-fg: var(--color-heading);
 	--result-chart-muted: var(--color-secondary);
-	--result-chart-border: #e4e4e7;
-	--result-chart-surface: #fafafa;
-	--result-chart-tooltip-bg: #18181b;
-	--result-chart-tooltip-fg: #fafafa;
+	--result-chart-border: #dde3ea;
+	--result-chart-surface: #f7f8fa;
+	--result-chart-tooltip-bg: #161c22;
+	--result-chart-tooltip-fg: #f7f8fa;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--result-chart-fg: #fafafa;
-		--result-chart-muted: #a1a1aa;
-		--result-chart-border: #3f3f46;
-		--result-chart-surface: #18181b;
-		--result-chart-tooltip-bg: #fafafa;
-		--result-chart-tooltip-fg: #18181b;
+		--result-chart-fg: #f7f8fa;
+		--result-chart-muted: #94a1b0;
+		--result-chart-border: #34404d;
+		--result-chart-surface: #161c22;
+		--result-chart-tooltip-bg: #f7f8fa;
+		--result-chart-tooltip-fg: #161c22;
 	}
 }
 

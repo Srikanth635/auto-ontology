@@ -82,7 +82,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 						<span className="flex min-w-0 items-center gap-2">
 							<Icon
 								name={IconName.Database}
-								className="h-4 w-4 shrink-0 text-secondary dark:text-zinc-400"
+								className="h-4 w-4 shrink-0 text-secondary dark:text-slate-400"
 							/>
 							<span className="truncate">{summary}</span>
 							{selected !== null && (
@@ -94,7 +94,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 						</span>
 						<Icon
 							name={IconName.ChevronRight}
-							className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-zinc-400"
+							className="h-4 w-4 shrink-0 rotate-90 text-secondary dark:text-slate-400"
 						/>
 					</SelectButton>
 				</div>
@@ -103,7 +103,7 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 			{({ close }) => (
 				<div className="flex flex-col">
 					<div className="flex items-center justify-between gap-2 px-2 py-1">
-						<span className="text-xs font-medium text-secondary dark:text-zinc-400">
+						<span className="text-xs font-medium text-secondary dark:text-slate-400">
 							Filter By
 						</span>
 						<Button
@@ -120,12 +120,12 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 						</Button>
 					</div>
 					{emptyMessage !== null ? (
-						<p className="px-2 py-3 text-center text-xs text-secondary dark:text-zinc-400">
+						<p className="px-2 py-3 text-center text-xs text-secondary dark:text-slate-400">
 							{emptyMessage}
 						</p>
 					) : (
 						<>
-							<label className="flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-2 text-sm text-heading hover:bg-zinc-100/90 dark:text-zinc-200 dark:hover:bg-zinc-800/70">
+							<label className="flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-2 text-sm text-heading hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800/70">
 								<span className="inline-flex w-4 shrink-0" />
 								<input
 									type="radio"
@@ -135,12 +135,12 @@ export const DatabaseFilter = ({ selected, onChange }: DatabaseFilterProps) => {
 										onChange(null);
 										close();
 									}}
-									className="h-4 w-4 cursor-pointer border-zinc-300 text-[#76b900] focus:ring-[#76b900]/40 dark:border-zinc-600"
+									className="h-4 w-4 cursor-pointer border-slate-300 text-brand focus:ring-brand/40 dark:border-slate-600"
 								/>
 								<span className="inline-flex shrink-0" aria-hidden>
 									<Icon
 										name={IconName.Database}
-										className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
+										className="h-4 w-4 text-slate-500 dark:text-slate-400"
 									/>
 								</span>
 								All databases

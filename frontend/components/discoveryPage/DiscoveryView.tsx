@@ -373,10 +373,10 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 		(items.length >= GLOBAL_SEARCH_LIST_LIMIT || tabTotal > GLOBAL_SEARCH_LIST_LIMIT);
 
 	return (
-		<div className="flex h-full w-full flex-col bg-white dark:bg-zinc-950">
-			<header className="flex shrink-0 items-center gap-3 border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
-				<Icon name={IconName.Discovery} className="h-5 w-5 text-body dark:text-zinc-300" />
-				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-zinc-100">
+		<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
+			<header className="flex shrink-0 items-center gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+				<Icon name={IconName.Discovery} className="h-5 w-5 text-body dark:text-slate-300" />
+				<h1 className="text-lg font-semibold tracking-tight text-heading dark:text-slate-100">
 					Discovery
 				</h1>
 			</header>
@@ -402,7 +402,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 								event.preventDefault();
 								runSearch();
 							}}
-							className="flex shrink-0 items-center gap-2 border-b border-zinc-200 px-6 py-3 dark:border-zinc-800"
+							className="flex shrink-0 items-center gap-2 border-b border-slate-200 px-6 py-3 dark:border-slate-800"
 						>
 							<SearchInput
 								value={query}
@@ -435,11 +435,11 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 							{!loading &&
 								items.length > 0 &&
 								(untaggedSearch ? (
-									<p className="shrink-0 text-xs text-secondary dark:text-zinc-400">
+									<p className="shrink-0 text-xs text-secondary dark:text-slate-400">
 										A search for untagged objects cannot be saved as a rule
 									</p>
 								) : taggableCount === 0 ? (
-									<p className="shrink-0 text-xs text-secondary dark:text-zinc-400">
+									<p className="shrink-0 text-xs text-secondary dark:text-slate-400">
 										These results cannot carry tags, so a rule cannot be saved
 										from them
 									</p>
@@ -453,7 +453,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 						</form>
 						{applied !== null &&
 							(hasCounts || loading || countsLoading || countsFailed) && (
-								<div className="shrink-0 border-b border-zinc-100 px-4 pt-2 dark:border-zinc-800">
+								<div className="shrink-0 border-b border-slate-100 px-4 pt-2 dark:border-slate-800">
 									{hasCounts ? (
 										<GlobalSearchTabs
 											counts={counts}
@@ -461,7 +461,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 											onSelect={setSelectedTab}
 										/>
 									) : countsFailed && !countsLoading ? (
-										<div className="flex items-center gap-2 px-2 pb-2 text-sm text-secondary dark:text-zinc-400">
+										<div className="flex items-center gap-2 px-2 pb-2 text-sm text-secondary dark:text-slate-400">
 											<span>Result counts are unavailable.</span>
 											<Button
 												theme={ButtonTheme.Minimal}
@@ -481,7 +481,7 @@ export const DiscoveryView = ({ initialQuery = '', handoverId = '' }: DiscoveryV
 								</div>
 							)}
 						{showLimitBanner && (
-							<p className="shrink-0 px-6 py-2 text-sm text-secondary dark:text-zinc-400">
+							<p className="shrink-0 px-6 py-2 text-sm text-secondary dark:text-slate-400">
 								Viewing the top {GLOBAL_SEARCH_LIST_LIMIT} results. Try filtering
 								for more accurate results.
 							</p>
