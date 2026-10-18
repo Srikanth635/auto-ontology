@@ -151,8 +151,8 @@ def test_worker_submit_passes_prediction_through() -> None:
     worker.submit("q", prediction=True)
     worker.submit("q2")
 
-    assert sent[0][1] == ("q", True, None, None, [], None)
-    assert sent[1][1] == ("q2", None, None, None, [], None)
+    assert sent[0][1] == ("q", True, None, [], None)
+    assert sent[1][1] == ("q2", None, None, [], None)
 
 
 def test_worker_submit_accepts_every_field_by_keyword() -> None:

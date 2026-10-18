@@ -10,7 +10,6 @@ dependencies = [
     "duckdb>=1.5.5",
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
-    "hvac>=2.4.0",
     # Capped at 1.3.4, the last release that accepts openai<2.45.0; see the openai pin.
     "langchain-openai>=1.3.0,<1.3.5",
     "langgraph>=1.2.11",
@@ -20,13 +19,6 @@ dependencies = [
     "pandas>=2.3.3,<3",
     "psycopg-pool>=3.3.1",
     "psycopg[binary]>=3.3.4",
-    "pyheavydb>=8.0.1.post1",
-    # `heavydb/version.py` does `import importlib_metadata` -- the backport, not
-    # the stdlib `importlib.metadata` -- but pyheavydb does not declare it. It
-    # used to arrive transitively; an upgrade dropped whatever was carrying it
-    # and every `import auto_ontology.connectors` started failing at collection. Declared
-    # here so the next upgrade cannot take it away again.
-    "importlib-metadata>=8.7.1",
     "python-dotenv>=1.2.3",
     "snowflake-connector-python>=4.7.2",
     "uvicorn[standard]>=0.52.4",
@@ -39,20 +31,13 @@ dependencies = [
     "alembic>=1.19.1",
     "apache-ossie-nvidia-auto-ontology @ git+https://github.com/apache/ossie.git@ef91cb61092c60f4b918016a81cfdbe483e113bc#subdirectory=converters/nvidia",
     "langchain-postgres>=0.0.17",
-    "pyhive[hive-pure-sasl]>=0.7.0",
-    "thrift>=0.24.0",
-    "thrift-sasl>=0.4.3",
-    "pure-sasl>=0.6.2",
-    "pyjks>=20.0.0",
-    "trino>=0.339.0",
     # The embedding client (auto_ontology/utils/embedding.py). Pinned to the
     # version nemo-gym 0.6.0 declares, so this matches the ontology-sql-eval
     # harness.
     "openai==2.44.0",
     # Imported directly but previously only installed transitively. Declared so
-    # dropping whatever carried them cannot break an import the way pyheavydb's
-    # importlib-metadata did; langchain-nvidia-ai-endpoints arrived solely via
-    # nemo-retriever.
+    # dropping whatever carried them cannot break an import;
+    # langchain-nvidia-ai-endpoints arrived solely via nemo-retriever.
     "langchain-nvidia-ai-endpoints>=1.4.3",
     "langchain-core>=1.6.1",
     "sqlglot>=30.17.0",
@@ -96,10 +81,6 @@ format = "flat"
 dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.5",
-]
-release = [
-    "ngcsdk>=4.37.0",
-    "pyyaml>=6.0.3",
 ]
 
 # Stated, not inherited. With no `select` at all, the rule set is whatever the
