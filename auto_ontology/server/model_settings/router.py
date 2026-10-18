@@ -76,7 +76,7 @@ def reset_model_setting(role: str = _ROLE) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-@router.post("/model-settings/{role}/test", response_model=ModelTestResponse)
+@router.post("/model-settings/{role}/verify", response_model=ModelTestResponse)
 def test_model_setting(body: ModelSettingBody, role: str = _ROLE) -> dict[str, Any]:
     """Make one small real call with a setting, without saving it.
 
@@ -106,7 +106,8 @@ def list_provider_models(body: ModelSettingBody, role: str = _ROLE) -> dict[str,
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except httpx.HTTPError as exc:
         raise HTTPException(
-            status_code=502, detail=f"Could not list models: {service._short(exc)}"
+            status_code=502,
+            detail=f"Could not list models: {service._short(exc, body.api_key or '')}",
         ) from exc
 
 

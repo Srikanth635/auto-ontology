@@ -49,7 +49,9 @@ const labelClass = 'text-xs font-medium text-body dark:text-slate-300';
 type StatusPill = { text: string; tone: 'ok' | 'warn' | 'muted' };
 
 const statusOf = (setting: ModelSetting): StatusPill => {
-	if (setting.source === 'chat') return { text: 'Using chat model', tone: 'muted' };
+	// Fast chat with nothing of its own saved always follows chat, configured or not.
+	if (setting.role === 'fast_chat' && (setting.source === 'chat' || setting.source === 'unset'))
+		return { text: 'Using chat model', tone: 'muted' };
 	if (setting.role === 'rerank' && setting.provider === 'none')
 		return { text: 'Off', tone: 'muted' };
 	if (!setting.configured) return { text: 'Not configured', tone: 'warn' };
@@ -80,7 +82,7 @@ export const ModelRoleCard = ({
 }: ModelRoleCardProps) => {
 	const formId = useId();
 	const isFastChat = setting.role === 'fast_chat';
-	const usingChat = setting.source === 'chat';
+	const usingChat = isFastChat && (setting.source === 'chat' || setting.source === 'unset');
 
 	const [provider, setProvider] = useState<ModelProviderId | typeof SAME_AS_CHAT>(
 		isFastChat && usingChat ? SAME_AS_CHAT : setting.provider,

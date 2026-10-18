@@ -4797,10 +4797,10 @@
         "x-auto-ontology-proxied": true
       }
     },
-    "/api/model-settings/{role}/test": {
+    "/api/model-settings/{role}/verify": {
       "post": {
-        "description": "modelSettingsApi.test — one small real call with an unsaved setting. Manage,\nnot read: it can use the stored key, and it spends the provider's quota.",
-        "operationId": "post_api_model_settings_role_test",
+        "description": "modelSettingsApi.test — one small real call with an unsaved setting. The\nfolder is `verify`, not `test`: .dockerignore drops every `test` directory.\nManage,\nnot read: it can use the stored key, and it spends the provider's quota.",
+        "operationId": "post_api_model_settings_role_verify",
         "parameters": [
           {
             "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",
@@ -4859,7 +4859,7 @@
             "ApiToken": []
           }
         ],
-        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/test/route.ts",
+        "x-auto-ontology-source": "frontend/app/api/model-settings/[role]/verify/route.ts",
         "x-auto-ontology-permissions": {
           "modelSettings": ["manage"]
         },

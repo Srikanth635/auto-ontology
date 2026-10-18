@@ -27,7 +27,7 @@ export const modelSettingsApi = {
 
 	/** One small real call with an unsaved setting. */
 	test: (role: ModelRoleId, input: ModelSettingInput) =>
-		requests.post<ModelTestResult>(`${rolePath(role)}/test`, input),
+		requests.post<ModelTestResult>(`${rolePath(role)}/verify`, input),
 
 	/** The model ids the provider offers, for the model picker. */
 	listModels: (role: ModelRoleId, input: ModelSettingInput) =>

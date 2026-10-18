@@ -352,7 +352,7 @@ export const GlobalSearchModal = ({ open, onClose }: GlobalSearchModalProps) => 
 			<button
 				type="button"
 				onClick={handleAdvancedSearch}
-				className="flex shrink-0 cursor-pointer items-center gap-2 border-t border-slate-200 px-4 py-2.5 text-sm text-blue-600 transition-colors hover:bg-slate-50 hover:text-blue-700 dark:border-slate-800 dark:text-blue-400 dark:hover:bg-slate-900/60 dark:hover:text-blue-300"
+				className="flex shrink-0 cursor-pointer items-center gap-2 border-t border-slate-200 px-4 py-2.5 text-sm text-brand-strong transition-colors hover:bg-slate-50 hover:text-brand-deep dark:border-slate-800 dark:text-brand-light dark:hover:bg-slate-900/60 dark:hover:text-brand-light"
 			>
 				<Icon name={IconName.Filter} className="h-4 w-4 shrink-0" />
 				Advanced Search
@@ -371,7 +371,7 @@ export const GlobalSearch = () => {
 				type="button"
 				onClick={() => setOpen(true)}
 				aria-label="Search Auto Ontology"
-				className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-full bg-blue-50 px-3 text-sm text-blue-700 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50"
+				className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-3 text-sm text-body transition-colors hover:bg-brand-soft hover:text-brand-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800"
 			>
 				<svg
 					className="h-4 w-4 shrink-0"

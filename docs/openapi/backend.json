@@ -8346,10 +8346,10 @@
         ]
       }
     },
-    "/api/model-settings/{role}/test": {
+    "/api/model-settings/{role}/verify": {
       "post": {
         "description": "Make one small real call with a setting, without saving it.\n\n``ok`` is false, with the provider's error in ``detail``, when the call\nfails. Omitting ``api_key`` uses the stored key.",
-        "operationId": "test_model_setting_api_model_settings__role__test_post",
+        "operationId": "test_model_setting_api_model_settings__role__verify_post",
         "parameters": [
           {
             "description": "`chat`, `fast_chat`, `embedding` or `rerank`.",

@@ -242,9 +242,15 @@ def reset_setting(role_name: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _short(exc: Exception) -> str:
-    """A one-line error safe to show. Provider errors never echo the key."""
+def _short(exc: Exception, secret: str = "") -> str:
+    """A one-line error safe to show, with *secret* redacted.
+
+    Some providers quote the submitted key back in their error (OpenAI does,
+    for one), so the key is removed before the message goes anywhere.
+    """
     text = " ".join(str(exc).split())
+    if secret:
+        text = text.replace(secret, "***")
     return text[:300] or type(exc).__name__
 
 
@@ -261,7 +267,7 @@ def test_setting(role_name: str, body: ModelSettingBody) -> dict[str, Any]:
             return _test_embedding(resolved)
         return _test_rerank(resolved)
     except Exception as exc:  # noqa: BLE001 -- every failure is the test's answer
-        return {"ok": False, "detail": _short(exc)}
+        return {"ok": False, "detail": _short(exc, resolved.api_key)}
 
 
 def _test_chat(resolved: ResolvedModel) -> dict[str, Any]:

@@ -211,3 +211,14 @@ def test_the_listing_covers_every_role_and_hides_keys() -> None:
     assert [r["role"] for r in rows] == ["chat", "fast_chat", "embedding", "rerank"]
     assert all("api_key" not in r for r in rows)
     assert rows[1]["source"] == "chat"
+
+
+def test_a_provider_error_never_echoes_the_key(monkeypatch) -> None:
+    def _fail(resolved):
+        raise RuntimeError(f"Incorrect API key provided: {resolved.api_key}")
+
+    monkeypatch.setattr(service, "_test_chat", _fail)
+    result = service.test_setting("chat", _chat(api_key="sk-secret-value"))
+    assert result["ok"] is False
+    assert "sk-secret-value" not in result["detail"]
+    assert "***" in result["detail"]
