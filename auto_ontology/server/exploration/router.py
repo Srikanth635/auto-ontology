@@ -23,7 +23,6 @@ from auto_ontology.server.responses import (
     SqlAttributeExplorationDetailsResponse,
     SqlExplorationDetailsResponse,
     TableExplorationDetailsResponse,
-    TableZonesResponse,
     TermExplorationDetailsResponse,
 )
 
@@ -66,7 +65,7 @@ _SEMANTIC_GRAPH_LIMIT_QUERY = Query(
 @router.get("/exploration/edges", response_model=ExplorationEdgeListResponse)
 def list_data_exploration_edges() -> dict:
     """Table connections backed by a shared SQL query or a foreign key."""
-    rows = service.fetch_data_exploration_edges(zone_ids=None)
+    rows = service.fetch_data_exploration_edges()
     return {"data": rows, "count": len(rows)}
 
 
@@ -87,7 +86,7 @@ def get_data_exploration_graph(
     """
     return {
         "data": service.fetch_data_exploration_graph(
-            zone_ids=None, limit=limit, database_id=database_id
+            limit=limit, database_id=database_id
         )
     }
 
@@ -104,7 +103,7 @@ def get_table_exploration_details(
     """Columns-adjacent SQL and one ordered page of Term details for an Exploration modal."""
     return {
         "data": service.fetch_table_exploration_details(
-            table_id, zone_ids=None, skip=skip, limit=limit
+            table_id, skip=skip, limit=limit
         )
     }
 
@@ -120,9 +119,7 @@ def get_term_exploration_details(
 ) -> dict:
     """One ordered page of Tables linked to a Term, for expanding it on the Exploration graph."""
     return {
-        "data": service.fetch_term_exploration_details(
-            term_id, zone_ids=None, skip=skip, limit=limit
-        )
+        "data": service.fetch_term_exploration_details(term_id, skip=skip, limit=limit)
     }
 
 
@@ -132,7 +129,7 @@ def get_term_exploration_details(
 )
 def get_column_exploration_details(column_id: str) -> dict:
     """The Column's own ColumnAttribute, FK target, referencing FK Columns and Sql queries, for expanding it on the Exploration graph."""
-    return {"data": service.fetch_column_exploration_details(column_id, zone_ids=None)}
+    return {"data": service.fetch_column_exploration_details(column_id)}
 
 
 @router.get(
@@ -149,7 +146,7 @@ def get_column_attribute_exploration_details(
     """
     return {
         "data": service.fetch_column_attribute_exploration_details(
-            attr_id, zone_ids=None, skip=skip, limit=limit
+            attr_id, skip=skip, limit=limit
         )
     }
 
@@ -160,9 +157,7 @@ def get_column_attribute_exploration_details(
 )
 def get_sql_attribute_exploration_details(attr_id: str) -> dict:
     """A SqlAttribute's own Sql query and owning Term, for expanding it on the Exploration graph."""
-    return {
-        "data": service.fetch_sql_attribute_exploration_details(attr_id, zone_ids=None)
-    }
+    return {"data": service.fetch_sql_attribute_exploration_details(attr_id)}
 
 
 @router.get(
@@ -171,7 +166,7 @@ def get_sql_attribute_exploration_details(attr_id: str) -> dict:
 )
 def get_sql_exploration_details(sql_id: str) -> dict:
     """CustomAnalysis, Column, Table and SqlAttribute nodes hanging off this Sql node, for expanding it on the Exploration graph."""
-    return {"data": service.fetch_sql_exploration_details(sql_id, zone_ids=None)}
+    return {"data": service.fetch_sql_exploration_details(sql_id)}
 
 
 @router.get(
@@ -186,9 +181,7 @@ def get_semantic_link_path(term_id: str, other_term_id: str) -> dict:
     once the edge between ``term_id``/``other_term_id`` is clicked, instead
     of just showing the collapsed `GraphLink.relationship_types` label.
     """
-    return {
-        "data": service.fetch_semantic_link_path(term_id, other_term_id, zone_ids=None)
-    }
+    return {"data": service.fetch_semantic_link_path(term_id, other_term_id)}
 
 
 @router.get(
@@ -213,21 +206,10 @@ def get_exploration_node_relationships(
         "data": service.fetch_exploration_related_nodes(
             node_id,
             layer,
-            zone_ids=None,
             skip=skip,
             limit=limit,
         )
     }
-
-
-@router.get("/exploration/tables/zones", response_model=TableZonesResponse)
-def list_table_zones() -> dict:
-    """Return ``{table_id: [zone, ...]}`` for every Table.
-
-    Used by the Exploration graph to render Zone chips on every data node
-    without a per-node request.
-    """
-    return {"data": service.fetch_table_zones_map(zone_ids=None)}
 
 
 @router.get(
@@ -248,7 +230,6 @@ def get_semantic_exploration_graph(
     """
     return {
         "data": service.fetch_semantic_exploration_graph(
-            zone_ids=None,
             limit=limit,
             database_id=database_id,
         )

@@ -3,22 +3,15 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-# Guarded Prisma schema sync for the `frontend-migrate` Helm hook.
+# Guarded Prisma schema sync for the `frontend-migrate` Compose service.
 #
 # Runs from /app/migrate, where the image ships the Prisma CLI plus
 # prisma.config.ts (datasource url) and prisma/schema.prisma.
 #
-# Why the guard: conversation_analytics gained a REQUIRED user_id column.
-# `prisma db push` cannot add a NOT NULL column to a table that already holds
-# rows, so a DB seeded before the column existed makes the push fail with
-# "Added the required column `user_id` ... without a default value". Those
-# pre-feature rows have no user to attribute them to, so we drop them once.
-#
-# The cleanup is idempotent: it only fires when conversation_analytics exists
-# WITHOUT user_id, so it is a no-op on fresh installs (table absent) and on
-# every deploy after the column has been added. It touches only the `frontend`
-# schema -- as the SQL above shows -- matching the scope `db push` operates on,
-# which is the one schema Prisma's datasource lists.
+# Why the guard: `prisma db push` stops rather than drop a table that still
+# holds rows, so tables of removed features are dropped explicitly first. Every
+# step is idempotent and touches only the `frontend` schema -- the one schema
+# Prisma's datasource lists.
 set -eu
 
 # Both subcommands read the schema path and datasource url from
@@ -33,32 +26,42 @@ $PRISMA db execute --stdin <<'SQL'
 CREATE SCHEMA IF NOT EXISTS frontend;
 SQL
 
-echo "migrate: checking conversation_analytics for the pre-user_id schema..."
-$PRISMA db execute --stdin <<'SQL'
-DO $$
-DECLARE
-  stale_rows bigint;
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.tables
-    WHERE table_schema = 'frontend' AND table_name = 'conversation_analytics'
-  ) AND NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'frontend'
-      AND table_name = 'conversation_analytics'
-      AND column_name = 'user_id'
-  ) THEN
-    SELECT count(*) INTO stale_rows FROM frontend.conversation_analytics;
-    RAISE NOTICE 'conversation_analytics is missing user_id; truncating % pre-feature row(s) so the required column can be added', stale_rows;
-    TRUNCATE TABLE frontend.conversation_analytics;
-  END IF;
-END $$;
-SQL
-
-echo "migrate: dropping tables of removed features (SSO, invitations)..."
+echo "migrate: dropping tables of removed features (sign-in, API tokens, OAuth, SSO, invitations)..."
+# `db push` refuses to drop a table that still has rows, so the tables of
+# removed features go explicitly. Dropping "user" with CASCADE also drops the
+# foreign keys conversations and analytics had to it, after which their rows
+# move to the single local user.
 $PRISMA db execute --stdin <<'SQL'
 DROP TABLE IF EXISTS frontend.invitations;
 DROP TABLE IF EXISTS frontend."ssoProvider";
+DROP TABLE IF EXISTS frontend."oauthClientAssertion" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthConsent" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthAccessToken" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthRefreshToken" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthClientResource" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthResource" CASCADE;
+DROP TABLE IF EXISTS frontend."oauthClient" CASCADE;
+DROP TABLE IF EXISTS frontend.apikey CASCADE;
+DROP TABLE IF EXISTS frontend.verification CASCADE;
+DROP TABLE IF EXISTS frontend.account CASCADE;
+DROP TABLE IF EXISTS frontend.session CASCADE;
+DROP TABLE IF EXISTS frontend."user" CASCADE;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'frontend' AND table_name = 'conversations'
+  ) THEN
+    UPDATE frontend.conversations SET user_id = 'local' WHERE user_id <> 'local';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'frontend' AND table_name = 'conversation_analytics'
+      AND column_name = 'user_id'
+  ) THEN
+    UPDATE frontend.conversation_analytics SET user_id = 'local' WHERE user_id <> 'local';
+  END IF;
+END $$;
 SQL
 
 echo "migrate: running prisma db push..."

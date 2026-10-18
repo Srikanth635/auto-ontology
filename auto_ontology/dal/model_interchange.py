@@ -563,7 +563,6 @@ def assemble_export_document(
             sql_attributes=sql_attributes,
             custom_analyses=custom_analyses,
         ),
-        zones=[],
     )
 
 
@@ -1569,8 +1568,7 @@ def _persist_sql_object(
 
     Reuses ``add_query`` rather than writing the statement here, so an imported
     statement lands with the same table and column links an ingested one gets —
-    which is what makes the SQL attribute show up in the exploration graph and
-    the zone checks afterwards.
+    which is what makes the SQL attribute show up in the exploration graph.
     """
     dialects, schemas = _cached_dialects_and_schemas(schema_cache, database_name)
     query_obj = validate_sql(sql, dialects, schemas)

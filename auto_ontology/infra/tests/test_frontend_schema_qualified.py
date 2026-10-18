@@ -38,9 +38,6 @@ PRISMA_TABLES = (
     "configurations",
     "acronyms",
     "conversation_analytics",
-    # Better Auth accounts. The role lookup reads this; an unqualified name
-    # fails closed and reports every caller as not an admin.
-    "user",
 )
 
 _AUTO_ONTOLOGY_ROOT = Path(__file__).resolve().parents[2]

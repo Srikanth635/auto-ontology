@@ -7,7 +7,6 @@
 import { Icon, IconName } from '@/common/icons';
 import { Breadcrumbs } from '@/common/Breadcrumbs';
 import { GlobalSearch } from '@/common/GlobalSearch';
-import { UserMenu } from '@/common/UserMenu';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 
 export const AppTopBar = ({ version }: { version?: string }) => {
@@ -20,7 +19,9 @@ export const AppTopBar = ({ version }: { version?: string }) => {
 			<div className="ml-auto flex items-center gap-3">
 				{rightSlot ? <div className="flex items-center gap-2">{rightSlot}</div> : null}
 				<GlobalSearch />
-				<UserMenu version={version} />
+				{version ? (
+					<span className="text-xs text-secondary dark:text-slate-500">v{version}</span>
+				) : null}
 			</div>
 		</header>
 	);

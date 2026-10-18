@@ -14,8 +14,7 @@
 // Auto Ontology user identity over the private upstream hop, and otherwise preserves SSE.
 
 import { after } from 'next/server';
-import { withPermission } from '@/auth/with-auth';
-import { userCan } from '@/auth/permissions';
+import { route } from '@/lib/server/route';
 import { buildInternalIdentityHeaders } from '@/lib/internalIdentity';
 
 const PYTHON_API_URL = process.env.PYTHON_API_URL ?? 'http://127.0.0.1:3001';
@@ -41,17 +40,11 @@ const parseBody = (rawBody: string): Record<string, unknown> => {
 // when that answer has an executed result — generates and persists the
 // chart/table bubble itself and streams it back as its own `charts` event
 // before the stream closes. No second request needed from this route or the
-// browser. Passing `conversation_id` persists the turn and additionally
-// requires `conversation: ['write']`; the route answers 409 while that
+// browser. Passing `conversation_id` persists the turn; the route answers 409 while that
 // conversation already has a run in flight. Omitting it runs the question
 // statelessly, with no history and no chart step.
-export const POST = withPermission({ chat: ['use'] })(async (req, { user }) => {
+export const POST = route(async (req, { user }) => {
 	const payload = parseBody(await req.text());
-	const hasConversationId =
-		typeof payload.conversation_id === 'string' && payload.conversation_id.trim() !== '';
-	if (hasConversationId && !userCan(user, { conversation: ['write'] })) {
-		return new Response('Forbidden', { status: 403 });
-	}
 
 	// Forwarded verbatim to FastAPI, which streams the SQL/answer and then the
 	// chart/table bubble on this same connection — see the module docstring.

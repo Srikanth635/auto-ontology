@@ -5,8 +5,8 @@
 """Tag CRUD, and the objects a tag labels.
 
 One thing here is less obvious than it looks: **a tag name is unique
-case-insensitively on the trimmed name**, and unlike ``zone.name`` that rule is
-a real database constraint — ``uq_tag_name_lower`` in ``auto_ontology/dal/schema.py``.
+case-insensitively on the trimmed name**, and that rule is a real database
+constraint — ``uq_tag_name_lower`` in ``auto_ontology/dal/schema.py``.
 
 The duplicate checks in :func:`create_tag` and :func:`update_tag` therefore
 exist for their error message rather than for correctness. The index is what
@@ -643,7 +643,7 @@ def create_tag(*, name: str, created_by: str | None = None) -> dict[str, Any]:
     ``ValueError`` when the name is already taken, whether that is caught by the
     check or by the unique index underneath it.
 
-    *created_by* is the Better Auth user id the router read from the gateway's
+    *created_by* is the user id the router read from the gateway's
     header. It is optional because the header is not guaranteed -- FastAPI is
     reachable directly on the private network -- and ``None`` records that
     nobody was named rather than failing the create over an audit field. The

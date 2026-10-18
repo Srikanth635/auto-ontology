@@ -105,22 +105,16 @@ accompanies each upstream project at the URLs above.
 
 | Component | Version | License | Project URL |
 | --- | --- | --- | --- |
-| @better-auth/api-key | 1.7.4 | MIT | https://github.com/better-auth/better-auth |
-| @better-auth/core | 1.7.4 | MIT | https://github.com/better-auth/better-auth |
-| @better-auth/mcp | 1.7.4 | MIT | https://github.com/better-auth/better-auth |
-| @better-auth/oauth-provider | 1.7.4 | MIT | https://github.com/better-auth/better-auth |
 | @nvidia/foundations-react-core (Kaizen UI) | ^0.604.1 | Apache-2.0 | https://www.npmjs.com/package/@nvidia/foundations-react-core |
 | @prisma/adapter-pg | ^7.7.0 | Apache-2.0 | https://github.com/prisma/prisma |
 | @prisma/client | ^7.7.0 | Apache-2.0 | https://github.com/prisma/prisma |
 | @sigma/node-border | ^3.0.0 | MIT | https://github.com/jacomyal/sigma.js |
 | @tanstack/react-query | ^5.103.2 | MIT | https://github.com/TanStack/query |
 | axios | ^1.20.0 | MIT | https://github.com/axios/axios |
-| better-auth | 1.7.4 | MIT | https://github.com/better-auth/better-auth |
 | d3-force | ^3.0.0 | ISC | https://github.com/d3/d3-force |
 | dayjs | ^1.11.21 | MIT | https://github.com/iamkun/dayjs |
 | dotenv | ^17.4.2 | BSD-2-Clause | https://github.com/motdotla/dotenv |
 | graphology | ^0.26.0 | MIT | https://github.com/graphology/graphology |
-| jose | ^6.1.0 | MIT | https://github.com/panva/jose |
 | Next.js (next) | 16.3.8 | MIT | https://github.com/vercel/next.js |
 | node-postgres (pg) | ^8.20.0 | MIT | https://github.com/brianc/node-postgres |
 | React (react) | 19.2.4 | MIT | https://github.com/facebook/react |
@@ -149,19 +143,6 @@ accompanies each upstream project at the URLs above.
 | TypeScript | ^5 | Apache-2.0 | https://github.com/microsoft/TypeScript |
 | Vite | ^8.3.0 | MIT | https://github.com/vitejs/vite |
 | Vitest | ^4.1.11 | MIT | https://github.com/vitest-dev/vitest |
-
----
-
-## MCP server (Python — `mcp/pyproject.toml`)
-
-### Runtime dependencies
-
-| Component | Version | License | Project URL |
-| --- | --- | --- | --- |
-| FastMCP | >=3.2.4,<4 | Apache-2.0 | https://github.com/PrefectHQ/fastmcp |
-| HTTPX | >=0.28.1 | BSD-3-Clause | https://github.com/encode/httpx |
-| Pydantic | >=2 | MIT | https://github.com/pydantic/pydantic |
-| python-dotenv | >=1.0 | BSD-3-Clause | https://github.com/theskumar/python-dotenv |
 
 ---
 

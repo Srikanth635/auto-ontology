@@ -2,11 +2,9 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// Anyone may list custom analyses; only admins (analysis:manage) may add one.
-export const GET = withPermission({ analysis: ['read'] })((req) => proxyToBackend(req));
-export const POST = withPermission({ analysis: ['manage'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
+// List or add custom analyses.
+export const GET = route((req) => proxyToBackend(req));
+export const POST = route((req, { user }) => proxyToBackend(req, { userId: user.id }));

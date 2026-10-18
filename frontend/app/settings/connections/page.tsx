@@ -13,7 +13,7 @@ export default async function ConnectionsSettingsPage() {
 	// URL would still reach a page whose every action is a dead end.
 	const envManaged = await readConnectionsEnvSource();
 	if (envManaged === true) {
-		redirect('/settings/zones');
+		redirect('/settings/models');
 	}
 
 	return (

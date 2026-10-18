@@ -4,8 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
-import { Role } from '@/enums/auth';
+import { route } from '@/lib/server/route';
 import { analyticsSelect } from '@/lib/apiSelects';
 
 // Analytics always cover a fixed trailing window; not configurable per-request.
@@ -17,8 +16,8 @@ const parseIntParam = (value: string | null, fallback: number): number => {
 	return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-// Viewing the analytics report requires the analytics:read permission (admin).
-export const GET = withPermission({ analytics: ['read'] })(async (request) => {
+// The trailing question log behind the Analytics page.
+export const GET = route(async (request) => {
 	const prisma = getPrisma();
 	const { searchParams } = new URL(request.url);
 
@@ -30,19 +29,13 @@ export const GET = withPermission({ analytics: ['read'] })(async (request) => {
 	const where = { question_timestamp: { gte: cutoff } };
 
 	const total = await prisma.conversationAnalytics.count({ where });
-	// The row stores only `userId`; join the User to resolve the display name.
-	const rows = await prisma.conversationAnalytics.findMany({
+	const data = await prisma.conversationAnalytics.findMany({
 		where,
 		orderBy: { question_timestamp: 'desc' },
 		skip,
 		...(limit != null ? { take: limit } : {}),
 		select: analyticsSelect,
 	});
-
-	const data = rows.map((row) => ({
-		...row,
-		user: { ...row.user, role: (row.user.role as Role) ?? Role.Viewer },
-	}));
 
 	return NextResponse.json({ data, total });
 });

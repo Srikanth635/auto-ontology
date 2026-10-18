@@ -3,46 +3,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Resolves the Better Auth user ids a tag read carries to the names the Tags
- * settings pages render: a tag's own `created_by` / `modified_by`, and the
- * `tagged_by` on each object a tag labels, which is a page of its own.
+ * Names the user ids a tag read carries, for the Tags settings pages: a tag's
+ * own `created_by` / `modified_by`, and the `tagged_by` on each object a tag
+ * labels.
  *
- * Here, in the gateway, for two reasons. FastAPI cannot do it: the accounts live
- * in the `frontend` schema Prisma owns, which the backend has no model for and
- * deliberately does not reach into. And the browser should not: the admin
- * `listUsers` call is a second round trip returning a *page* of users, so every
- * author past that page would render as "Auto Generated" — which is also what a
- * deleted account renders as, making the two indistinguishable.
- *
- * The same join as the analytics report (`lib/apiSelects.ts`), for the same
- * reason: the row stores an id, and only the User table knows the name.
+ * There is no sign-in, so the only person who can author anything is the one
+ * local user, shown as "You". Any other id — a rule, an import, or nothing —
+ * reads as "Auto Generated", exactly as a null does.
  */
 
-import { getPrisma } from '@/lib/prisma';
-import { userCan } from '@/auth/permissions';
-import { PROXY_CACHE_CONTROL } from '@/auth/proxy-backend';
-import type { ResolvedUser } from '@/auth/resolve-user';
+import { PROXY_CACHE_CONTROL } from '@/lib/server/proxy-backend';
+import { LOCAL_USER_ID } from '@/lib/server/route';
 import { AUTHORS_PARAM, AUTHORS_PARAM_ON } from '@/constants/tags';
 
 /**
- * Whether this read should carry authors: the caller asked for them, and may
- * have them.
- *
- * Both halves are needed and neither implies the other. The param is what keeps
- * the work off the tag picker's path, which reads the same list on every detail
- * page and throws authors away. The permission is what stops a viewer from
- * helping themselves to the names by appending the param — only the settings
- * page shows who curated the vocabulary, and only admins can open it.
- *
- * One function rather than a check per route, so the two read routes cannot
- * come to disagree about who sees authors.
+ * Whether this read should carry authors. The param is what keeps the work off
+ * the tag picker's path, which reads the same list on every detail page and
+ * throws authors away.
  */
-export const authorsRequested = (req: Request, user: ResolvedUser): boolean =>
-	new URL(req.url).searchParams.get(AUTHORS_PARAM) === AUTHORS_PARAM_ON &&
-	userCan(user, { tag: ['manage'] });
+export const authorsRequested = (req: Request): boolean =>
+	new URL(req.url).searchParams.get(AUTHORS_PARAM) === AUTHORS_PARAM_ON;
 
-/** Only what a row needs: a name to print, and an email to fall back to. */
-const authorSelect = { id: true, name: true, email: true } as const;
+const LOCAL_AUTHOR = { id: LOCAL_USER_ID, name: 'You', email: '' } as const;
 
 type Row = Record<string, unknown>;
 
@@ -61,16 +43,8 @@ const rowsIn = (payload: Row): Row[] => {
 	return rows.filter(isRow);
 };
 
-/**
- * The id to look up, or null when the column holds nothing to look one up by.
- *
- * An id that names no account is not filtered out here, and does not need to
- * be: the lookup simply does not find it, which the pages render exactly as
- * they render a null — "Auto Generated". That covers a deleted account and the
- * legacy `system` an earlier version stored alike.
- */
-const lookupId = (value: unknown): string | null =>
-	typeof value === 'string' && value !== '' ? value : null;
+/** The local user when *value* names it, otherwise null ("Auto Generated"). */
+const authorOf = (value: unknown) => (value === LOCAL_USER_ID ? LOCAL_AUTHOR : null);
 
 /**
  * The upstream answer, rebuilt around a body this module may have rewritten.
@@ -95,9 +69,7 @@ const respond = (body: string, upstream: Response): Response =>
  * page of tagged objects, `tagged_by_user` — added beside the ids it stored.
  *
  * Every branch that cannot add them answers with the body unchanged rather than
- * failing: an error response, a body that is not the expected envelope, or a
- * failed user lookup. A tag whose author will not resolve still reads as "Auto
- * Generated", whereas a 500 here would lose the whole list over a decoration.
+ * failing: an error response or a body that is not the expected envelope.
  */
 export const withTagAuthors = async (upstream: Response): Promise<Response> => {
 	const body = await upstream.text();
@@ -111,49 +83,16 @@ export const withTagAuthors = async (upstream: Response): Promise<Response> => {
 	}
 	if (typeof payload !== 'object' || payload === null) return respond(body, upstream);
 
-	// Mutated in place below, so the envelope keeps whatever else it carries —
-	// a list's `count`, a page's `total`.
-	const rows = rowsIn(payload as Row);
-	// One lookup for all three columns, since a tag curated and a label applied
-	// are commonly the same person and the union is what makes that one row read.
-	const ids = [
-		...new Set(
-			rows
-				.flatMap((row) => [
-					lookupId(row.created_by),
-					lookupId(row.modified_by),
-					lookupId(row.tagged_by),
-				])
-				.filter((id): id is string => id !== null),
-		),
-	];
-	if (ids.length === 0) return respond(body, upstream);
-
-	let authors: Map<string, unknown>;
-	try {
-		const users = await getPrisma().user.findMany({
-			where: { id: { in: ids } },
-			select: authorSelect,
-		});
-		authors = new Map(users.map((user) => [user.id, user]));
-	} catch {
-		return respond(body, upstream);
-	}
-
-	// Set only where the row has the column, so a tag does not gain a
-	// `tagged_by_user` and a tagged object does not gain an author it has no id
-	// for — a null there means "no account", which is a claim about a column
-	// this row does not carry.
-	for (const row of rows) {
+	// Mutated in place, so the envelope keeps whatever else it carries — a
+	// list's `count`, a page's `total`. Set only where the row has the column,
+	// so a tag does not gain a `tagged_by_user` it has no id for.
+	for (const row of rowsIn(payload as Row)) {
 		if ('created_by' in row || 'modified_by' in row) {
-			const createdBy = lookupId(row.created_by);
-			const modifiedBy = lookupId(row.modified_by);
-			row.created_by_user = createdBy === null ? null : (authors.get(createdBy) ?? null);
-			row.modified_by_user = modifiedBy === null ? null : (authors.get(modifiedBy) ?? null);
+			row.created_by_user = authorOf(row.created_by);
+			row.modified_by_user = authorOf(row.modified_by);
 		}
 		if ('tagged_by' in row) {
-			const taggedBy = lookupId(row.tagged_by);
-			row.tagged_by_user = taggedBy === null ? null : (authors.get(taggedBy) ?? null);
+			row.tagged_by_user = authorOf(row.tagged_by);
 		}
 	}
 

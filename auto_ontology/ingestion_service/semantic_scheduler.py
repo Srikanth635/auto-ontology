@@ -2,16 +2,15 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Recurring scheduler for semantic compilation.
+"""Background job for semantic compilation.
 
 Runs :func:`run_semantic_compilation` for every configured connection once at
-startup, then again every 24h measured from the end of the previous run. An
-API-triggered run also resets that 24h timer, so the next automatic run is
-always one interval after the most recent run — scheduled or manual.
+startup, then whenever the API triggers it (Settings -> Semantic Compilation).
+There is no recurring timer.
 
 Every pass re-checks the ``semantic_compilation_enabled`` settings flag and
 no-ops when it is off, so disabling in the UI takes effect on the next run
-(scheduled or triggered) without waiting for a service restart.
+without waiting for a service restart.
 
 A completed pass also re-applies every tagging rule — see
 :meth:`SemanticScheduler._reapply_rules`. That is the one piece of work here
@@ -28,7 +27,7 @@ service boot, so without coordination this one could race ahead and compile
 against a catalog that isn't there yet — silently producing zero Terms instead
 of an error. Passing the ingest scheduler as *depends_on* closes that race: the
 very first pass waits for the ingest scheduler's first pass to finish (see
-``IntervalScheduler.wait_first_pass``) before touching the catalog. Every pass
+``JobRunner.wait_first_pass``) before touching the catalog. Every pass
 after that returns immediately, since the dependency is long since satisfied.
 """
 
@@ -37,7 +36,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from datetime import timedelta
 
 from auto_ontology.ingestion_service.config import is_semantic_compilation_enabled
 from auto_ontology.ingestion_service.connections import resolve_database_names
@@ -49,15 +47,11 @@ from auto_ontology.ingestion_service.history import (
 )
 from auto_ontology.ingestion_service.pii import run_pii_propagation_in_thread
 from auto_ontology.ingestion_service.rules import replay_rules_in_thread
-from auto_ontology.ingestion_service.scheduler import IntervalScheduler
+from auto_ontology.ingestion_service.scheduler import JobRunner
 from auto_ontology.semantic.cancellation import clear_cancel, request_cancel
 from auto_ontology.semantic.compile import run_semantic_compilation
 
 logger = logging.getLogger(__name__)
-
-# Cadence measured from the end of the previous run rather than a fixed
-# wall-clock time.
-SEMANTIC_INTERVAL = timedelta(hours=24)
 
 # Appended when a pass compiles nothing. The count is tables that *needed*
 # compiling (``compile_semantic_layer`` works from the tables with no Term yet),
@@ -76,18 +70,17 @@ _NOTHING_TO_COMPILE = (
 )
 
 
-class SemanticScheduler(IntervalScheduler):
-    """Drives semantic compilation on startup, on a 24h timer, and on demand."""
+class SemanticScheduler(JobRunner):
+    """Drives semantic compilation on startup and on demand."""
 
     name = "semantic"
 
     def __init__(
         self,
-        interval: timedelta = SEMANTIC_INTERVAL,
         *,
-        depends_on: IntervalScheduler | None = None,
+        depends_on: JobRunner | None = None,
     ) -> None:
-        super().__init__(interval)
+        super().__init__()
         # The scheduler that writes the catalog this one compiles from — see
         # the module docstring. Optional so tests/callers that don't care about
         # the startup race can still construct one on its own.
@@ -135,7 +128,7 @@ class SemanticScheduler(IntervalScheduler):
         clear_cancel()
 
         # Re-check the settings flag on every pass so a disable is honored live:
-        # the loop keeps ticking but no-ops until re-enabled, rather than running
+        # the job keeps waiting for triggers but no-ops until re-enabled, rather than running
         # until the next service restart. Mirrors the lifespan startup gate.
         if not is_semantic_compilation_enabled():
             logger.info("semantic: compilation disabled in settings; skipping run")

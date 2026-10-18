@@ -75,8 +75,7 @@ def _delete_scoped_semantic(database_name: str) -> int:
       references.
 
     Each is deleted only when **every** table it touches belongs to this
-    database — the same all-or-nothing shape the zone reads use, and for the
-    same reason inverted: a Term shared with another database is that other
+    database: a Term shared with another database is that other
     database's data too, and a reset of this one must not take it.
 
     ``PqlAnalysis``, ``TextAttribute`` and ``Analysis`` are absent here on
@@ -288,7 +287,7 @@ def _delete_data_rows(database_name: str | None = None) -> int:
     """The transactional half: catalog rows and the statements they orphaned.
 
     One ``DELETE`` on ``catalog_database``. Schemas, tables, columns, foreign
-    keys, joins, statement links and zone targets all follow by cascade — which
+    keys, joins, and statement links all follow by cascade — which
     is the point of modelling ``CONTAINS`` as a parent FK rather than an edge
     table, and means a child table added later cannot be forgotten here.
 

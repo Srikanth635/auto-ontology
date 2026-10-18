@@ -51,7 +51,6 @@ from auto_ontology.dal.terms import (
     find_term_link_path,
     term_is_in_scope,
 )
-from auto_ontology.dal.users import resolve_accessible_catalog_ids
 from auto_ontology.utils.sample_values import stringify_sample_values
 from auto_ontology.semantic.constants import (
     LABEL_COLUMN_ATTRIBUTE,
@@ -61,11 +60,6 @@ from auto_ontology.semantic.constants import (
     REL_SEMANTIC_FK,
     SEMANTIC_SOURCE,
 )
-
-# Re-exported, not reimplemented: the Term reads need it too, and two spellings
-# of the zone-resolution rule is how a viewer ends up seeing a chip on one
-# screen and not another.
-from auto_ontology.dal.zones import fetch_table_zones_map  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +84,7 @@ def _non_empty_sql():
 # ---------------------------------------------------------------------------
 
 
-def _shared_sql_pairs(table_filter=None):
+def _shared_sql_pairs():
     """Table pairs referenced together by one non-empty statement."""
     source = s.sql_query__table.alias("sql_source")
     target = s.sql_query__table.alias("sql_target")
@@ -107,14 +101,10 @@ def _shared_sql_pairs(table_filter=None):
         )
         .where(_non_empty_sql())
     )
-    if table_filter is not None:
-        statement = statement.where(
-            source.c.table_id.in_(table_filter), target.c.table_id.in_(table_filter)
-        )
     return statement, source, target
 
 
-def _fk_column_pairs(table_filter=None):
+def _fk_column_pairs():
     """Foreign-key column pairs whose two columns live on different tables."""
     source_column = s.catalog_column.alias("fk_source_column")
     target_column = s.catalog_column.alias("fk_target_column")
@@ -139,15 +129,10 @@ def _fk_column_pairs(table_filter=None):
         .where(source_column.c.table_id != target_column.c.table_id)
         .distinct()
     )
-    if table_filter is not None:
-        statement = statement.where(
-            source_column.c.table_id.in_(table_filter),
-            target_column.c.table_id.in_(table_filter),
-        )
     return statement
 
 
-def _related_tables(node_id: str, table_filter: list[str] | None):
+def _related_tables(node_id: str):
     """Every table related to *node_id*, as a set of ids.
 
     **The single definition of a data-layer relationship**, read by both the
@@ -155,14 +140,14 @@ def _related_tables(node_id: str, table_filter: list[str] | None):
     text, or a foreign key in *either* direction — the two FK legs are separate
     because a foreign key is stored one way round and relatedness is not.
     """
-    sql_pairs, source, target = _shared_sql_pairs(table_filter)
+    sql_pairs, source, target = _shared_sql_pairs()
     shared = (
         sql_pairs.with_only_columns(target.c.table_id.label("related_id"))
         .where(source.c.table_id == node_id, target.c.table_id != node_id)
         .distinct()
     )
 
-    fk_pairs = _fk_column_pairs(table_filter).subquery("fk_pairs")
+    fk_pairs = _fk_column_pairs().subquery("fk_pairs")
     outgoing = (
         select(fk_pairs.c.target.label("related_id"))
         .where(fk_pairs.c.source == node_id, fk_pairs.c.target != node_id)
@@ -229,33 +214,6 @@ _TABLE_REF_COLUMNS = (
 #: lookup-style column can be referenced by very many source columns, and this
 #: field is capped rather than paged like every other field on that payload.
 _MAX_REFERENCING_COLUMNS = 50
-
-
-def _visible_table(table_filter: list[str] | None):
-    """``catalog_table`` is inside the accessible set, or ``True`` when unscoped."""
-    if table_filter is None:
-        return literal(True)
-    return s.catalog_table.c.id.in_(table_filter)
-
-
-def _sql_in_scope(table_filter: list[str] | None):
-    """A statement is visible only when **every** table it references is.
-
-    The same all-or-nothing rule ``_sql_attr_zone_filter`` applies in
-    ``auto_ontology.dal.sql_attributes``: a statement half of whose tables are out of zone
-    would otherwise leak the other half's names through its own text.
-    """
-    if table_filter is None:
-        return literal(True)
-    return ~(
-        select(literal(1))
-        .select_from(s.sql_query__table)
-        .where(
-            s.sql_query__table.c.sql_query_id == s.sql_query.c.id,
-            s.sql_query__table.c.table_id.notin_(table_filter),
-        )
-        .exists()
-    )
 
 
 def _attribute_link():
@@ -339,13 +297,10 @@ def _relationship_types(raw: Any) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def fetch_data_exploration_edges(
-    zone_ids: list[str] | None = None,
-    data_ids_by_zone: dict[str, set[str]] | None = None,
-) -> list[dict[str, Any]]:
+def fetch_data_exploration_edges() -> list[dict[str, Any]]:
     """Table pairs connected by a shared statement or a foreign key.
 
-    A statement becomes an edge when it references at least two visible tables;
+    A statement becomes an edge when it references at least two tables;
     the edge carries the SQL text so the client can show it. A foreign key also
     makes an edge — flagged ``via_foreign_key`` — even when no stored statement
     ever referenced both tables together, and every edge carries a
@@ -358,18 +313,11 @@ def fetch_data_exploration_edges(
     ``edge["source"]`` — getting that wrong renders a join backwards, which
     looks plausible and is wrong.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids, data_ids_by_zone)
-    table_filter: list[str] | None = None
-    if resolved is not None:
-        table_filter = list(resolved["table_ids"])
-        if not table_filter:
-            return []
-
-    sql_pairs, source, target = _shared_sql_pairs(table_filter)
+    sql_pairs, source, target = _shared_sql_pairs()
     sql_rows = store().query_read(
         sql_pairs.where(source.c.table_id < target.c.table_id).distinct()
     )
-    fk_rows = store().query_read(_fk_column_pairs(table_filter))
+    fk_rows = store().query_read(_fk_column_pairs())
 
     edges: dict[tuple[str, str], dict[str, Any]] = {}
     for row in sql_rows:
@@ -425,7 +373,6 @@ def fetch_data_exploration_edges(
 
 def fetch_table_exploration_details(
     table_id: str,
-    zone_ids: list[str] | None = None,
     *,
     skip: int = 0,
     limit: int | None = None,
@@ -448,10 +395,6 @@ def fetch_table_exploration_details(
     change what the panel shows — but pinned by a test so it cannot be
     "tidied" silently.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    if resolved is not None and table_id not in resolved["table_ids"]:
-        return {"queries": [], "terms": [], "terms_total": 0}
-
     queries = store().query_read(
         select(s.sql_query.c.id, s.sql_query.c.sql_full_query.label("sql"))
         .select_from(
@@ -510,26 +453,22 @@ def fetch_table_exploration_details(
 
 def fetch_term_exploration_details(
     term_id: str,
-    zone_ids: list[str] | None = None,
     *,
     skip: int = 0,
     limit: int | None = None,
 ) -> dict[str, Any]:
-    """One ordered page of the Tables linked to a visible Term.
+    """One ordered page of the Tables linked to a Term.
 
     The reverse of :func:`fetch_table_exploration_details`'s Term list, down to
     the ``relationship_types`` each row carries — REPRESENTS directly, or the
     HAS_ATTRIBUTE / SEMANTIC_FK link off one of the table's columns — so a
     client labels the edge the same way from either end.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    if not term_is_in_scope(term_id, zone_ids, resolved):
+    if not term_is_in_scope(term_id):
         return {"tables": [], "tables_total": 0}
 
     links = _term_table_links()
     conditions: list[Any] = [links.c.term_id == term_id]
-    if resolved is not None:
-        conditions.append(links.c.table_id.in_(list(resolved["table_ids"])))
 
     total_rows = store().query_read(
         select(func.count(func.distinct(links.c.table_id)).label("total")).where(
@@ -567,11 +506,8 @@ def fetch_term_exploration_details(
     }
 
 
-def fetch_column_exploration_details(
-    column_id: str,
-    zone_ids: list[str] | None = None,
-) -> dict[str, Any]:
-    """Everything one hop off a visible Column.
+def fetch_column_exploration_details(column_id: str) -> dict[str, Any]:
+    """Everything one hop off a Column.
 
     Closes the ``Table -> Column -> ColumnAttribute -> Term`` chain from the
     Column's own end: :func:`fetch_table_exploration_details` links a table to
@@ -588,29 +524,18 @@ def fetch_column_exploration_details(
         full catalog path so the client can graft it on as an expandable node
         rather than a bare label.
     ``referencing_columns``
-        The same edge read backwards — every visible column whose foreign key
+        The same edge read backwards — every column whose foreign key
         points *at* this one, which is what makes expanding a primary key show
         anything at all. Capped rather than paged, like every field here.
     ``sql_queries``
-        Every visible statement that referenced this column directly.
+        Every statement that referenced this column directly.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    table_filter = None if resolved is None else list(resolved["table_ids"])
-
     # Aliased, and not correlated with whatever `catalog_column` the query
     # around it is already using for the *other* end of the edge -- the plain
     # table here would silently collapse the two into one.
     owner = s.catalog_column.alias("owner_column")
     owned = (
-        select(literal(1))
-        .select_from(owner)
-        .where(
-            owner.c.id == column_id,
-            literal(True)
-            if table_filter is None
-            else owner.c.table_id.in_(table_filter),
-        )
-        .exists()
+        select(literal(1)).select_from(owner).where(owner.c.id == column_id).exists()
     )
 
     link = _attribute_link()
@@ -645,7 +570,6 @@ def fetch_column_exploration_details(
         .where(
             s.column__foreign_key.c.source_column_id == column_id,
             owned,
-            _visible_table(table_filter),
         )
         .limit(1)
     )
@@ -660,7 +584,6 @@ def fetch_column_exploration_details(
         .where(
             s.column__foreign_key.c.target_column_id == column_id,
             owned,
-            _visible_table(table_filter),
         )
         .distinct()
         .order_by(
@@ -679,7 +602,6 @@ def fetch_column_exploration_details(
         .where(
             s.sql_query__column.c.column_id == column_id,
             owned,
-            _sql_in_scope(table_filter),
         )
         .distinct()
         .order_by(s.sql_query.c.id)
@@ -695,7 +617,6 @@ def fetch_column_exploration_details(
 
 def fetch_column_attribute_exploration_details(
     attr_id: str,
-    zone_ids: list[str] | None = None,
     *,
     skip: int = 0,
     limit: int | None = None,
@@ -708,10 +629,8 @@ def fetch_column_attribute_exploration_details(
     ``user_id``-shaped one) is typically linked from many columns across many
     tables at once.
 
-    ``term`` is ``None`` when the attribute has no owning Term, or that term
-    falls outside *zone_ids*.
+    ``term`` is ``None`` when the attribute has no owning Term.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
     term_rows = store().query_read(
         select(s.term.c.id, s.term.c.name, s.term.c.description)
         .select_from(
@@ -724,14 +643,12 @@ def fetch_column_attribute_exploration_details(
     )
     term = (
         dict(term_rows[0])
-        if term_rows and term_is_in_scope(term_rows[0]["id"], zone_ids, resolved)
+        if term_rows and term_is_in_scope(term_rows[0]["id"])
         else None
     )
 
     link = _attribute_link()
     conditions: list[Any] = [link.c.attribute_id == attr_id]
-    if resolved is not None:
-        conditions.append(s.catalog_column.c.table_id.in_(list(resolved["table_ids"])))
 
     linked_columns = _column_catalog_join().join(
         link, link.c.column_id == s.catalog_column.c.id
@@ -773,21 +690,13 @@ def fetch_column_attribute_exploration_details(
     }
 
 
-def fetch_sql_attribute_exploration_details(
-    attr_id: str,
-    zone_ids: list[str] | None = None,
-) -> dict[str, Any]:
+def fetch_sql_attribute_exploration_details(attr_id: str) -> dict[str, Any]:
     """The statement and owning Term behind a SqlAttribute.
 
     A term's own expansion already grafts its SqlAttributes on; this is what
     that attribute in turn connects to, so double-clicking it can graft both
-    ends. ``sql`` is ``None`` when any table the statement references falls
-    outside *zone_ids*, even where the attribute and its term are both visible —
-    the same rule ``_sql_attr_zone_filter`` applies in ``auto_ontology.dal.sql_attributes``.
+    ends.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    table_filter = None if resolved is None else list(resolved["table_ids"])
-
     sql_rows = store().query_read(
         select(s.sql_query.c.id, s.sql_query.c.sql_full_query.label("sql"))
         .select_from(
@@ -795,10 +704,7 @@ def fetch_sql_attribute_exploration_details(
                 s.sql_query, s.sql_query.c.id == s.sql_attribute__sql.c.sql_query_id
             )
         )
-        .where(
-            s.sql_attribute__sql.c.attribute_id == attr_id,
-            _sql_in_scope(table_filter),
-        )
+        .where(s.sql_attribute__sql.c.attribute_id == attr_id)
         .order_by(s.sql_query.c.id)
         .limit(1)
     )
@@ -818,10 +724,7 @@ def fetch_sql_attribute_exploration_details(
     }
 
 
-def fetch_sql_exploration_details(
-    sql_id: str,
-    zone_ids: list[str] | None = None,
-) -> dict[str, Any]:
+def fetch_sql_exploration_details(sql_id: str) -> dict[str, Any]:
     """The custom analyses, columns, tables and SqlAttributes hanging off a statement.
 
     A SqlAttribute's statement is identified by its **text**, so a custom
@@ -831,12 +734,8 @@ def fetch_sql_exploration_details(
     their catalog path so a client can graft either on as a fully expandable
     node. The SqlAttributes are the reverse of
     :func:`fetch_sql_attribute_exploration_details`'s own lookup; one whose
-    owning term falls outside *zone_ids* is dropped.
+    owning term is not a semantic Term is dropped.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    table_filter = None if resolved is None else list(resolved["table_ids"])
-    visible = _visible_table(table_filter)
-
     analyses = store().query_read(
         select(
             s.custom_analysis.c.id,
@@ -851,10 +750,7 @@ def fetch_sql_exploration_details(
                 s.sql_query, s.sql_query.c.id == s.custom_analysis__sql.c.sql_query_id
             )
         )
-        .where(
-            s.custom_analysis__sql.c.sql_query_id == sql_id,
-            _sql_in_scope(table_filter),
-        )
+        .where(s.custom_analysis__sql.c.sql_query_id == sql_id)
         .distinct()
         .order_by(s.custom_analysis.c.name)
     )
@@ -867,7 +763,7 @@ def fetch_sql_exploration_details(
                 s.sql_query__column.c.column_id == s.catalog_column.c.id,
             )
         )
-        .where(s.sql_query__column.c.sql_query_id == sql_id, visible)
+        .where(s.sql_query__column.c.sql_query_id == sql_id)
         .distinct()
         .order_by(
             s.catalog_table.c.name, s.catalog_column.c.name, s.catalog_column.c.id
@@ -882,7 +778,7 @@ def fetch_sql_exploration_details(
                 s.sql_query__table.c.table_id == s.catalog_table.c.id,
             )
         )
-        .where(s.sql_query__table.c.sql_query_id == sql_id, visible)
+        .where(s.sql_query__table.c.sql_query_id == sql_id)
         .distinct()
         .order_by(s.catalog_table.c.name, s.catalog_table.c.id)
     )
@@ -920,18 +816,12 @@ def fetch_sql_exploration_details(
             dict(row)
             for row in attributes
             if row["id"]
-            and (
-                row["term_id"] is None
-                or term_is_in_scope(row["term_id"], zone_ids, resolved)
-            )
+            and (row["term_id"] is None or term_is_in_scope(row["term_id"]))
         ],
     }
 
 
-def _fetch_table_relationship_counts(
-    table_ids: list[str],
-    zone_table_ids: list[str] | None,
-) -> dict[str, int]:
+def _fetch_table_relationship_counts(table_ids: list[str]) -> dict[str, int]:
     """``{table_id: degree}`` for a small, known set of tables.
 
     The "Relationships" column of the related-nodes page needs each *returned*
@@ -942,7 +832,7 @@ def _fetch_table_relationship_counts(
     if not table_ids:
         return {}
 
-    sql_pairs, source, target = _shared_sql_pairs(zone_table_ids)
+    sql_pairs, source, target = _shared_sql_pairs()
     shared = (
         sql_pairs.with_only_columns(
             source.c.table_id.label("id"), target.c.table_id.label("other_id")
@@ -954,7 +844,7 @@ def _fetch_table_relationship_counts(
         .distinct()
     )
 
-    fk_pairs = _fk_column_pairs(zone_table_ids).subquery("fk_pairs")
+    fk_pairs = _fk_column_pairs().subquery("fk_pairs")
     outgoing = (
         select(fk_pairs.c.source.label("id"), fk_pairs.c.target.label("other_id"))
         .where(fk_pairs.c.source.in_(table_ids))
@@ -974,7 +864,6 @@ def _fetch_table_relationship_counts(
 
 def _fetch_data_exploration_related_nodes(
     node_id: str,
-    zone_ids: list[str] | None,
     *,
     skip: int,
     limit: int | None,
@@ -989,12 +878,7 @@ def _fetch_data_exploration_related_nodes(
     would drop a related table with no schema or database above it from the
     page while the graph still counted it, and the two numbers must agree.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    if resolved is not None and node_id not in resolved["table_ids"]:
-        return {"nodes": [], "total": 0}
-
-    zone_table_ids = None if resolved is None else list(resolved["table_ids"])
-    related = _related_tables(node_id, zone_table_ids).subquery("related")
+    related = _related_tables(node_id).subquery("related")
 
     total_rows = store().query_read(
         select(
@@ -1029,9 +913,7 @@ def _fetch_data_exploration_related_nodes(
         page = page.limit(limit)
 
     rows = [dict(r) for r in store().query_read(page)]
-    counts = _fetch_table_relationship_counts(
-        [row["id"] for row in rows], zone_table_ids=zone_table_ids
-    )
+    counts = _fetch_table_relationship_counts([row["id"] for row in rows])
     return {
         "nodes": [
             {**row, "relationship_count": counts.get(row["id"], 0)} for row in rows
@@ -1045,11 +927,7 @@ def _fetch_data_exploration_related_nodes(
 # ---------------------------------------------------------------------------
 
 
-def _fetch_term_relationship_counts(
-    term_ids: list[str],
-    zone_ids: list[str] | None,
-    data_ids_by_zone: dict[str, set[str]] | None = None,
-) -> dict[str, int]:
+def _fetch_term_relationship_counts(term_ids: list[str]) -> dict[str, int]:
     """``{term_id: related count}``, reusing the Terms list's own count.
 
     Reused rather than recomputed so a term's number is the same wherever it is
@@ -1057,15 +935,12 @@ def _fetch_term_relationship_counts(
     """
     return {
         row["term_id"]: row["count"]
-        for row in fetch_related_terms_counts(
-            zone_ids, term_ids=term_ids, data_ids_by_zone=data_ids_by_zone
-        )
+        for row in fetch_related_terms_counts(term_ids=term_ids)
     }
 
 
 def _fetch_semantic_exploration_related_nodes(
     node_id: str,
-    zone_ids: list[str] | None,
     *,
     skip: int,
     limit: int | None,
@@ -1076,23 +951,16 @@ def _fetch_semantic_exploration_related_nodes(
     counts — but only the page's rows are read: ``fetch_related_term_ids``
     yields ids and ``fetch_terms_by_ids`` orders and pages them in SQL under the
     same rule the related list uses, so a term cannot move between pages.
-
-    *zone_ids* is resolved **once** here and threaded through the visibility
-    check, the related-id pass and the counts. Left to themselves those would
-    re-resolve the same zones five times for one request.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    if not term_is_in_scope(node_id, zone_ids, resolved):
+    if not term_is_in_scope(node_id):
         return {"nodes": [], "total": 0}
 
-    related_ids = fetch_related_term_ids(node_id, zone_ids, resolved)
+    related_ids = fetch_related_term_ids(node_id)
     if not related_ids:
         return {"nodes": [], "total": 0}
 
     page = fetch_terms_by_ids(related_ids, skip=skip, limit=limit)
-    counts = _fetch_term_relationship_counts(
-        [term["id"] for term in page], zone_ids=zone_ids, data_ids_by_zone=resolved
-    )
+    counts = _fetch_term_relationship_counts([term["id"] for term in page])
     return {
         "nodes": [
             {
@@ -1109,7 +977,6 @@ def _fetch_semantic_exploration_related_nodes(
 def fetch_exploration_related_nodes(
     node_id: str,
     layer: str,
-    zone_ids: list[str] | None = None,
     *,
     skip: int = 0,
     limit: int | None = None,
@@ -1122,12 +989,10 @@ def fetch_exploration_related_nodes(
     disagreed with the degree drawn on the node would be worse than either.
     """
     if layer == "data":
-        return _fetch_data_exploration_related_nodes(
-            node_id, zone_ids=zone_ids, skip=skip, limit=limit
-        )
+        return _fetch_data_exploration_related_nodes(node_id, skip=skip, limit=limit)
     if layer == "semantic":
         return _fetch_semantic_exploration_related_nodes(
-            node_id, zone_ids=zone_ids, skip=skip, limit=limit
+            node_id, skip=skip, limit=limit
         )
     raise ValueError(f"Unsupported Exploration layer: {layer}")
 
@@ -1138,7 +1003,6 @@ def fetch_exploration_related_nodes(
 
 
 def fetch_data_exploration_graph(
-    zone_ids: list[str] | None = None,
     limit: int = MAX_EXPLORATION_GRAPH_NODES,
     database_id: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
@@ -1154,11 +1018,9 @@ def fetch_data_exploration_graph(
     filtered to pairs with both ends drawn.
 
     **Relationship counts are computed before truncation**, over the whole
-    accessible edge set — so a table's number matches what the related-nodes
+    edge set — so a table's number matches what the related-nodes
     endpoint reports rather than shrinking because a neighbour was not drawn.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-
     statement = (
         select(
             s.catalog_table.c.id,
@@ -1190,18 +1052,13 @@ def fetch_data_exploration_graph(
     )
     if database_id is not None:
         statement = statement.where(s.catalog_database.c.id == database_id)
-    if resolved is not None:
-        statement = statement.where(
-            s.catalog_table.c.id.in_(list(resolved["table_ids"]))
-        )
     if database_id is None:
         limit = max(1, min(limit, MAX_EXPLORATION_GRAPH_NODES))
         statement = statement.limit(limit)
 
     nodes = [dict(r) for r in store().query_read(statement)]
     node_ids = {row["id"] for row in nodes}
-    zones_by_table = fetch_table_zones_map(zone_ids, data_ids_by_zone=resolved)
-    edges = fetch_data_exploration_edges(zone_ids=zone_ids, data_ids_by_zone=resolved)
+    edges = fetch_data_exploration_edges()
 
     degree: Counter[str] = Counter()
     for edge in edges:
@@ -1209,14 +1066,7 @@ def fetch_data_exploration_graph(
         degree[edge["target"]] += 1
 
     return {
-        "nodes": [
-            {
-                **row,
-                "zones": zones_by_table.get(row["id"], []),
-                "relationship_count": degree[row["id"]],
-            }
-            for row in nodes
-        ],
+        "nodes": [{**row, "relationship_count": degree[row["id"]]} for row in nodes],
         "links": [
             edge
             for edge in edges
@@ -1241,7 +1091,6 @@ def _table_ids_for_database(database_id: str) -> set[str]:
 
 
 def fetch_semantic_exploration_graph(
-    zone_ids: list[str] | None = None,
     limit: int = MAX_EXPLORATION_GRAPH_NODES,
     database_id: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
@@ -1261,23 +1110,13 @@ def fetch_semantic_exploration_graph(
     database is returned and *limit* is ignored. Links are kept only where
     both ends survived.
     """
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-
-    terms = fetch_all_terms(zone_ids=zone_ids, data_ids_by_zone=resolved)
+    terms = fetch_all_terms()
     column_counts = {
-        row["term_id"]: row["count"]
-        for row in fetch_column_attribute_counts(
-            zone_ids=zone_ids, data_ids_by_zone=resolved
-        )
+        row["term_id"]: row["count"] for row in fetch_column_attribute_counts()
     }
-    sql_counts = {
-        row["term_id"]: row["count"]
-        for row in fetch_sql_attribute_counts(
-            zone_ids=zone_ids, data_ids_by_zone=resolved
-        )
-    }
+    sql_counts = {row["term_id"]: row["count"] for row in fetch_sql_attribute_counts()}
 
-    pairs = fetch_term_table_pairs(zone_ids, data_ids_by_zone=resolved)
+    pairs = fetch_term_table_pairs()
     term_tables, table_terms = build_term_table_maps(pairs)
     # Which link type connected each (term, table) pair, kept per pair rather
     # than folded into the maps above, so a term-to-term edge can report *why*
@@ -1330,7 +1169,6 @@ def fetch_semantic_exploration_graph(
                 "name": term["name"],
                 "description": term.get("description"),
                 "synonyms": term.get("synonyms") or [],
-                "zones": term.get("zones") or [],
                 "relationship_count": degree.get(term["id"], 0),
                 "column_attributes_count": column_counts.get(term["id"], 0),
                 "sql_attributes_count": sql_counts.get(term["id"], 0),
@@ -1393,7 +1231,6 @@ def _link_path_node(node: dict[str, Any]) -> dict[str, Any]:
 def fetch_semantic_link_path(
     source_term_id: str,
     target_term_id: str,
-    zone_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """The real hop chain behind one term↔term edge of the semantic graph.
 
@@ -1403,31 +1240,10 @@ def fetch_semantic_link_path(
     actually connects the two. This returns
     :func:`auto_ontology.dal.terms.find_term_link_path`'s ordered node chain instead, so
     the client can graft those nodes on and highlight the real path.
-
-    Every Table and Column the path passes through has to fall inside
-    *zone_ids*, or the whole path is dropped: a chain that silently skipped an
-    out-of-scope hop would misrepresent how the two terms connect. Columns are
-    checked as well as tables because the traversal walks SEMANTIC_FK and
-    HAS_ATTRIBUTE undirected — a path can reach a column from an attribute on
-    both sides without ever stepping through that column's own table.
     """
     hops = find_term_link_path(source_term_id, target_term_id)
     if not hops:
         return {"hops": []}
-
-    resolved = resolve_accessible_catalog_ids(zone_ids)
-    if resolved is not None:
-        table_ids = resolved["table_ids"]
-        for hop in hops:
-            for side in (hop["source"], hop["target"]):
-                label = side.get("label")
-                if label == Labels.TABLE and side.get("id") not in table_ids:
-                    return {"hops": []}
-                # `table_id` is already on every Column node, put there by
-                # `find_term_link_path`'s own catalog enrichment — no extra
-                # round trip needed to check it.
-                if label == Labels.COLUMN and side.get("table_id") not in table_ids:
-                    return {"hops": []}
 
     return {
         "hops": [
@@ -1441,10 +1257,6 @@ def fetch_semantic_link_path(
     }
 
 
-#: Spelled out because ``fetch_table_zones_map`` is **re-exported** from
-#: ``zones`` rather than defined here, and the surface freeze resolves a
-#: module's contract by ``__module__`` — which for a re-export points at the
-#: definition, not at this file.
 __all__ = [
     "MAX_EXPLORATION_GRAPH_NODES",
     "fetch_column_attribute_exploration_details",
@@ -1457,6 +1269,5 @@ __all__ = [
     "fetch_sql_attribute_exploration_details",
     "fetch_sql_exploration_details",
     "fetch_table_exploration_details",
-    "fetch_table_zones_map",
     "fetch_term_exploration_details",
 ]

@@ -16,8 +16,8 @@ or a value the Python layer writes unconditionally). Everything else is
 optional and nullable — a missing value comes back as ``null``, and a
 required-but-null field would turn a documentation change into a 500.
 
-Item shapes are shared across routers on purpose: a Zone chip is rendered by
-the zones, terms, sql-attributes and exploration endpoints alike, so it is
+Item shapes are shared across routers on purpose: a Tag chip is rendered by
+the tags, terms, sql-attributes and catalog endpoints alike, so it is
 modelled once here rather than four times in four router packages.
 
 Every model allows extra keys — see :class:`ApiModel`.
@@ -78,12 +78,6 @@ __all__ = [
     "TermListItem",
     "TermSummary",
     "TermTable",
-    "Group",
-    "GroupRole",
-    "GroupUser",
-    "Zone",
-    "ZoneChip",
-    "ZoneItem",
 ]
 
 
@@ -140,7 +134,6 @@ class NodeUpdateResult(ApiModel):
     description: str | None = None
     sample_values: list[str] | None = None
     description_certified: bool | None = None
-    owner_id: str | None = None
 
 
 class GlobalSearchBreadcrumb(ApiModel):
@@ -170,115 +163,6 @@ class GlobalSearchItem(ApiModel):
 
 
 # ---------------------------------------------------------------------------
-# Zones
-# ---------------------------------------------------------------------------
-
-
-class ZoneChip(ApiModel):
-    """A zone as rendered next to something else it grants access to.
-
-    ``enabled`` is false for a zone whose ``Zone`` label was swapped for
-    ``disableZone``; those are returned to admins only.
-    """
-
-    id: str
-    name: str | None = None
-    color: str | None = None
-    enabled: bool | None = None
-
-
-class ZoneItem(ApiModel):
-    """A catalog node a zone grants access to (a database, schema or table)."""
-
-    id: str
-    name: str | None = None
-    label: str | None = None
-
-
-class Zone(ApiModel):
-    """A zone with its catalog data items.
-
-    ``items`` is absent on the list endpoint, a list of ``ZoneItem`` on the
-    detail/update endpoints, and a plain list of the ids that were linked on
-    create.
-    """
-
-    id: str
-    name: str | None = None
-    description: str | None = None
-    color: str | None = None
-    label: str | None = None
-    enabled: bool | None = None
-    items: list[ZoneItem | str] | None = None
-
-
-# ---------------------------------------------------------------------------
-# Users and groups
-# ---------------------------------------------------------------------------
-
-
-class GroupRole(ApiModel):
-    """One role on a group.
-
-    A group carries a single role, ``admin`` or ``viewer``. ``id`` and
-    ``name`` are that same value: there is no separate role catalog.
-    """
-
-    id: str
-    name: str
-
-
-class GroupUser(ApiModel):
-    """An account as a member of a group.
-
-    ``name`` and ``email`` are empty when the account has been deleted and
-    the membership remains. ``role`` is the account's own role, not the
-    group's.
-    """
-
-    id: str
-    name: str
-    email: str
-    role: str | None = None
-
-
-class Group(ApiModel):
-    """A group, its members, its role, and the permissions that role grants.
-
-    ``role`` is the stored value. ``roles`` is that same role as a one-element
-    list, and ``permissions`` is ``resource:action`` strings expanded from it.
-    Membership does not change an account's own role.
-    """
-
-    id: str
-    name: str
-    description: str
-    color: str
-    role: str
-    roles: list[GroupRole]
-    users: list[GroupUser]
-    permissions: list[str]
-    created: datetime
-
-
-class Owner(ApiModel):
-    """A user or a group that can be chosen as an owner.
-
-    ``permissions`` is the ``resource:action`` list the account's role, or the
-    group's role, grants. ``member_ids`` is empty for a user. For a group it
-    is the caller when they belong to that group, and empty otherwise.
-    ``color`` is only set for a group.
-    """
-
-    id: str
-    name: str
-    kind: str
-    color: str | None = None
-    permissions: list[str]
-    member_ids: list[str] = Field(default_factory=list)
-
-
-# ---------------------------------------------------------------------------
 # Catalog (databases / schemas / tables / columns)
 # ---------------------------------------------------------------------------
 
@@ -290,7 +174,6 @@ class SchemaSummary(ApiModel):
     schema_name: str | None = None
     description: str | None = None
     tables_count: int | None = None
-    owner_id: str | None = None
 
 
 class DatabaseSummary(ApiModel):
@@ -300,7 +183,6 @@ class DatabaseSummary(ApiModel):
     name: str | None = None
     description: str | None = None
     num_of_schemas: int | None = None
-    owner_id: str | None = None
     schemas: list[SchemaSummary] = Field(default_factory=list)
 
 
@@ -317,7 +199,6 @@ class TableSummary(ApiModel):
     columns_count: int | None = None
     sql_count: int | None = None
     terms_count: int | None = None
-    owner_id: str | None = None
     #: The catalog has no table detail read -- a table's page is built from the
     #: schema's list -- so its chips travel with the row.
     tags: list[TagChip] = Field(default_factory=list)
@@ -375,9 +256,8 @@ class Tag(ApiModel):
     additionally null for a tag nobody has renamed, which is the same fact
     ``modified == created`` states.
 
-    Both are opaque Better Auth user ids. Resolving one to a name is the
-    gateway's job -- the accounts live in a schema this service does not own --
-    so this API deliberately answers with the id it stored.
+    Both are opaque user ids from the gateway. There is no sign-in, so a
+    person's edit is recorded as ``local``.
     """
 
     id: str
@@ -442,9 +322,8 @@ class TagItem(ApiModel):
     this itself. A row written before either column existed reads the same way,
     since a label nobody claimed is a label nobody claimed.
 
-    ``tagged_by`` is an opaque Better Auth user id, resolved to a name by the
-    gateway for the reason :class:`Tag`'s authors are: the accounts live in a
-    schema this service does not own. An id that resolves to nothing reads as
+    ``tagged_by`` is an opaque user id from the gateway, like :class:`Tag`'s
+    authors. An id that resolves to nothing reads as
     "Auto Generated" as well — these are not foreign keys, so an account can be
     deleted and leave the label behind, and the column names a person or a rule
     or neither rather than spelling out which kind of nobody this is.
@@ -544,14 +423,12 @@ class TermSummary(ApiModel):
 
 
 class Term(TermSummary):
-    """A Term with its certification rollup and resolved zone chips."""
+    """A Term with its certification rollup and tag chips."""
 
     synonyms: list[str] | None = None
     name_certified: bool | None = None
     description_certified: bool | None = None
     certification: str | None = None
-    owner_id: str | None = None
-    zones: list[ZoneChip] | None = None
 
 
 class TermTable(ApiModel):
@@ -628,7 +505,6 @@ class ColumnAttribute(ApiModel):
     table_id: str | None = None
     sample_values: list[str] | None = None
     certified: bool | None = None
-    zones: list[ZoneChip] | None = None
     tags: list[TagChip] | None = None
     primary_column: ColumnRef | None = None
     referenced_columns: list[ColumnRef] | None = None
@@ -641,8 +517,7 @@ class ColumnAttribute(ApiModel):
 class SqlAttribute(ApiModel):
     """A SqlAttribute with its owning Term and the SQL text behind it.
 
-    ``zones`` is resolved only by the single-attribute read; ``sql_id`` and
-    ``database_name`` only by the create/update writes.
+    ``sql_id`` and ``database_name`` are set only by the create/update writes.
     """
 
     id: str
@@ -657,8 +532,6 @@ class SqlAttribute(ApiModel):
     term_id: str | None = None
     term_name: str | None = None
     database_name: str | None = None
-    owner_id: str | None = None
-    zones: list[ZoneChip] | None = None
     tags: list[TagChip] | None = None
     created: datetime | None = None
     modified: datetime | None = None
@@ -758,7 +631,6 @@ class DataGraphNode(ApiModel):
     columns_count: int | None = None
     sql_count: int | None = None
     terms_count: int | None = None
-    zones: list[ZoneChip] = Field(default_factory=list)
     relationship_count: int | None = None
 
 
@@ -789,7 +661,6 @@ class SemanticGraphNode(ApiModel):
     name: str | None = None
     description: str | None = None
     synonyms: list[str] = Field(default_factory=list)
-    zones: list[ZoneChip] = Field(default_factory=list)
     relationship_count: int | None = None
     column_attributes_count: int | None = None
     sql_attributes_count: int | None = None
@@ -971,10 +842,8 @@ class SqlAttributeExplorationSql(ApiModel):
 class SqlAttributeExplorationDetails(ApiModel):
     """A SqlAttribute's own Sql query and owning Term, for expanding it on the graph.
 
-    Both are `None` only when the attribute itself doesn't exist (or is out
-    of scope) — see `fetch_sql_attribute_exploration_details`. `sql` alone
-    can be `None` when the attribute's SQL touches a table outside the
-    caller's zones even though the attribute/term are visible.
+    Both are `None` only when the attribute itself doesn't exist — see
+    `fetch_sql_attribute_exploration_details`.
     """
 
     sql: SqlAttributeExplorationSql | None = None

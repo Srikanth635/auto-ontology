@@ -22,14 +22,13 @@ https://github.com/NVIDIA/auto-ontology.
 
 ## Base image
 
-All three images are built on the NVIDIA-approved Ubuntu 22.04 base container
+Both images are built on the NVIDIA-approved Ubuntu 22.04 base container
 (OSRB Bug 3840915), pulled from NVIDIA's registry:
 
 | Image | Base |
 | --- | --- |
 | `auto-ontology` (backend and ingestion) | `nvcr.io/nvidia/base/ubuntu:jammy-20250619` |
 | `auto-ontology-frontend` | `nvcr.io/nvidia/base/ubuntu:jammy-20250619` |
-| `auto-ontology-mcp` | `nvcr.io/nvidia/base/ubuntu:jammy-20250619` |
 
 Source code for the base container is provided by NVIDIA with that image.
 
@@ -54,15 +53,6 @@ Source code for the base container is provided by NVIDIA with that image.
 | Prisma CLI and engines (`/app/migrate`) | 7.7.0 | Apache-2.0 | https://github.com/prisma/prisma |
 | dotenv (`/app/migrate`) | 17.4.2 | BSD-2-Clause | https://github.com/motdotla/dotenv |
 | Geist and Geist Mono fonts (bundled by `next/font`) | — | SIL Open Font License 1.1 | https://github.com/vercel/geist-font |
-| `ca-certificates` (Ubuntu package) | jammy | MPL-2.0 (certificate data), GPL-2.0-or-later (scripts) | https://packages.ubuntu.com/jammy/ca-certificates |
-| `tini` (Ubuntu package) | jammy | MIT | https://github.com/krallin/tini |
-
-### `auto-ontology-mcp` — `mcp/Dockerfile`
-
-| Component | Version | License | Project URL |
-| --- | --- | --- | --- |
-| CPython (python-build-standalone, installed by uv) | 3.12 | PSF-2.0, plus the licenses of its bundled libraries | https://github.com/astral-sh/python-build-standalone |
-| Python packages in `/opt/venv` | per `mcp/uv.lock` | see `THIRD_PARTY_NOTICES.md` (MCP server) | — |
 | `ca-certificates` (Ubuntu package) | jammy | MPL-2.0 (certificate data), GPL-2.0-or-later (scripts) | https://packages.ubuntu.com/jammy/ca-certificates |
 | `tini` (Ubuntu package) | jammy | MIT | https://github.com/krallin/tini |
 

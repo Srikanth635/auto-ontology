@@ -2,8 +2,6 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { CSSProperties } from 'react';
-
 import { Text } from '@/common/Text';
 
 // A label carries a name, so it is capped and clipped rather than allowed to
@@ -15,21 +13,8 @@ const LABEL_GREEN =
 	'border-brand/40 bg-brand/10 text-brand-strong dark:border-brand/30 dark:bg-brand/15 dark:text-brand-light';
 const LABEL_GREEN_HOVER =
 	'hover:border-brand/70 hover:bg-brand/20 hover:text-brand-deep dark:hover:border-brand/60 dark:hover:bg-brand/25 dark:hover:text-brand-pale';
-const LABEL_NEUTRAL =
-	'border-slate-200 bg-slate-100 text-body dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300';
-const LABEL_MUTED =
-	'border-slate-200 bg-slate-100 text-secondary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500';
-
-function zoneLabelStyle(color: string): CSSProperties {
-	return { backgroundColor: `${color}26`, color, borderColor: `${color}60` };
-}
-
 type LabelStyleProps = {
 	label: string;
-	/** Accent color (hex) for zone labels; falls back to the brand-green palette when omitted. */
-	color?: string | null;
-	/** Muted grey style used for disabled zones. */
-	muted?: boolean;
 };
 
 /**
@@ -53,32 +38,29 @@ export type LabelProps = LabelStyleProps &
 		  }
 	);
 
-export const Label = ({ label, onClick, color, muted = false, onRemove }: LabelProps) => {
-	const usesZoneColor = !muted && color != null && color !== '';
+export const Label = ({ label, onClick, onRemove }: LabelProps) => {
 	const interactive = onClick != null;
-	const palette = muted ? LABEL_MUTED : usesZoneColor ? LABEL_NEUTRAL : LABEL_GREEN;
 	const className = [
 		LABEL_BASE,
-		palette,
+		LABEL_GREEN,
 		interactive ? 'cursor-pointer transition-colors' : '',
-		interactive && !usesZoneColor && !muted ? LABEL_GREEN_HOVER : '',
+		interactive ? LABEL_GREEN_HOVER : '',
 	]
 		.filter(Boolean)
 		.join(' ');
-	const style = usesZoneColor ? zoneLabelStyle(color as string) : undefined;
 	// Clipping is what makes the cap above win over a long value, and a clipped
 	// chip reveals itself in the same tooltip the tags elsewhere use.
 	const content = <Text text={label} />;
 
 	if (interactive) {
 		return (
-			<button type="button" onClick={onClick} className={className} style={style}>
+			<button type="button" onClick={onClick} className={className}>
 				{content}
 			</button>
 		);
 	}
 	return (
-		<span className={className} style={style}>
+		<span className={className}>
 			{content}
 			{onRemove != null && (
 				<button

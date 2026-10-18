@@ -6,10 +6,12 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Body, Request
 from fastapi.responses import JSONResponse
+from auto_ontology.ingestion_service.config import is_semantic_compilation_enabled
 from auto_ontology.ingestion_service.history import (
     get_last_failure_if_most_recent,
     get_last_successful_run,
@@ -73,10 +75,32 @@ async def liveness() -> dict[str, str]:
     return {"status": "ok"}
 
 
+def _start_or_trigger(scheduler: Any) -> None:
+    """Run a compilation pass now, starting the job first if it is idle."""
+    # start() performs an immediate first run on its own. Only ask for an extra
+    # run when the job was already started; otherwise the first run and the
+    # trigger would compile twice.
+    if not scheduler.start():
+        scheduler.trigger()
+
+
 @router.post("/ingest", status_code=202, response_model=StatusResponse)
-async def ingest_connection(connection: dict[str, Any] = Body(...)) -> dict[str, str]:
-    """Trigger a non-blocking ingest for a single connection."""
-    trigger_ingest(connection)
+async def ingest_connection(
+    request: Request, connection: dict[str, Any] = Body(...)
+) -> dict[str, str]:
+    """Trigger a non-blocking ingest for a single connection.
+
+    When semantic compilation is on, a compilation pass follows the ingest so
+    the new or changed database gets its semantic layer straight away.
+    """
+    scheduler = request.app.state.semantic_scheduler
+    loop = asyncio.get_running_loop()
+
+    def _compile_after_ingest() -> None:
+        if is_semantic_compilation_enabled():
+            loop.call_soon_threadsafe(_start_or_trigger, scheduler)
+
+    trigger_ingest(connection, on_done=_compile_after_ingest)
     return {"status": "accepted"}
 
 
@@ -97,7 +121,7 @@ async def semantic_reset(
     """Trigger a non-blocking reset of a database's semantic layer.
 
     Deletes the semantic nodes and embeddings, then asks for a compilation pass
-    so the layer is rebuilt without waiting for the scheduler's next run.
+    so the layer is rebuilt straight away.
     Omitting ``database_name`` resets every database.
 
     The three steps are strictly ordered — stop the running pass, wait for it to
@@ -118,15 +142,9 @@ async def semantic_compile(request: Request) -> dict[str, str]:
 
     Ensures the scheduler is running first (``start()`` is idempotent), so this
     also takes effect when compilation is enabled while the service is already
-    up — no restart needed. Runs on the scheduler's own task; when it finishes,
-    the next automatic run is rescheduled for 24h later.
+    up — no restart needed. Runs on the scheduler's own task.
     """
-    scheduler = request.app.state.semantic_scheduler
-    # start() performs an immediate startup run on its own. Only ask for an
-    # extra run when the scheduler was already running; otherwise the startup
-    # run and the trigger would compile twice.
-    if not scheduler.start():
-        scheduler.trigger()
+    _start_or_trigger(request.app.state.semantic_scheduler)
     return {"status": "accepted"}
 
 
@@ -154,7 +172,7 @@ async def semantic_stop(request: Request) -> dict[str, str]:
 
     The database being compiled finishes first — that work runs in a thread that
     cannot be interrupted — so the pass ends at the next database boundary. The
-    scheduler stays alive and its next automatic run happens on schedule.
+    job stays alive and runs again on the next trigger.
     """
     request.app.state.semantic_scheduler.abort()
     return {"status": "accepted"}

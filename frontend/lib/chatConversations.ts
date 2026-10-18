@@ -2,13 +2,13 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ResolvedUser } from '@/auth/resolve-user';
+import type { LocalUser } from '@/lib/server/route';
 import { getPrisma } from '@/lib/prisma';
 
 // Shared by the watch, cancel, and visualization proxies. Each must confirm
 // that a conversation belongs to the caller, and none should create one.
 export const findOwnedConversation = async (
-	user: ResolvedUser,
+	user: LocalUser,
 	conversationId: string,
 ): Promise<{ id: string } | null> => {
 	const prisma = getPrisma();

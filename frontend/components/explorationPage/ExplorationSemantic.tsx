@@ -12,7 +12,6 @@ import { PropertyRow } from '@/common/PropertyRow';
 import { Text } from '@/common/Text';
 import { TextVariant } from '@/enums/text';
 import { ExplorationLayer } from '@/enums/exploration';
-import { ZonesRow } from '@/common/SinglePageComposer';
 import type {
 	ExplorationGraph,
 	ExplorationTermNode,
@@ -26,7 +25,6 @@ export const buildSemanticGraph = (graph: SemanticExplorationGraph): Exploration
 		name: node.name,
 		description: node.description,
 		synonyms: node.synonyms,
-		zones: node.zones,
 		layer: ExplorationLayer.Semantic as const,
 		nodeType: 'term' as const,
 		relationshipCount: node.relationship_count,
@@ -131,7 +129,6 @@ export const ActiveTermCard = ({
 					/>
 				</span>
 			</div>
-			<ZonesRow zones={node.zones} />
 		</div>
 	</section>
 );

@@ -6,7 +6,7 @@
 .venv/
 **/__pycache__/
 
-# Build artefacts (e.g. auto-ontology-mcp wheels from `uv build`)
+# Build artefacts (e.g. wheels from `uv build`)
 dist/
 *.egg-info/
 

@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPublic } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +24,7 @@ async function checkPostgres(): Promise<CheckResult> {
 //
 // Probes Postgres and answers 200 `{ status: 'ok' }`, or 503
 // `{ status: 'degraded' }` carrying the failing check's error detail.
-export const GET = withPublic(async () => {
+export const GET = route(async () => {
 	const postgres = await checkPostgres();
 	const healthy = postgres.status === 'ok';
 	return NextResponse.json(

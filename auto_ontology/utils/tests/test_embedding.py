@@ -329,6 +329,16 @@ def test_embed_rows_keeps_only_the_embedded_rows(endpoint) -> None:
     assert [r["metadata"]["id"] for r in out] == ["a"]
 
 
+def test_embed_rows_without_a_model_makes_no_request(endpoint) -> None:
+    """An edit still saves when no embedding model is configured."""
+
+    def _unexpected(request: httpx.Request) -> httpx.Response:
+        raise AssertionError("no request should be made without a model")
+
+    endpoint(_unexpected)
+    assert embed_rows(_rows("a"), _params(model_name=""), what="Thing") == []
+
+
 def test_embed_rows_raises_when_the_endpoint_fails(endpoint) -> None:
     endpoint(lambda request: httpx.Response(401, json={"error": "bad key"}))
     with pytest.raises(RuntimeError, match="Thing"):

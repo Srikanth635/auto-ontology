@@ -67,7 +67,6 @@ def build_id_map() -> dict[str, str]:
         fetch_all_terms,
         fetch_column_attributes_by_term_id,
     )
-    from auto_ontology.dal.zones import list_zones
 
     id_map: dict[str, str] = {}
 
@@ -98,8 +97,6 @@ def build_id_map() -> dict[str, str]:
         id_map[analysis["id"]] = f"<analysis:{analysis['name']}>"
     for analysis in list_pql_analyses():
         id_map[analysis["id"]] = f"<pql:{analysis['name']}>"
-    for zone in list_zones():
-        id_map[zone["id"]] = f"<zone:{zone['name']}>"
 
     # Statements carry no name, so they are keyed by their text -- stable across
     # runs regardless of insertion order, which an id is not.
@@ -202,7 +199,7 @@ def normalise(value: Any, id_map: dict[str, str]) -> Any:
 
     if isinstance(value, dict):
         # Keys are normalised too: several reads return maps *keyed by node id*
-        # (``fetch_table_zones_map``, ``fetch_col_table_contexts``), so leaving
+        # (``fetch_col_table_contexts``, for one), so leaving
         # keys alone would leave raw uuids in the golden.
         normalised = {
             normalise(k, id_map): (
@@ -274,17 +271,11 @@ ZERO_ARG_READS: tuple[tuple[str, str], ...] = (
     ("sql_attributes", "list_sql_attributes"),
     ("terms", "fetch_terms_with_sqls"),
     ("terms", "semantic_layer_calculated"),
-    ("zones", "list_zones"),
-)
-
-# Reads whose only parameter is zone scoping, captured under every zone mode.
-ZONE_SCOPED_READS: tuple[tuple[str, str], ...] = (
     ("custom_analyses", "list_custom_analyses"),
     ("datasources", "fetch_databases"),
     ("exploration", "fetch_data_exploration_edges"),
     ("exploration", "fetch_data_exploration_graph"),
     ("exploration", "fetch_semantic_exploration_graph"),
-    ("exploration", "fetch_table_zones_map"),
     ("sql_attributes", "fetch_sql_attribute_counts"),
     ("terms", "count_terms"),
     ("terms", "fetch_all_terms"),
@@ -292,18 +283,7 @@ ZONE_SCOPED_READS: tuple[tuple[str, str], ...] = (
     ("terms", "fetch_column_attribute_counts"),
     ("terms", "fetch_related_terms_counts"),
     ("terms", "fetch_term_table_pairs"),
-    ("terms", "fetch_term_zones_map"),
 )
-
-
-def _zone_modes(ids: dict[str, Any]) -> tuple[tuple[str, Any], ...]:
-    """The three zone-scoping modes every scoped read is captured under.
-
-    ``admin`` (``None``) sees everything, ``scoped`` sees one zone, ``none``
-    (``[]``) sees nothing. A golden covering only the admin path would miss
-    precisely the access-control regression that matters most.
-    """
-    return (("admin", None), ("scoped", [ids["zone_film"]]), ("none", []))
 
 
 def _fixture_ids() -> dict[str, Any]:
@@ -325,7 +305,6 @@ def _fixture_ids() -> dict[str, Any]:
     from auto_ontology.dal.pql_analyses import list_pql_analyses
     from auto_ontology.dal.sql_attributes import list_sql_attributes
     from auto_ontology.dal.terms import fetch_all_terms
-    from auto_ontology.dal.zones import list_zones
 
     databases = {row["name"]: row["id"] for row in fetch_databases()}
     columns = fetch_schemas_by_ids()
@@ -368,7 +347,6 @@ def _fixture_ids() -> dict[str, Any]:
     attributes = list_sql_attributes()
     analyses = list_custom_analyses()
     pql = list_pql_analyses()
-    zones = list_zones()
 
     ids: dict[str, Any] = {
         "db_pagila": databases.get("pagila"),
@@ -377,9 +355,6 @@ def _fixture_ids() -> dict[str, Any]:
         "sqlattr_revenue": first(attributes, name="total revenue"),
         "analysis_top_films": first(analyses, name="Top rented films"),
         "pql_churn": pql[0]["id"] if pql else None,
-        "zone_film": first(zones, name="Film domain"),
-        "zone_cross": first(zones, name="Cross database"),
-        "zone_retired": first(zones, name="Retired zone"),
     }
 
     for name in ("film", "rental", "customer", "payment", "inventory", "category"):
@@ -439,8 +414,6 @@ def capture_arg_reads(cap: Capture, ids: dict[str, Any]) -> None:
         pql_analyses,
         sql_attributes,
         terms,
-        users,
-        zones,
     )
 
     film = ids["table_film"]
@@ -694,22 +667,6 @@ def capture_arg_reads(cap: Capture, ids: dict[str, Any]) -> None:
         lambda: exploration.fetch_exploration_related_nodes(term_film, "semantic"),
     )
 
-    # -- zones / users -----------------------------------------------------
-    run("zones.get_zone_by_id__enabled", lambda: zones.get_zone_by_id(ids["zone_film"]))
-    run(
-        "zones.get_zone_by_id__disabled",
-        lambda: zones.get_zone_by_id(ids["zone_retired"]),
-    )
-    for label, zone_ids in _zone_modes(ids):
-        run(
-            f"users.resolve_accessible_catalog_ids[{label}]",
-            lambda z=zone_ids: users.resolve_accessible_catalog_ids(z),
-        )
-        run(
-            f"users.get_accessible_catalog_ids_for_zones[{label}]",
-            lambda z=zone_ids: users.get_accessible_catalog_ids_for_zones(z or []),
-        )
-
 
 def capture_all() -> Capture:
     """Run every capture against the live graph. Used by the replay test too."""
@@ -724,15 +681,6 @@ def capture_all() -> Capture:
     for module_name, fn_name in ZERO_ARG_READS:
         module = importlib.import_module(f"auto_ontology.dal.{module_name}")
         cap.run(f"{module_name}.{fn_name}", getattr(module, fn_name))
-
-    for module_name, fn_name in ZONE_SCOPED_READS:
-        module = importlib.import_module(f"auto_ontology.dal.{module_name}")
-        fn = getattr(module, fn_name)
-        for label, zone_ids in _zone_modes(ids):
-            cap.run(
-                f"{module_name}.{fn_name}[{label}]",
-                lambda f=fn, z=zone_ids: f(zone_ids=z),
-            )
 
     capture_arg_reads(cap, ids)
     return cap

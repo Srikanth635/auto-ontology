@@ -5,7 +5,7 @@
 import { redirect } from 'next/navigation';
 import { readConnectionsEnvSource } from '@/lib/server/connections';
 
-// Settings is admin-only (enforced by layout.tsx). Land on the first section
+// Land on the first section
 // the nav actually offers: SettingsNav drops Connections when they come from
 // CONNECTION_STRINGS, so a fixed redirect there opened a page with no entry in
 // the menu beside it. Both read the same flag so they cannot disagree — now
@@ -13,5 +13,5 @@ import { readConnectionsEnvSource } from '@/lib/server/connections';
 // per-request memo.
 export default async function SettingsPage() {
 	const envManaged = await readConnectionsEnvSource();
-	redirect(envManaged === true ? '/settings/zones' : '/settings/connections');
+	redirect(envManaged === true ? '/settings/models' : '/settings/connections');
 }

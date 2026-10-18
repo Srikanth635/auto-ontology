@@ -155,4 +155,3 @@ class AutoOntologyModelDocument(BaseModel):
 
     data_layer: ModelDataLayer = Field(default_factory=ModelDataLayer)
     semantic_layer: ModelSemanticLayer = Field(default_factory=ModelSemanticLayer)
-    zones: list[dict[str, str]] = Field(default_factory=list)

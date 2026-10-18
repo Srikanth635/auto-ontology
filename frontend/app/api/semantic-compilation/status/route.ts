@@ -2,9 +2,9 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // Whether the semantic layer has been calculated (any Term exists). The chat
 // page uses this to gate the conversation area when the layer is missing.
-export const GET = withPermission({ chat: ['use'] })(async (req) => proxyToBackend(req));
+export const GET = route(async (req) => proxyToBackend(req));

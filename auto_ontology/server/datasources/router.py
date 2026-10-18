@@ -6,16 +6,14 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Path, Query, Request
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, Field
 
 from auto_ontology.server.custom_analyses import service as custom_analyses_dal
 from auto_ontology.server.datasources import service as dal
 from auto_ontology.server.pagination import LIMIT_QUERY, SKIP_QUERY
 from auto_ontology.server.pql_analyses import service as pql_analyses_dal
-from auto_ontology.dal.owners import edit_subject
 from auto_ontology.server.models import NodeUpdateResult
-from auto_ontology.server.owners import enforce_edit, owner_from_body
 from auto_ontology.server.responses import (
     CustomAnalysisPageResponse,
     CustomAnalysisResponse,
@@ -34,7 +32,6 @@ class NodeUpdate(BaseModel):
     description: str | None = None
     sample_values: list[str] | None = None
     description_certified: bool | None = None
-    owner_id: str | None = None
 
 
 class CustomAnalysisValidate(BaseModel):
@@ -75,7 +72,7 @@ def _count_payload(data: object) -> dict:
 @router.get("/schemas/{db_id}", response_model=SchemasPayload | None)
 def list_schemas_by_database(db_id: str) -> dict:
     """Schemas for a database."""
-    result = dal.fetch_schemas_for_database(db_id, zone_ids=None)
+    result = dal.fetch_schemas_for_database(db_id)
     return result
 
 
@@ -91,9 +88,7 @@ def list_tables_by_schema(
     ),
 ) -> dict:
     """Tables under a schema (lazy tree)."""
-    rows = dal.fetch_tables_for_schema(
-        schema_id, database_name=database_name, zone_ids=None
-    )
+    rows = dal.fetch_tables_for_schema(schema_id, database_name=database_name)
     return _count_payload(rows)
 
 
@@ -142,7 +137,7 @@ def list_columns_by_table(
 @router.get("/datasources/dbs", response_model=DatabaseListResponse)
 def list_databases() -> dict:
     """Databases in the catalog."""
-    rows = dal.fetch_databases(zone_ids=None)
+    rows = dal.fetch_databases()
     return _count_payload(rows)
 
 
@@ -170,12 +165,12 @@ def list_custom_analyses(
     asking. Omitting *limit* returns every matching analysis.
     """
     rows = custom_analyses_dal.list_custom_analyses(
-        zone_ids=None, search=query, skip=skip, limit=limit
+        search=query, skip=skip, limit=limit
     )
     # The count is a second read, so it is worth skipping for the request that
     # asked for everything: a whole unpaged list already is its own total.
     total = (
-        custom_analyses_dal.count_custom_analyses(zone_ids=None, search=query)
+        custom_analyses_dal.count_custom_analyses(search=query)
         if skip or limit is not None
         else len(rows)
     )
@@ -386,7 +381,6 @@ def delete_pql_analysis(analysis_id: str) -> dict:
     response_model_exclude_unset=True,
 )
 def update_node(
-    request: Request,
     node_id: str = Path(
         description="Id of any catalog node — a Database, Schema, Table or Column."
     ),
@@ -394,11 +388,6 @@ def update_node(
 ) -> dict:
     """Update mutable properties of any catalog node."""
     props = body.model_dump(exclude_none=True)
-    subject = edit_subject(node_id)
-    if subject is not None:
-        enforce_edit(request, subject)
-        if "owner_id" in body.model_fields_set:
-            props["owner_id"] = owner_from_body(body.owner_id, subject.permission)
     try:
         result = dal.update_node_properties(node_id, props)
     except ValueError as exc:

@@ -278,20 +278,6 @@
               }
             ],
             "title": "Term Name"
-          },
-          "zones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ZoneChip"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Zones"
           }
         },
         "required": [
@@ -1195,13 +1181,6 @@
               }
             ],
             "title": "Terms Count"
-          },
-          "zones": {
-            "items": {
-              "$ref": "#/components/schemas/ZoneChip"
-            },
-            "title": "Zones",
-            "type": "array"
           }
         },
         "required": [
@@ -1299,19 +1278,6 @@
           "data"
         ],
         "title": "DataResponse[ExplorationRelatedNodes]",
-        "type": "object"
-      },
-      "DataResponse_Group_": {
-        "additionalProperties": true,
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/Group"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "title": "DataResponse[Group]",
         "type": "object"
       },
       "DataResponse_IdRef_": {
@@ -1509,19 +1475,6 @@
         "title": "DataResponse[Term]",
         "type": "object"
       },
-      "DataResponse_Zone_": {
-        "additionalProperties": true,
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/Zone"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "title": "DataResponse[Zone]",
-        "type": "object"
-      },
       "DataResponse_dict_str__int__": {
         "additionalProperties": true,
         "properties": {
@@ -1537,26 +1490,6 @@
           "data"
         ],
         "title": "DataResponse[dict[str, int]]",
-        "type": "object"
-      },
-      "DataResponse_dict_str__list_ZoneChip___": {
-        "additionalProperties": true,
-        "properties": {
-          "data": {
-            "additionalProperties": {
-              "items": {
-                "$ref": "#/components/schemas/ZoneChip"
-              },
-              "type": "array"
-            },
-            "title": "Data",
-            "type": "object"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "title": "DataResponse[dict[str, list[ZoneChip]]]",
         "type": "object"
       },
       "DatabaseSummary": {
@@ -1599,17 +1532,6 @@
               }
             ],
             "title": "Num Of Schemas"
-          },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
           },
           "schemas": {
             "items": {
@@ -2347,233 +2269,6 @@
         "title": "GraphLink",
         "type": "object"
       },
-      "Group": {
-        "additionalProperties": true,
-        "description": "A group, its members, its role, and the permissions that role grants.\n\n``role`` is the stored value. ``roles`` is that same role as a one-element\nlist, and ``permissions`` is ``resource:action`` strings expanded from it.\nMembership does not change an account's own role.",
-        "properties": {
-          "color": {
-            "title": "Color",
-            "type": "string"
-          },
-          "created": {
-            "format": "date-time",
-            "title": "Created",
-            "type": "string"
-          },
-          "description": {
-            "title": "Description",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "permissions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Permissions",
-            "type": "array"
-          },
-          "role": {
-            "title": "Role",
-            "type": "string"
-          },
-          "roles": {
-            "items": {
-              "$ref": "#/components/schemas/GroupRole"
-            },
-            "title": "Roles",
-            "type": "array"
-          },
-          "users": {
-            "items": {
-              "$ref": "#/components/schemas/GroupUser"
-            },
-            "title": "Users",
-            "type": "array"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "color",
-          "role",
-          "roles",
-          "users",
-          "permissions",
-          "created"
-        ],
-        "title": "Group",
-        "type": "object"
-      },
-      "GroupCreate": {
-        "properties": {
-          "color": {
-            "title": "Color",
-            "type": "string"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "role": {
-            "title": "Role",
-            "type": "string"
-          },
-          "user_ids": {
-            "default": [],
-            "items": {
-              "type": "string"
-            },
-            "title": "User Ids",
-            "type": "array"
-          }
-        },
-        "required": [
-          "name",
-          "color",
-          "role"
-        ],
-        "title": "GroupCreate",
-        "type": "object"
-      },
-      "GroupRole": {
-        "additionalProperties": true,
-        "description": "One role on a group.\n\nA group carries a single role, ``admin`` or ``viewer``. ``id`` and\n``name`` are that same value: there is no separate role catalog.",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ],
-        "title": "GroupRole",
-        "type": "object"
-      },
-      "GroupUpdate": {
-        "properties": {
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "role": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Role"
-          },
-          "user_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Ids"
-          }
-        },
-        "title": "GroupUpdate",
-        "type": "object"
-      },
-      "GroupUser": {
-        "additionalProperties": true,
-        "description": "An account as a member of a group.\n\n``name`` and ``email`` are empty when the account has been deleted and\nthe membership remains. ``role`` is the account's own role, not the\ngroup's.",
-        "properties": {
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "role": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Role"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "email"
-        ],
-        "title": "GroupUser",
-        "type": "object"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2668,50 +2363,6 @@
         "title": "ListResponse[GlobalSearchItem]",
         "type": "object"
       },
-      "ListResponse_Group_": {
-        "additionalProperties": true,
-        "properties": {
-          "count": {
-            "title": "Count",
-            "type": "integer"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/Group"
-            },
-            "title": "Data",
-            "type": "array"
-          }
-        },
-        "required": [
-          "data",
-          "count"
-        ],
-        "title": "ListResponse[Group]",
-        "type": "object"
-      },
-      "ListResponse_Owner_": {
-        "additionalProperties": true,
-        "properties": {
-          "count": {
-            "title": "Count",
-            "type": "integer"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/Owner"
-            },
-            "title": "Data",
-            "type": "array"
-          }
-        },
-        "required": [
-          "data",
-          "count"
-        ],
-        "title": "ListResponse[Owner]",
-        "type": "object"
-      },
       "ListResponse_PublicConnection_": {
         "additionalProperties": true,
         "properties": {
@@ -2798,28 +2449,6 @@
           "count"
         ],
         "title": "ListResponse[TagChip]",
-        "type": "object"
-      },
-      "ListResponse_Zone_": {
-        "additionalProperties": true,
-        "properties": {
-          "count": {
-            "title": "Count",
-            "type": "integer"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/Zone"
-            },
-            "title": "Data",
-            "type": "array"
-          }
-        },
-        "required": [
-          "data",
-          "count"
-        ],
-        "title": "ListResponse[Zone]",
         "type": "object"
       },
       "ModelFormat": {
@@ -3136,17 +2765,6 @@
             ],
             "title": "Description Certified"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "sample_values": {
             "anyOf": [
               {
@@ -3195,17 +2813,6 @@
             "title": "Id",
             "type": "string"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "sample_values": {
             "anyOf": [
               {
@@ -3248,57 +2855,6 @@
           "total"
         ],
         "title": "ObjectPageResponse[TableColumns]",
-        "type": "object"
-      },
-      "Owner": {
-        "additionalProperties": true,
-        "description": "A user or a group that can be chosen as an owner.\n\n``permissions`` is the ``resource:action`` list the account's role, or the\ngroup's role, grants. ``member_ids`` is empty for a user. For a group it\nis the caller when they belong to that group, and empty otherwise.\n``color`` is only set for a group.",
-        "properties": {
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "member_ids": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Member Ids",
-            "type": "array"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "permissions": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Permissions",
-            "type": "array"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "kind",
-          "permissions"
-        ],
-        "title": "Owner",
         "type": "object"
       },
       "PagedListResponse_ColumnAttribute_": {
@@ -3824,17 +3380,6 @@
             "title": "Id",
             "type": "string"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "schema_name": {
             "anyOf": [
               {
@@ -3978,13 +3523,6 @@
             },
             "title": "Synonyms",
             "type": "array"
-          },
-          "zones": {
-            "items": {
-              "$ref": "#/components/schemas/ZoneChip"
-            },
-            "title": "Zones",
-            "type": "array"
           }
         },
         "required": [
@@ -4038,7 +3576,7 @@
       },
       "SqlAttribute": {
         "additionalProperties": true,
-        "description": "A SqlAttribute with its owning Term and the SQL text behind it.\n\n``zones`` is resolved only by the single-attribute read; ``sql_id`` and\n``database_name`` only by the create/update writes.",
+        "description": "A SqlAttribute with its owning Term and the SQL text behind it.\n\n``sql_id`` and ``database_name`` are set only by the create/update writes.",
         "properties": {
           "certified": {
             "anyOf": [
@@ -4156,17 +3694,6 @@
             ],
             "title": "Name"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "source": {
             "anyOf": [
               {
@@ -4235,20 +3762,6 @@
               }
             ],
             "title": "Term Name"
-          },
-          "zones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ZoneChip"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Zones"
           }
         },
         "required": [
@@ -4273,17 +3786,6 @@
             "title": "Name",
             "type": "string"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "source": {
             "default": "manual",
             "title": "Source",
@@ -4305,7 +3807,7 @@
       },
       "SqlAttributeExplorationDetails": {
         "additionalProperties": true,
-        "description": "A SqlAttribute's own Sql query and owning Term, for expanding it on the graph.\n\nBoth are `None` only when the attribute itself doesn't exist (or is out\nof scope) \u2014 see `fetch_sql_attribute_exploration_details`. `sql` alone\ncan be `None` when the attribute's SQL touches a table outside the\ncaller's zones even though the attribute/term are visible.",
+        "description": "A SqlAttribute's own Sql query and owning Term, for expanding it on the graph.\n\nBoth are `None` only when the attribute itself doesn't exist \u2014 see\n`fetch_sql_attribute_exploration_details`.",
         "properties": {
           "sql": {
             "anyOf": [
@@ -4392,17 +3894,6 @@
               }
             ],
             "title": "Name"
-          },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
           }
         },
         "title": "SqlAttributeMetadataPatch",
@@ -5123,17 +4614,6 @@
             ],
             "title": "Name"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "schema_name": {
             "anyOf": [
               {
@@ -5194,7 +4674,7 @@
       },
       "Tag": {
         "additionalProperties": true,
-        "description": "A tag, as both the list and the create endpoint return it.\n\nThe four columns describing *when* are required, unlike most of this\nmodule: each is ``NOT NULL`` and ``auto_ontology.dal.tags`` selects them on every\npath.\n\n``created`` and ``modified`` are the first timestamps this module carries,\nso they set the convention: a timezone-aware ``datetime``, which Pydantic\nserialises as ISO 8601 and the client parses directly. They are read from\nthe database rather than the application clock, so a client comparing two\ntags is comparing one clock.\n\nThe two describing *who* are nullable, and each null says something\ndifferent. ``created_by`` is null for a tag made by a caller that reached\nFastAPI without the gateway's identity header. ``modified_by`` is\nadditionally null for a tag nobody has renamed, which is the same fact\n``modified == created`` states.\n\nBoth are opaque Better Auth user ids. Resolving one to a name is the\ngateway's job -- the accounts live in a schema this service does not own --\nso this API deliberately answers with the id it stored.",
+        "description": "A tag, as both the list and the create endpoint return it.\n\nThe four columns describing *when* are required, unlike most of this\nmodule: each is ``NOT NULL`` and ``auto_ontology.dal.tags`` selects them on every\npath.\n\n``created`` and ``modified`` are the first timestamps this module carries,\nso they set the convention: a timezone-aware ``datetime``, which Pydantic\nserialises as ISO 8601 and the client parses directly. They are read from\nthe database rather than the application clock, so a client comparing two\ntags is comparing one clock.\n\nThe two describing *who* are nullable, and each null says something\ndifferent. ``created_by`` is null for a tag made by a caller that reached\nFastAPI without the gateway's identity header. ``modified_by`` is\nadditionally null for a tag nobody has renamed, which is the same fact\n``modified == created`` states.\n\nBoth are opaque user ids from the gateway. There is no sign-in, so a\nperson's edit is recorded as ``local``.",
         "properties": {
           "created": {
             "format": "date-time",
@@ -5281,7 +4761,7 @@
       },
       "TagItem": {
         "additionalProperties": true,
-        "description": "One object carrying a tag, whichever of the five kinds it is.\n\n``type`` is what tells them apart, as :class:`TagTargetType` spells the five.\n\n``path`` says where the object sits \u2014 ``database.schema`` for a Table,\n``database.schema.table`` for a Column, and the owning Term for either kind\nof attribute, which are properties of one in the same sense and so are\ndescribed the same way. Null only for a Term, which is a glossary entry\nrather than a catalog object and sits under nothing.\n\n``tagged_by`` and ``rule`` are where the label came from, for the page's\n\"Tagged By\" column: the account that applied it by hand, or the rule that\nmatched. At most one is set \u2014 a label has one source \u2014 and both null is an\nanswer rather than a gap: it is what an attach carrying no identity records,\nso the page reads it as \"Auto Generated\", the deployment having labelled\nthis itself. A row written before either column existed reads the same way,\nsince a label nobody claimed is a label nobody claimed.\n\n``tagged_by`` is an opaque Better Auth user id, resolved to a name by the\ngateway for the reason :class:`Tag`'s authors are: the accounts live in a\nschema this service does not own. An id that resolves to nothing reads as\n\"Auto Generated\" as well \u2014 these are not foreign keys, so an account can be\ndeleted and leave the label behind, and the column names a person or a rule\nor neither rather than spelling out which kind of nobody this is.\n\nThe four id fields are the same relationships as ids, which is what a link\nto the object's own page is built from: a Table and a Column are addressed\nby their whole catalog chain, an attribute by the Term whose page lists it,\nand a Term by its own id alone. Each kind fills only the ones it has.",
+        "description": "One object carrying a tag, whichever of the five kinds it is.\n\n``type`` is what tells them apart, as :class:`TagTargetType` spells the five.\n\n``path`` says where the object sits \u2014 ``database.schema`` for a Table,\n``database.schema.table`` for a Column, and the owning Term for either kind\nof attribute, which are properties of one in the same sense and so are\ndescribed the same way. Null only for a Term, which is a glossary entry\nrather than a catalog object and sits under nothing.\n\n``tagged_by`` and ``rule`` are where the label came from, for the page's\n\"Tagged By\" column: the account that applied it by hand, or the rule that\nmatched. At most one is set \u2014 a label has one source \u2014 and both null is an\nanswer rather than a gap: it is what an attach carrying no identity records,\nso the page reads it as \"Auto Generated\", the deployment having labelled\nthis itself. A row written before either column existed reads the same way,\nsince a label nobody claimed is a label nobody claimed.\n\n``tagged_by`` is an opaque user id from the gateway, like :class:`Tag`'s\nauthors. An id that resolves to nothing reads as\n\"Auto Generated\" as well \u2014 these are not foreign keys, so an account can be\ndeleted and leave the label behind, and the column names a person or a rule\nor neither rather than spelling out which kind of nobody this is.\n\nThe four id fields are the same relationships as ids, which is what a link\nto the object's own page is built from: a Table and a Column are addressed\nby their whole catalog chain, an attribute by the Term whose page lists it,\nand a Term by its own id alone. Each kind fills only the ones it has.",
         "properties": {
           "database_id": {
             "anyOf": [
@@ -5451,7 +4931,7 @@
       },
       "Term": {
         "additionalProperties": true,
-        "description": "A Term with its certification rollup and resolved zone chips.",
+        "description": "A Term with its certification rollup and tag chips.",
         "properties": {
           "certification": {
             "anyOf": [
@@ -5512,17 +4992,6 @@
             ],
             "title": "Name Certified"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "synonyms": {
             "anyOf": [
               {
@@ -5536,20 +5005,6 @@
               }
             ],
             "title": "Synonyms"
-          },
-          "zones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ZoneChip"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Zones"
           }
         },
         "required": [
@@ -5687,17 +5142,6 @@
             ],
             "title": "Name Certified"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "related_terms": {
             "items": {
               "$ref": "#/components/schemas/TermSummary"
@@ -5743,20 +5187,6 @@
             },
             "title": "Tags",
             "type": "array"
-          },
-          "zones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ZoneChip"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Zones"
           }
         },
         "required": [
@@ -5942,17 +5372,6 @@
             ],
             "title": "Name Certified"
           },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
-          },
           "schema_names": {
             "anyOf": [
               {
@@ -5987,20 +5406,6 @@
             },
             "title": "Tags",
             "type": "array"
-          },
-          "zones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ZoneChip"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Zones"
           }
         },
         "required": [
@@ -6140,17 +5545,6 @@
               }
             ],
             "title": "Name Certified"
-          },
-          "owner_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Owner Id"
           }
         },
         "title": "TermUpdate",
@@ -6241,290 +5635,6 @@
           "type"
         ],
         "title": "ValidationError",
-        "type": "object"
-      },
-      "Zone": {
-        "additionalProperties": true,
-        "description": "A zone with its catalog data items.\n\n``items`` is absent on the list endpoint, a list of ``ZoneItem`` on the\ndetail/update endpoints, and a plain list of the ids that were linked on\ncreate.",
-        "properties": {
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Enabled"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "items": {
-            "anyOf": [
-              {
-                "items": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/ZoneItem"
-                    },
-                    {
-                      "type": "string"
-                    }
-                  ]
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Items"
-          },
-          "label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Label"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "title": "Zone",
-        "type": "object"
-      },
-      "ZoneChip": {
-        "additionalProperties": true,
-        "description": "A zone as rendered next to something else it grants access to.\n\n``enabled`` is false for a zone whose ``Zone`` label was swapped for\n``disableZone``; those are returned to admins only.",
-        "properties": {
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Enabled"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "title": "ZoneChip",
-        "type": "object"
-      },
-      "ZoneCreate": {
-        "properties": {
-          "color": {
-            "title": "Color",
-            "type": "string"
-          },
-          "created_by": {
-            "title": "Created By",
-            "type": "string"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "items": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Items",
-            "type": "array"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "color",
-          "items",
-          "created_by"
-        ],
-        "title": "ZoneCreate",
-        "type": "object"
-      },
-      "ZoneItem": {
-        "additionalProperties": true,
-        "description": "A catalog node a zone grants access to (a database, schema or table).",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Label"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "title": "ZoneItem",
-        "type": "object"
-      },
-      "ZoneStatusUpdate": {
-        "properties": {
-          "enabled": {
-            "title": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "title": "ZoneStatusUpdate",
-        "type": "object"
-      },
-      "ZoneUpdate": {
-        "properties": {
-          "color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "items": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Items"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          }
-        },
-        "title": "ZoneUpdate",
         "type": "object"
       }
     }
@@ -7706,28 +6816,6 @@
         ]
       }
     },
-    "/api/exploration/tables/zones": {
-      "get": {
-        "description": "Return ``{table_id: [zone, ...]}`` for every Table.\n\nUsed by the Exploration graph to render Zone chips on every data node\nwithout a per-node request.",
-        "operationId": "list_table_zones_api_exploration_tables_zones_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_dict_str__list_ZoneChip___"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "List Table Zones",
-        "tags": [
-          "exploration"
-        ]
-      }
-    },
     "/api/exploration/tables/{table_id}/details": {
       "get": {
         "description": "Columns-adjacent SQL and one ordered page of Term details for an Exploration modal.",
@@ -7929,203 +7017,6 @@
         "summary": "Get Semantic Link Path",
         "tags": [
           "exploration"
-        ]
-      }
-    },
-    "/api/groups": {
-      "get": {
-        "description": "Return every group, ordered by name, with its members. Requires admin.",
-        "operationId": "list_groups_api_groups_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListResponse_Group_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "List Groups",
-        "tags": [
-          "users"
-        ]
-      },
-      "post": {
-        "description": "Create a group and its members. Requires the admin role.\n\nThe caller is the gateway's identity header. A missing header is 401; a\ncaller who is not an admin is 403.\n\n409 when another group already holds the name, compared\ncase-insensitively on the trimmed value. 400 when a member id is not an\naccount, or when the name, color, or role is missing or invalid.",
-        "operationId": "create_group_api_groups_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GroupCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Group_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Create Group",
-        "tags": [
-          "users"
-        ]
-      }
-    },
-    "/api/groups/{group_id}": {
-      "delete": {
-        "description": "Delete one group. Its membership is deleted with it.\n\nRequires the admin role. 404 rather than 204 for an id that is not\nthere: the caller deleted from a list it has already read, so a missing\ngroup means that list is stale.",
-        "operationId": "delete_group_api_groups__group_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "group_id",
-            "required": true,
-            "schema": {
-              "title": "Group Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_IdRef_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Delete Group",
-        "tags": [
-          "users"
-        ]
-      },
-      "get": {
-        "description": "Return one group. Requires admin.\n\n404 for an unknown id rather than an empty group: the caller asked for a\nrow it expects to exist.",
-        "operationId": "get_group_api_groups__group_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "group_id",
-            "required": true,
-            "schema": {
-              "title": "Group Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Group_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Group",
-        "tags": [
-          "users"
-        ]
-      },
-      "patch": {
-        "description": "Update a group's fields and, when sent, replace its members.\n\nRequires the admin role, for the same reason create does.\n\nOmitting ``user_ids`` leaves membership alone. Sending a list replaces\nit, and an empty list clears it. A patch that names no field returns the\ngroup unchanged.\n\n404 for an unknown id, 409 for a name another group holds, 400 for an\ninvalid field or a member id that is not an account.",
-        "operationId": "update_group_api_groups__group_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "group_id",
-            "required": true,
-            "schema": {
-              "title": "Group Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GroupUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Group_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Group",
-        "tags": [
-          "users"
         ]
       }
     },
@@ -8573,28 +7464,6 @@
         "tags": [
           "datasources",
           "connectors"
-        ]
-      }
-    },
-    "/api/owners": {
-      "get": {
-        "description": "Return every account and every group that can be shown as an owner.\n\nEach row carries the permissions of its role, which is what a picker uses\nto offer only the people who may own that kind of object. A group's\n``member_ids`` names the caller when they belong to it, and nobody else.\nThe edit button only needs that. The full roster stays on the admin group\nlist.",
-        "operationId": "list_owners_api_owners_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListResponse_Owner_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "List Owners",
-        "tags": [
-          "users"
         ]
       }
     },
@@ -9232,7 +8101,7 @@
     },
     "/api/semantic-compilation/reset": {
       "post": {
-        "description": "Ask the ingestion service to rebuild every database's semantic layer.\n\nThe service deletes the semantic nodes and embeddings and compiles them\nagain, so the layer is rebuilt without waiting for the next scheduled run.",
+        "description": "Ask the ingestion service to rebuild every database's semantic layer.\n\nThe service deletes the semantic nodes and embeddings and compiles them\nagain, so the layer is rebuilt straight away.",
         "operationId": "reset_api_semantic_compilation_reset_post",
         "responses": {
           "202": {
@@ -9318,7 +8187,7 @@
         ]
       },
       "post": {
-        "description": "Create a SqlAttribute with its Sql node, linked to a Term.\n\nThe connector is resolved server-side (never chosen by the client \u2014\nsee ``auto_ontology/connectors/registry.py``). ``owner_id``, when set,\nnames a user or a group that can edit the catalog; omit it to leave the\nattribute unassigned. The caller is stored as ``created_by`` so the side\npanel can name them. Returns 400 when that id cannot be assigned, 409\nwhen the name is already taken, 422 when the target Term does not exist\nor the SQL can't be parsed.",
+        "description": "Create a SqlAttribute with its Sql node, linked to a Term.\n\nThe connector is resolved server-side (never chosen by the client \u2014\nsee ``auto_ontology/connectors/registry.py``). Returns 409 when the name is\nalready taken, 422 when the target Term does not exist or the SQL can't be\nparsed.",
         "operationId": "create_sql_attribute_api_sql_attributes_post",
         "requestBody": {
           "content": {
@@ -9443,7 +8312,7 @@
         ]
       },
       "get": {
-        "description": "One SqlAttribute by id, including its resolved zones.",
+        "description": "One SqlAttribute by id, including its tags.",
         "operationId": "get_sql_attribute_api_sql_attributes__attr_id__get",
         "parameters": [
           {
@@ -9535,7 +8404,7 @@
         ]
       },
       "put": {
-        "description": "Replace a SqlAttribute, re-parse SQL, and re-link to a Term.\n\nThe connector is resolved server-side (never chosen by the client \u2014\nsee ``auto_ontology/connectors/registry.py``). Returns 404 when no SqlAttribute\nwith that id exists, 409 on name conflict, 422 when the Term doesn't\nexist or SQL can't be parsed. Returns 403 when the caller may not edit\nthis attribute, the same check as the metadata patch.",
+        "description": "Replace a SqlAttribute, re-parse SQL, and re-link to a Term.\n\nThe connector is resolved server-side (never chosen by the client \u2014\nsee ``auto_ontology/connectors/registry.py``). Returns 404 when no SqlAttribute\nwith that id exists, 409 on name conflict, 422 when the Term doesn't\nexist or SQL can't be parsed.",
         "operationId": "update_sql_attribute_api_sql_attributes__attr_id__put",
         "parameters": [
           {
@@ -9588,7 +8457,7 @@
     },
     "/api/sql-attributes/{attr_id}/description-suggestion": {
       "get": {
-        "description": "LLM-generated (or cached) description suggestion for a SqlAttribute.\n\nReturns 404 when no SqlAttribute with that id exists. ``data`` is\n``null`` when a suggestion could not be produced (e.g. the LLM call\nfailed) \u2014 that is not treated as an error. Returns 403 when the caller\nmay not edit this attribute. A suggestion is cached on the attribute,\nso the same edit check as a save applies.",
+        "description": "LLM-generated (or cached) description suggestion for a SqlAttribute.\n\nReturns 404 when no SqlAttribute with that id exists. ``data`` is\n``null`` when a suggestion could not be produced (e.g. the LLM call\nfailed) \u2014 that is not treated as an error. A suggestion is cached on the\nattribute.",
         "operationId": "get_sql_attribute_description_suggestion_api_sql_attributes__attr_id__description_suggestion_get",
         "parameters": [
           {
@@ -10140,7 +9009,7 @@
     },
     "/api/terms": {
       "get": {
-        "description": "Return Term nodes.\n\n*query*, when given, filters to terms whose name contains it\n(case-insensitive).\n\nTerms come back ordered by name, and *skip*/*limit* select one page of\nthat order; ``total`` reports how many match in full, so a caller knows\nwhen to stop asking. Omitting *limit* returns every matching term.\n\nEach returned term carries its resolved ``zones``, so the Terms list\nand the Exploration graph can render Zone chips from this single\nresponse without a separate per-page zones request.\n\n``column_attribute_counts``, ``sql_attribute_counts`` and\n``related_counts`` are per-term breakdowns (``[{term_id, count}, ...]``)\nthat let the Terms list render per-card badges without an N+1 fetch, and\ncover the terms on this page (see ``service.list_terms_page``). The\nunderlying ColumnAttribute/SqlAttribute nodes are fetched separately, only\nfor the focused Term, via ``/terms/{term_id}/column-attributes`` and\n``/terms/{term_id}/sql-attributes`` below \u2014 this endpoint stays\ncounts-only so the Terms list never pulls attribute nodes it won't show.",
+        "description": "Return Term nodes.\n\n*query*, when given, filters to terms whose name contains it\n(case-insensitive).\n\nTerms come back ordered by name, and *skip*/*limit* select one page of\nthat order; ``total`` reports how many match in full, so a caller knows\nwhen to stop asking. Omitting *limit* returns every matching term.\n\nEach returned term carries its ``tags``, so the Terms list can render tag\nchips from this single response.\n\n``column_attribute_counts``, ``sql_attribute_counts`` and\n``related_counts`` are per-term breakdowns (``[{term_id, count}, ...]``)\nthat let the Terms list render per-card badges without an N+1 fetch, and\ncover the terms on this page (see ``service.list_terms_page``). The\nunderlying ColumnAttribute/SqlAttribute nodes are fetched separately, only\nfor the focused Term, via ``/terms/{term_id}/column-attributes`` and\n``/terms/{term_id}/sql-attributes`` below \u2014 this endpoint stays\ncounts-only so the Terms list never pulls attribute nodes it won't show.",
         "operationId": "list_terms_api_terms_get",
         "parameters": [
           {
@@ -10225,7 +9094,7 @@
     },
     "/api/terms/{term_id}": {
       "get": {
-        "description": "Return a single Term node by id, including zones and related terms.",
+        "description": "Return a single Term node by id, including tags and related terms.",
         "operationId": "get_term_api_terms__term_id__get",
         "parameters": [
           {
@@ -10530,301 +9399,6 @@
         "summary": "List Term Sql Attributes By Id",
         "tags": [
           "terms"
-        ]
-      }
-    },
-    "/api/zones": {
-      "get": {
-        "description": "Return every zone to the requesting user.",
-        "operationId": "list_zones_api_zones_get",
-        "parameters": [
-          {
-            "description": "Requesting user id",
-            "in": "query",
-            "name": "uid",
-            "required": true,
-            "schema": {
-              "description": "Requesting user id",
-              "title": "Uid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListResponse_Zone_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "List Zones",
-        "tags": [
-          "zones"
-        ]
-      },
-      "post": {
-        "description": "Create a zone and attach catalog items.  Requires admin role.",
-        "operationId": "create_zone_api_zones_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ZoneCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Zone_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Create Zone",
-        "tags": [
-          "zones"
-        ]
-      }
-    },
-    "/api/zones/{zone_id}": {
-      "delete": {
-        "description": "Delete one zone by id.",
-        "operationId": "delete_zone_api_zones__zone_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "zone_id",
-            "required": true,
-            "schema": {
-              "title": "Zone Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_IdRef_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Delete Zone",
-        "tags": [
-          "zones"
-        ]
-      },
-      "get": {
-        "description": "Return one zone with its catalog data items.",
-        "operationId": "get_zone_api_zones__zone_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "zone_id",
-            "required": true,
-            "schema": {
-              "title": "Zone Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Requesting user id",
-            "in": "query",
-            "name": "uid",
-            "required": true,
-            "schema": {
-              "description": "Requesting user id",
-              "title": "Uid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Zone_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Zone",
-        "tags": [
-          "zones"
-        ]
-      },
-      "patch": {
-        "description": "Update zone fields and optionally replace catalog data items.",
-        "operationId": "update_zone_api_zones__zone_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "zone_id",
-            "required": true,
-            "schema": {
-              "title": "Zone Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ZoneUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Zone_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Zone",
-        "tags": [
-          "zones"
-        ]
-      }
-    },
-    "/api/zones/{zone_id}/status": {
-      "patch": {
-        "description": "Enable or disable a zone.  Requires admin role.\n\nDisabling clears the zone's ``enabled`` flag\n(re-enabling reverses it), which immediately revokes the catalog access\nthe zone granted without deleting it.",
-        "operationId": "set_zone_status_api_zones__zone_id__status_patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "zone_id",
-            "required": true,
-            "schema": {
-              "title": "Zone Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Admin user id performing the request",
-            "in": "query",
-            "name": "admin_uid",
-            "required": true,
-            "schema": {
-              "description": "Admin user id performing the request",
-              "title": "Admin Uid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ZoneStatusUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_Zone_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Set Zone Status",
-        "tags": [
-          "zones"
         ]
       }
     }

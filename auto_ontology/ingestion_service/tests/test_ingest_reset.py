@@ -57,6 +57,7 @@ def resets(monkeypatch: pytest.MonkeyPatch) -> list[_RecordingVdb]:
     import auto_ontology.ingestion_service.ingest as mod
 
     monkeypatch.setattr(mod, "get_embed_params", lambda: {})
+    monkeypatch.setattr(mod, "embedding_configured", lambda: True)
     monkeypatch.setattr(mod, "ingest_catalog", lambda c: ([1], [1]))
     monkeypatch.setattr(mod, "is_pii_detection_enabled", lambda: False)
     monkeypatch.setattr(mod, "CatalogEmbeddingRowsOp", lambda **kw: lambda pair: pair)
@@ -116,3 +117,22 @@ def test_the_reset_waits_for_the_first_chunk_that_embedded(
         record["metadata"]["id"] for batch in resets[0].written for record in batch
     ]
     assert written == ["b"]
+
+
+def test_without_an_embedding_model_nothing_is_embedded_or_reset(
+    resets: list[_RecordingVdb], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No model means no calls to a provider, and the live catalog stays."""
+    import auto_ontology.ingestion_service.ingest as mod
+    from auto_ontology.ingestion_service.ingest import run_ingest
+
+    def _unexpected(*args: Any, **kwargs: Any) -> Iterator[pd.DataFrame]:
+        raise AssertionError("embedding was attempted without a model")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(mod, "embedding_configured", lambda: False)
+    monkeypatch.setattr(mod, "batch_embed_chunks", _unexpected)
+
+    run_ingest(_Connector())
+
+    assert resets == []

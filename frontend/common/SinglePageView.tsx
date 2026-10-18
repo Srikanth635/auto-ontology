@@ -35,7 +35,7 @@ export type SinglePageViewProps = {
 		rowId: string,
 		certified: boolean,
 	) => void | Promise<void>;
-	canCertifyDataTableRow?: (sectionId: string, rowId: string, ownerId: string | null) => boolean;
+	canCertifyDataTableRow?: (sectionId: string, rowId: string) => boolean;
 	inlineSaveSectionId?: string;
 	hideEditToolbar?: boolean;
 	headerActions?: ReactNode;

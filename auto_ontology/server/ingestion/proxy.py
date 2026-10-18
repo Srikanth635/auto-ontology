@@ -86,8 +86,7 @@ def trigger_semantic_reset(database_name: str | None = None) -> None:
     """Ask the ingestion service to delete the semantic layer (best-effort).
 
     Omitting ``database_name`` resets every database. The service deletes the
-    semantic nodes and embeddings without recompiling; the next scheduled run
-    rebuilds them.
+    semantic nodes and embeddings, then runs a compilation pass to rebuild them.
     """
     url = f"{_base_url()}/semantic/reset"
     params = {} if database_name is None else {"database_name": database_name}

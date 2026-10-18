@@ -2,20 +2,7 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""SqlAttribute reads and writes.
-
-The zone scoping gets the most attention, because it is access control and both
-of its rules fail quietly when wrong:
-
-* an attribute is scoped by **the tables its own SQL references**, not by its
-  parent Term's tables — the two genuinely differ;
-* the check is **all-or-nothing** — one out-of-zone table hides the attribute
-  entirely, so an attribute joining an in-zone table to an out-of-zone one must
-  not appear.
-
-The second is the one a positive-form check ("does it touch an allowed table?")
-gets wrong while looking correct, so the fixture builds exactly that case.
-"""
+"""SqlAttribute reads and writes."""
 
 from __future__ import annotations
 
@@ -62,7 +49,6 @@ class World:
         self.tables: dict[str, str] = {}
         self.terms: dict[str, str] = {}
         self.attributes: dict[str, str] = {}
-        self.zones: list[str] = []
         self.queries: list[str] = []
 
     def table(self, name: str, columns: tuple[str, ...] = ("id",)) -> str:
@@ -109,19 +95,11 @@ class World:
                 _link(s.sql_query__table, sql_query_id=qid, table_id=self.tables[table])
         return aid
 
-    def zone(self, name: str, *, table: str, enabled: bool = True) -> str:
-        zid = _add(s.zone, name=f"{self.prefix}-{name}", enabled=enabled)
-        self.zones.append(zid)
-        _link(s.zone_target, zone_id=zid, table_id=self.tables[table])
-        return zid
-
 
 @pytest.fixture
 def world():
     w = World(f"q-{uuid.uuid4().hex[:8]}")
     yield w
-    for zone_id in w.zones:
-        store().query_write(s.zone.delete().where(s.zone.c.id == zone_id))
     store().query_write(
         s.catalog_database.delete().where(s.catalog_database.c.id == w.database)
     )
@@ -133,20 +111,13 @@ def world():
 
 @pytest.fixture
 def scoped(world):
-    """One in-zone table, one out, and three attributes across them.
-
-    * ``inside``  — SQL over the in-zone table only
-    * ``outside`` — SQL over the out-of-zone table only
-    * ``both``    — SQL joining the two, which is the case that separates an
-      all-or-nothing check from a permissive one
-    """
+    """Two tables and three attributes across them."""
     world.table("orders")
     world.table("secrets")
     world.term("Revenue")
     world.attribute("inside", "Revenue", sql="SELECT 1", tables=("orders",))
     world.attribute("outside", "Revenue", sql="SELECT 2", tables=("secrets",))
     world.attribute("both", "Revenue", sql="SELECT 3", tables=("orders", "secrets"))
-    world.zone_id = world.zone("Sales", table="orders")
     return world
 
 
@@ -155,47 +126,20 @@ def _names(rows) -> set[str]:
 
 
 # --------------------------------------------------------------------------
-# Zone scoping
+# Lists and counts
 # --------------------------------------------------------------------------
-
-
-def test_an_attribute_touching_one_out_of_zone_table_is_hidden(scoped) -> None:
-    """The case a permissive check gets wrong.
-
-    `both` references an in-zone table, so "does it touch something allowed?"
-    answers yes and shows it. The rule is the other way round: any disallowed
-    table hides it.
-    """
-    visible = _names(
-        sa.fetch_sql_attributes_by_term_id(scoped.terms["Revenue"], [scoped.zone_id])
-    )
-    assert visible == {f"{scoped.prefix}-inside"}
-
-
-def test_no_zone_ids_means_unscoped_not_empty(scoped) -> None:
-    """`None` is an admin seeing everything; `[]` is a viewer granted nothing.
-
-    Conflating the two is how an access-control bug gets written, so both are
-    asserted here rather than only the convenient one.
-    """
-    assert len(sa.fetch_sql_attributes_by_term_id(scoped.terms["Revenue"], None)) == 3
-    assert sa.fetch_sql_attributes_by_term_id(scoped.terms["Revenue"], []) == []
 
 
 def test_counts_use_the_same_scoping_as_the_list(scoped) -> None:
     """A badge that disagrees with its list is worse than no badge."""
-    for zone_ids in ([scoped.zone_id], None, []):
-        listed = sa.fetch_sql_attributes_by_term_id(scoped.terms["Revenue"], zone_ids)
-        counted = sa.count_sql_attributes_by_term_id(scoped.terms["Revenue"], zone_ids)
-        assert counted == len(listed), f"disagreed for zone_ids={zone_ids!r}"
+    listed = sa.fetch_sql_attributes_by_term_id(scoped.terms["Revenue"])
+    counted = sa.count_sql_attributes_by_term_id(scoped.terms["Revenue"])
+    assert counted == len(listed) == 3
 
 
-def test_per_term_counts_use_the_same_scoping(scoped) -> None:
-    counts = {
-        r["term_id"]: r["count"]
-        for r in sa.fetch_sql_attribute_counts([scoped.zone_id])
-    }
-    assert counts.get(scoped.terms["Revenue"]) == 1
+def test_per_term_counts_agree_with_the_list(scoped) -> None:
+    counts = {r["term_id"]: r["count"] for r in sa.fetch_sql_attribute_counts()}
+    assert counts.get(scoped.terms["Revenue"]) == 3
 
 
 def test_per_term_counts_can_be_narrowed_to_a_page(scoped) -> None:
@@ -203,95 +147,11 @@ def test_per_term_counts_can_be_narrowed_to_a_page(scoped) -> None:
     other = scoped.term("Unrelated")
     scoped.attribute("elsewhere", "Unrelated", sql="SELECT 4", tables=("orders",))
 
-    everything = sa.fetch_sql_attribute_counts(None)
+    everything = sa.fetch_sql_attribute_counts()
     assert {scoped.terms["Revenue"], other} <= {r["term_id"] for r in everything}
 
-    narrowed = sa.fetch_sql_attribute_counts(None, term_ids=[other])
+    narrowed = sa.fetch_sql_attribute_counts(term_ids=[other])
     assert [r["term_id"] for r in narrowed] == [other]
-
-
-def test_get_full_returns_none_for_an_out_of_zone_attribute(scoped) -> None:
-    assert (
-        sa.get_full_sql_attribute_by_id(scoped.attributes["outside"], [scoped.zone_id])
-        is None
-    )
-    assert sa.get_full_sql_attribute_by_id(scoped.attributes["inside"], None)
-
-
-# --------------------------------------------------------------------------
-# Zone chips
-# --------------------------------------------------------------------------
-
-
-def test_zone_chips_come_from_the_sql_not_the_term(world) -> None:
-    """The distinction the whole module is built around.
-
-    The Term represents `customers`; the attribute's SQL queries `orders`. The
-    chips must describe what the SQL touches — a zone covering `customers` is
-    not evidence the viewer may see this attribute's data.
-    """
-    world.table("orders")
-    world.table("customers")
-    world.term("Customer")
-    _link(
-        s.table__term,
-        table_id=world.tables["customers"],
-        term_id=world.terms["Customer"],
-    )
-    attr = world.attribute("revenue", "Customer", sql="SELECT 1", tables=("orders",))
-    orders_zone = world.zone("Orders", table="orders")
-    world.zone("Customers", table="customers")
-
-    chips = sa.get_full_sql_attribute_by_id(attr, None)["zones"]
-    assert [z["id"] for z in chips] == [orders_zone]
-
-
-def test_a_zone_on_the_schema_covers_its_tables(world) -> None:
-    """A zone can name any of the three grains."""
-    world.table("orders")
-    world.term("Revenue")
-    attr = world.attribute("revenue", "Revenue", sql="SELECT 1", tables=("orders",))
-    zone_id = _add(s.zone, name=f"{world.prefix}-SchemaWide")
-    world.zones.append(zone_id)
-    _link(s.zone_target, zone_id=zone_id, schema_id=world.schema)
-
-    chips = sa.get_full_sql_attribute_by_id(attr, None)["zones"]
-    assert [z["id"] for z in chips] == [zone_id]
-
-
-def test_a_zone_on_the_database_covers_its_tables(world) -> None:
-    world.table("orders")
-    world.term("Revenue")
-    attr = world.attribute("revenue", "Revenue", sql="SELECT 1", tables=("orders",))
-    zone_id = _add(s.zone, name=f"{world.prefix}-DatabaseWide")
-    world.zones.append(zone_id)
-    _link(s.zone_target, zone_id=zone_id, database_id=world.database)
-
-    chips = sa.get_full_sql_attribute_by_id(attr, None)["zones"]
-    assert [z["id"] for z in chips] == [zone_id]
-
-
-def test_an_admin_sees_a_disabled_zone_marked_disabled(world) -> None:
-    """Visible so it can be managed, flagged so it does not look active."""
-    world.table("orders")
-    world.term("Revenue")
-    attr = world.attribute("revenue", "Revenue", sql="SELECT 1", tables=("orders",))
-    retired = world.zone("Retired", table="orders", enabled=False)
-
-    chips = sa.get_full_sql_attribute_by_id(attr, None)["zones"]
-    assert [(z["id"], z["enabled"]) for z in chips] == [(retired, False)]
-
-
-def test_a_viewer_never_sees_a_disabled_zone_chip(world) -> None:
-    """Even when its id is in the request's zone list."""
-    world.table("orders")
-    world.term("Revenue")
-    attr = world.attribute("revenue", "Revenue", sql="SELECT 1", tables=("orders",))
-    live = world.zone("Live", table="orders")
-    retired = world.zone("Retired", table="orders", enabled=False)
-
-    chips = sa.get_full_sql_attribute_by_id(attr, [live, retired])["zones"]
-    assert [z["id"] for z in chips] == [live]
 
 
 # --------------------------------------------------------------------------
@@ -313,7 +173,7 @@ def test_an_attribute_with_no_sql_is_invisible(world) -> None:
         f"{world.prefix}-orphan",
         f"{world.prefix}-real",
     } == {f"{world.prefix}-real"}
-    assert sa.count_sql_attributes_by_term_id(world.terms["Revenue"], None) == 1
+    assert sa.count_sql_attributes_by_term_id(world.terms["Revenue"]) == 1
 
 
 def test_several_statements_still_yield_one_row(world) -> None:
@@ -328,13 +188,13 @@ def test_several_statements_still_yield_one_row(world) -> None:
     world.queries.append(second)
     _link(s.sql_attribute__sql, attribute_id=attr, sql_query_id=second)
 
-    rows = sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"], None)
+    rows = sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"])
     assert len(rows) == 1
-    assert sa.count_sql_attributes_by_term_id(world.terms["Revenue"], None) == 1
+    assert sa.count_sql_attributes_by_term_id(world.terms["Revenue"]) == 1
     # Lowest id wins, and the same one each time.
     assert (
         rows[0]["sql"]
-        == sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"], None)[0]["sql"]
+        == sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"])[0]["sql"]
     )
 
 
@@ -354,7 +214,7 @@ def test_paging_is_stable_across_a_name_tie(world) -> None:
     seen: list[str] = []
     for skip in range(0, 4, 2):
         page = sa.fetch_sql_attributes_by_term_id(
-            world.terms["Revenue"], None, skip=skip, limit=2
+            world.terms["Revenue"], skip=skip, limit=2
         )
         seen.extend(r["id"] for r in page)
     assert len(seen) == len(set(seen)) == 4
@@ -523,7 +383,7 @@ def test_description_suggestions_round_trip(world) -> None:
 
     sa.set_sql_attribute_description_suggestion(attr, "a guess")
     assert (
-        sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"], None)[0][
+        sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"])[0][
             "description_suggestion"
         ]
         == "a guess"
@@ -531,7 +391,7 @@ def test_description_suggestions_round_trip(world) -> None:
 
     sa.clear_sql_attribute_description_suggestion(attr)
     assert (
-        sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"], None)[0][
+        sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"])[0][
             "description_suggestion"
         ]
         is None
@@ -547,7 +407,7 @@ def test_clearing_suggestions_for_a_term_clears_all_of_them(world) -> None:
 
     sa.clear_sql_attribute_description_suggestions_for_term(world.terms["Revenue"])
 
-    rows = sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"], None)
+    rows = sa.fetch_sql_attributes_by_term_id(world.terms["Revenue"])
     assert [r["description_suggestion"] for r in rows] == [None, None]
 
 

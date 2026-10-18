@@ -2,14 +2,7 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""CustomAnalysis, PqlAnalysis, and UI-managed connections.
-
-The zone rule on ``list_custom_analyses`` is the sharpest thing here. It is
-all-or-nothing for a more concrete reason than the Term or SqlAttribute rules:
-the analysis's **SQL text is returned to the caller**, so showing one that
-touches an out-of-zone table discloses that table's name and columns even though
-no rows are ever read.
-"""
+"""CustomAnalysis, PqlAnalysis, and UI-managed connections."""
 
 from __future__ import annotations
 
@@ -56,7 +49,6 @@ class World:
         self.schema = _add(s.catalog_schema, database_id=self.database, name="public")
         self.tables: dict[str, str] = {}
         self.analyses: dict[str, str] = {}
-        self.zones: dict[str, str] = {}
         self.queries: list[str] = []
 
     def table(self, name: str, columns: tuple[str, ...] = ("id",)) -> str:
@@ -92,19 +84,11 @@ class World:
                 _link(s.sql_query__table, sql_query_id=qid, table_id=self.tables[table])
         return aid
 
-    def zone(self, name: str, *, table: str) -> str:
-        zid = _add(s.zone, name=f"{self.prefix}-{name}")
-        self.zones[name] = zid
-        _link(s.zone_target, zone_id=zid, table_id=self.tables[table])
-        return zid
-
 
 @pytest.fixture
 def world():
     w = World(f"c-{uuid.uuid4().hex[:8]}")
     yield w
-    for zone_id in w.zones.values():
-        store().query_write(s.zone.delete().where(s.zone.c.id == zone_id))
     store().query_write(
         s.catalog_database.delete().where(s.catalog_database.c.id == w.database)
     )
@@ -116,33 +100,6 @@ def world():
 
 def _mine(rows, world):
     return [r for r in rows if str(r.get("name", "")).startswith(world.prefix)]
-
-
-# --------------------------------------------------------------------------
-# CustomAnalysis — zone scoping
-# --------------------------------------------------------------------------
-
-
-@pytest.fixture
-def scoped(world):
-    world.table("orders")
-    world.table("secrets")
-    world.analysis("inside", sql="SELECT 1", tables=("orders",))
-    world.analysis("outside", sql="SELECT 2", tables=("secrets",))
-    world.analysis("both", sql="SELECT 3", tables=("orders", "secrets"))
-    world.zone_id = world.zone("Sales", table="orders")
-    return world
-
-
-def test_an_analysis_touching_one_out_of_zone_table_is_hidden(scoped) -> None:
-    """The SQL text is the payload, so partial visibility leaks a schema."""
-    visible = {r["name"] for r in ca.list_custom_analyses(zone_ids=[scoped.zone_id])}
-    assert visible == {f"{scoped.prefix}-inside"}
-
-
-def test_no_zone_ids_means_unscoped_not_empty(scoped) -> None:
-    assert len(_mine(ca.list_custom_analyses(None), scoped)) == 3
-    assert ca.list_custom_analyses(zone_ids=[]) == []
 
 
 # --------------------------------------------------------------------------

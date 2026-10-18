@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
 import { PII_DETECTION_ENABLED_KEY, isPiiDetectionEnabled } from '@/lib/configurations';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { piiDetectionBody } from './openapi';
 
 // Key/value stored in the `configurations` table. The Python ingestion service
@@ -18,11 +18,11 @@ import { piiDetectionBody } from './openapi';
 const CONFIG_KEY = PII_DETECTION_ENABLED_KEY;
 
 // Report whether ingest classifies catalog columns as PII.
-export const GET = withPermission({ pii: ['read'] })(async () => {
+export const GET = route(async () => {
 	return NextResponse.json({ enabled: await isPiiDetectionEnabled() });
 });
 
-// Turn PII detection on or off instance-wide (admin-only).
+// Turn PII detection on or off instance-wide.
 //
 // Deliberately does NOT trigger an ingest. The flag is read at the start of
 // each ingest's PII step, so it applies from the next one onward — flipping it
@@ -32,7 +32,7 @@ export const GET = withPermission({ pii: ['read'] })(async () => {
 // Rejects a non-boolean `enabled` rather than coercing it, so
 // `{"enabled": "true"}` from a shell client cannot silently disagree with
 // what the page would show after a save.
-export const PUT = withPermission({ pii: ['manage'] })(async (req) => {
+export const PUT = route(async (req) => {
 	const prisma = getPrisma();
 
 	let raw: unknown;

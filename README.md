@@ -6,14 +6,14 @@ SPDX-License-Identifier: Apache-2.0
 
 # Auto Ontology
 
-Agents can retrieve documents and query databases, but reliability gates agentic analytics: a revenue metric answered faster is worth nothing if the number is wrong. Agents need a context layer that tells them where data lives, what it means, whether to use it, how to use it, where it came from, and what is similar. NVIDIA Auto Ontology is an open library that builds that layer from enterprise metadata, reconciles definitions across systems, and exposes it to any agent harness through MCP, CLI, and API. It complements the semantic models customers already own.
+Agents can retrieve documents and query databases, but reliability gates agentic analytics: a revenue metric answered faster is worth nothing if the number is wrong. Agents need a context layer that tells them where data lives, what it means, whether to use it, how to use it, where it came from, and what is similar. NVIDIA Auto Ontology is an open library that builds that layer from enterprise metadata, reconciles definitions across systems, and exposes it to any agent harness through its HTTP API. It complements the semantic models customers already own.
 
 It enables developers to:
 
 - Discover: generate enterprise ontologies from metadata; connect existing ontologies and semantic models; build AI-ready knowledge graphs.
 - Ground: give agents trusted business meaning for metrics, entities, and relationships; reconcile inconsistent definitions across systems.
 - Validate: check generated queries against certified definitions and lineage; return provenance with every answer.
-- Expose: serve context to any agent harness through MCP, CLI, and API.
+- Expose: serve context to any agent harness through the HTTP API.
 Learn: fold certified corrections and usage back into the ontology, so shared context improves with every question.
 
 ## Benchmarks
@@ -38,15 +38,15 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
   OpenAI, Anthropic, or any OpenAI-compatible server such as Ollama or vLLM.
 - **Semantic catalog / ontology layer** over relational sources, stored in
   Postgres alongside the catalog it describes.
-- **Authentication & RBAC** —using [Better Auth](https://github.com/better-auth/better-auth).
 - **Web UI** for chat, analysis, data catalog, analytics, and settings.
-- **Local deployment** — Docker Compose brings up the full stack.
+- **Local deployment** — Docker Compose brings up the full stack, for one
+  person on their own machine (no sign-in; see [Access](#access)).
 
 ## Software Components
 
 | Component           | Technology                                                             | Role                                       | Default port |
 | ------------------- | ---------------------------------------------------------------------- | ------------------------------------------ | ------------ |
-| Frontend            | Next.js 16 (React 19, TypeScript, Tailwind CSS 4), Better Auth, Prisma | Web UI, authentication, API gateway        | 3000         |
+| Frontend            | Next.js 16 (React 19, TypeScript, Tailwind CSS 4), Prisma              | Web UI, API gateway                        | 3000         |
 | Backend             | FastAPI (Python 3.12+), LangChain                                      | Chat / NL-to-SQL, catalog, datasource APIs | 3001         |
 | Ingestion worker    | FastAPI (Python 3.12+)                                                 | Ingests tabular data and writes embeddings | 3002         |
 | Postgres + pgvector | Relational Database                                                    | App metadata, the catalog and ontology, vector store | 5432 |
@@ -90,7 +90,7 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
 - **Docker** with **Docker Compose v2** (e.g. Docker Desktop on macOS/Windows,
   Docker Engine on Linux) for the local stack.
 - An API key for a model provider (OpenAI, Anthropic), or a local
-  OpenAI-compatible server such as Ollama. You enter it in the UI after sign-in.
+  OpenAI-compatible server such as Ollama. You enter it in the UI.
 - Connection details for the source database(s) you want to query
   (Databricks, Postgres, Snowflake, or DuckDB).
 
@@ -103,7 +103,7 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    ```
 
 2. Create your environment file (.env) from the template and fill in the values
-   (Postgres credentials, `AUTH_SECRET`, the admin account, `CONNECTION_STRINGS`, etc.).
+   (Postgres credentials, `AUTH_SECRET`, `CONNECTION_STRINGS`, etc.).
    See [`.env.example`](./.env.example) for the full list of variables:
 
    ```bash
@@ -112,8 +112,8 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    ```
 
    Note:
-   - `AUTH_SECRET` and `APP_URL` are **required** — without them every page
-     fails with a Better Auth "default secret" error.
+   - `AUTH_SECRET` is **required**: it encrypts the API keys you save under
+     Settings → Models. Changing it later means entering those keys again.
    - `POSTGRES_PORT` only changes the **host-side** port mapping (set it if
      5432 is already taken on your machine); containers always reach Postgres
      on the internal network port.
@@ -130,13 +130,7 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    and frontend).
 
 4. Open the UI at <http://localhost:3000> (the backend API is on `:3001`,
-   pgAdmin on `:5050`).
-
-   > **Troubleshooting:** if the UI loads without the left navigation panel
-   > (or otherwise looks broken after a restart), your browser is holding a
-   > stale session cookie — this happens when `AUTH_SECRET` changes or the
-   > database is reset. Clear the site data for `localhost:3000` (or delete
-   > the `better-auth.session_token` cookie) and sign in again.
+   pgAdmin on `:5050`). There is no sign-in — see [Access](#access).
 
 ## Connections Management
 
@@ -150,63 +144,38 @@ Auto Ontology resolves the source databases it connects to from two sources:
    connection strings supplied at deploy time in `.env`. This is a fallback: it
    is used only when there are no UI-added connections.
 
-## Authentication
+## Access
 
-Auto Ontology signs users in with email and password. Self-service sign-up is
-disabled: the only account is the bootstrap admin from
-`AUTO_ONTOLOGY_ADMIN_EMAIL` / `AUTO_ONTOLOGY_ADMIN_PASSWORD` in `.env`, which is
-created (or has its password reset) every time the frontend starts.
+Auto Ontology is set up for one person on their own machine: there is **no
+sign-in, no user accounts and no roles**. Everyone who can reach the frontend can
+do everything, and everything they do is recorded as the single local user.
 
-### API tokens (scripting)
+For that reason Docker Compose publishes the frontend (`:3000`), backend
+(`:3001`) and ingestion service (`:3002`) on `127.0.0.1` only. Only change those
+port mappings in `docker-compose.yml` on a network you trust, and never expose
+the backend or ingestion ports: they accept every request.
 
-A browser signs in and gets a session cookie, which a script cannot obtain. For
-scripts, notebooks, and scheduled jobs, mint an **API token** instead:
-
-1. Open the user menu (top right) → **API Tokens** → **New token**.
-2. Name it, optionally pick an expiry (default: never), and **copy the token**.
-   Auto Ontology stores only a SHA-256 hash of it, so it is shown exactly once. Losing it
-   means minting a new one.
-
-Send it as `x-api-key` on any `/api/...` call — `Authorization: Bearer <token>`
-works too:
+Scripts can call the same API the UI uses, with no token:
 
 ```sh
-curl -H "x-api-key: $AUTO_ONTOLOGY_API_TOKEN" https://auto_ontology.example.com/api/terms
+curl http://localhost:3000/api/terms
 ```
 
 ```python
-import os
 import requests
 
-session = requests.Session()
-session.headers["x-api-key"] = os.environ["AUTO_ONTOLOGY_API_TOKEN"]
-
-terms = session.get("https://auto_ontology.example.com/api/terms").json()
-
-answer = session.post(
-    "https://auto_ontology.example.com/api/chat/completions",
+answer = requests.post(
+    "http://localhost:3000/api/chat/completions",
     json={"question": "How many orders shipped last week?"},
-).json()
+).text
 ```
 
-Things worth knowing:
+The full surface is described in
+[`docs/openapi/auto-ontology-api.json`](./docs/openapi/auto-ontology-api.json).
 
-- **A token acts as its owner.** It carries no permissions of its own — every
-  call is authorized against the owner's role, exactly as it would be in the
-  browser. A viewer's token cannot do admin things.
-- **The whole API surface accepts it.** Authentication is resolved in one place
-  (`frontend/auth/resolve-user.ts`) for every route, so any endpoint in
-  [`docs/openapi/auto-ontology-api.json`](./docs/openapi/auto-ontology-api.json) that is not
-  `withPublic` works with a token.
-- **Revocation is immediate.** Delete the token in the UI, or delete/ban the
-  owning user, and the next request with it gets a 401.
-- **Tokens cannot manage tokens.** Creating and revoking requires a signed-in
-  session, so a leaked token cannot issue itself successors.
-  
 ## Agent API conversations
 
-Public clients call the authenticated Next.js gateway at
-`POST /api/chat/completions`. The response is an SSE stream containing `step`,
+Clients call the Next.js gateway at `POST /api/chat/completions`. The response is an SSE stream containing `step`,
 `result`, or `error` events, followed by `[DONE]`.
 
 `conversation_id` is optional:
@@ -231,29 +200,13 @@ text-to-SQL graph. Independent questions are passed through unchanged. Internal
 agent thoughts, chart payloads, errors, and raw SQL result sets are not reused as
 context.
 
-Conversation history is scoped to the authenticated Auto Ontology user. Browser and
-service callers should use the Next.js gateway, which resolves the user and
-forwards the internal `x-auto-ontology-user-id` header to FastAPI. The FastAPI port is a
-trusted internal service boundary: it must not be exposed publicly because that
-header is not independently verified by FastAPI. A direct FastAPI request
+Browser and script callers should use the Next.js gateway, which forwards the
+internal `x-auto-ontology-user-id` header to FastAPI. A direct FastAPI request
 without `conversation_id` remains stateless; a direct request with
-`conversation_id` requires the trusted identity header.
+`conversation_id` requires that header.
 
 The web UI manages the UUID automatically. An API-created conversation can be
-opened in the UI at `/chat?focus=<conversation_id>` when it belongs to the
-signed-in user.
-
-## Agent skills
-
-Coding agents: start at [`AGENTS.md`](./AGENTS.md). Skills live in
-[`skills/`](./skills/) (`nvidia-ontology-setup`, `nvidia-ontology-management`, `nvidia-ontology-query`).
-Maintainers keep using [`CLAUDE.md`](./CLAUDE.md).
-
-## MCP server
-
-Agent harnesses such as Cursor and Claude Desktop can query your data through
-Auto Ontology's [MCP](https://modelcontextprotocol.io) server. See
-[`mcp/`](./mcp/) to run it and [`docs/mcp.md`](./docs/mcp.md) for the details.
+opened in the UI at `/chat?focus=<conversation_id>`.
 
 ## License
 

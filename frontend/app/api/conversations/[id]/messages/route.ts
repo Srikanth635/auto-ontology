@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { messageSelect } from '@/lib/apiSelects';
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -15,10 +15,7 @@ type Ctx = { params: Promise<{ id: string }> };
 // persist their messages themselves via FastAPI, so a normal chat flow never
 // calls this. Also bumps the conversation's `updated_at`. 404 when the
 // conversation does not exist or belongs to someone else.
-export const POST = withPermission<Ctx>({ conversation: ['write'] })(async (
-	req,
-	{ params, user },
-) => {
+export const POST = route<Ctx>(async (req, { params, user }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	const body = await req.json();

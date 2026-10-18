@@ -7,14 +7,8 @@
 Orchestration — SQL validation, connector resolution, VDB lifecycle — stays in
 ``auto_ontology/server/sql_attributes/service.py``. This module only touches the store.
 
-Two rules run through every read here and are the easiest things to lose:
-
-* **A SqlAttribute is scoped by the tables its own SQL references**, not by its
-  parent Term's tables. The two genuinely differ, and using the Term's would
-  show a viewer an attribute querying data they cannot see.
-* **The scope check is all-or-nothing.** One out-of-zone table hides the whole
-  attribute. Partial visibility would mean rendering SQL a viewer is not
-  allowed to run.
+An attribute with no statement is invisible to every read here (see
+:func:`_has_sql`).
 """
 
 from __future__ import annotations
@@ -22,14 +16,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from sqlalchemy import String, delete, func, literal, or_, select, update
+from sqlalchemy import String, delete, func, literal, select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from auto_ontology.dal import schema as s
 from auto_ontology.dal.session import store, write_transaction
 from auto_ontology.dal.sql_fragments import column_description_expr
 from auto_ontology.dal.tags import TARGET_SQL_ATTRIBUTE, fetch_tags_map
-from auto_ontology.dal.users import resolve_accessible_catalog_ids
 from auto_ontology.server.sql_utils import SqlParseError
 
 logger = logging.getLogger(__name__)
@@ -54,43 +47,6 @@ SqlAttributeSqlError = SqlParseError
 # ---------------------------------------------------------------------------
 # Shared traversal
 # ---------------------------------------------------------------------------
-
-
-def _out_of_zone(table_ids: list[str]):
-    """True for an attribute whose SQL touches a table outside *table_ids*.
-
-    The all-or-nothing check, phrased in the negative on purpose: not "does it
-    touch an allowed table" but "does it touch a disallowed one". The difference
-    matters for an attribute joining an in-zone table to an out-of-zone one,
-    which the positive form would happily show.
-    """
-    return (
-        select(literal(1))
-        .select_from(
-            s.sql_attribute__sql.join(
-                s.sql_query__table,
-                s.sql_query__table.c.sql_query_id
-                == s.sql_attribute__sql.c.sql_query_id,
-            )
-        )
-        .where(
-            s.sql_attribute__sql.c.attribute_id == s.sql_attribute.c.id,
-            s.sql_query__table.c.table_id.notin_(table_ids),
-        )
-        .correlate(s.sql_attribute)
-        .exists()
-    )
-
-
-def _zone_scope(
-    zone_ids: list[str] | None,
-    data_ids_by_zone: dict[str, set[str]] | None = None,
-):
-    """The zone predicate for a SqlAttribute read, or ``None`` for unscoped."""
-    if zone_ids is None:
-        return None
-    resolved = resolve_accessible_catalog_ids(zone_ids, data_ids_by_zone)
-    return ~_out_of_zone(list(resolved["table_ids"]))
 
 
 #: The SQL text of an attribute, taken from its lowest-id statement.
@@ -141,7 +97,6 @@ def _attribute_select():
             s.sql_attribute.c.source,
             _SQL_TEXT.label("sql"),
             s.sql_attribute.c.certified,
-            s.sql_attribute.c.owner_id,
             s.sql_attribute.c.created,
             s.sql_attribute.c.modified,
             s.sql_attribute.c.created_by,
@@ -163,7 +118,6 @@ def _query_sql_attributes(
     *,
     attr_id: str | None = None,
     term_id: str | None = None,
-    zone_ids: list[str] | None = None,
     order_by: Any = None,
     skip: int = 0,
     limit: int | None = None,
@@ -180,10 +134,6 @@ def _query_sql_attributes(
         statement = statement.where(s.sql_attribute.c.id == attr_id)
     if term_id is not None:
         statement = statement.where(s.term.c.id == term_id)
-
-    scope = _zone_scope(zone_ids)
-    if scope is not None:
-        statement = statement.where(scope)
     if order_by is not None:
         statement = statement.order_by(*order_by)
     if skip:
@@ -205,11 +155,9 @@ def list_sql_attributes() -> list[dict[str, Any]]:
 
 
 def fetch_sql_attribute_counts(
-    zone_ids: list[str] | None = None,
-    data_ids_by_zone: dict[str, set[str]] | None = None,
     term_ids: list[str] | None = None,
 ) -> list[dict[str, Any]]:
-    """``[{term_id, count}]``, under the same zone scoping as every read.
+    """``[{term_id, count}]`` per Term.
 
     *term_ids* narrows the scan — the paged Terms list passes the ids on the
     page it is about to render, so the response does not carry counts for the
@@ -233,9 +181,6 @@ def fetch_sql_attribute_counts(
         .where(_has_sql())
         .group_by(s.term.c.id)
     )
-    scope = _zone_scope(zone_ids, data_ids_by_zone)
-    if scope is not None:
-        statement = statement.where(scope)
     if term_ids is not None:
         statement = statement.where(s.term.c.id.in_(list(term_ids)))
 
@@ -245,82 +190,24 @@ def fetch_sql_attribute_counts(
     ]
 
 
-def get_full_sql_attribute_by_id(
-    attr_id: str,
-    zone_ids: list[str] | None = None,
-) -> dict[str, Any] | None:
-    """One SqlAttribute with its Term, SQL text, and the zones covering it.
-
-    The zone chips come from the tables the attribute's **own SQL** references,
-    reached either directly or through their schema or database — matching how
-    the scope check resolves them, and not the parent Term's tables.
-
-    With *zone_ids* supplied the attribute must pass the scope check (``None``
-    otherwise, so a viewer cannot read an out-of-zone attribute) and disabled
-    zones are dropped from the chips entirely. Pass ``None`` to skip both, which
-    is how an admin sees a disabled zone at all — with ``enabled: False`` so the
-    UI can render it as retired rather than active.
-    """
-    rows = _query_sql_attributes(attr_id=attr_id, zone_ids=zone_ids)
+def get_full_sql_attribute_by_id(attr_id: str) -> dict[str, Any] | None:
+    """One SqlAttribute with its Term, SQL text and tags."""
+    rows = _query_sql_attributes(attr_id=attr_id)
     if not rows:
         return None
     result = rows[0]
 
-    # Zone -> the tables it covers, at any of the three grain levels a zone
-    # target can name -- table, schema or database -- as three explicit
-    # branches over the containment keys.
-    covered = or_(
-        s.zone_target.c.table_id == s.sql_query__table.c.table_id,
-        s.zone_target.c.schema_id == s.catalog_table.c.schema_id,
-        s.zone_target.c.database_id == s.catalog_schema.c.database_id,
-    )
-    statement = (
-        select(
-            s.zone.c.id,
-            s.zone.c.name,
-            s.zone.c.color,
-            s.zone.c.enabled,
-        )
-        .select_from(
-            s.sql_attribute__sql.join(
-                s.sql_query__table,
-                s.sql_query__table.c.sql_query_id
-                == s.sql_attribute__sql.c.sql_query_id,
-            )
-            .join(
-                s.catalog_table, s.catalog_table.c.id == s.sql_query__table.c.table_id
-            )
-            .join(
-                s.catalog_schema, s.catalog_schema.c.id == s.catalog_table.c.schema_id
-            )
-            .join(s.zone_target, covered)
-            .join(s.zone, s.zone.c.id == s.zone_target.c.zone_id)
-        )
-        .where(s.sql_attribute__sql.c.attribute_id == attr_id)
-        .distinct()
-        .order_by(s.zone.c.name)
-    )
-    if zone_ids is not None:
-        statement = statement.where(
-            s.zone.c.id.in_(list(zone_ids)), s.zone.c.enabled.is_(True)
-        )
-
-    result["zones"] = [dict(r) for r in store().query_read(statement)]
     result["tags"] = fetch_tags_map(TARGET_SQL_ATTRIBUTE, [attr_id]).get(attr_id, [])
     return result
 
 
 def fetch_sql_attributes_by_term_id(
     term_id: str,
-    zone_ids: list[str] | None = None,
     *,
     skip: int = 0,
     limit: int | None = None,
 ) -> list[dict[str, Any]]:
-    """One Term's SqlAttributes, each scoped independently.
-
-    An attribute of an otherwise-visible term is still hidden when its own SQL
-    touches a table outside *zone_ids*.
+    """One Term's SqlAttributes.
 
     Ordered by name then id — the id breaks ties between same-named attributes,
     without which a page boundary could repeat one and skip another. Pair with
@@ -328,7 +215,6 @@ def fetch_sql_attributes_by_term_id(
     """
     rows = _query_sql_attributes(
         term_id=term_id,
-        zone_ids=zone_ids,
         order_by=(s.sql_attribute.c.name, s.sql_attribute.c.id),
         skip=skip,
         limit=limit,
@@ -337,10 +223,7 @@ def fetch_sql_attributes_by_term_id(
     return [{**row, "tags": tags.get(row["id"], [])} for row in rows]
 
 
-def count_sql_attributes_by_term_id(
-    term_id: str,
-    zone_ids: list[str] | None = None,
-) -> int:
+def count_sql_attributes_by_term_id(term_id: str) -> int:
     """The unpaged size of :func:`fetch_sql_attributes_by_term_id`.
 
     Applies the same ``_has_sql`` condition for the same reason: a total that
@@ -356,9 +239,6 @@ def count_sql_attributes_by_term_id(
         )
         .where(s.sql_attribute__term.c.term_id == term_id, _has_sql())
     )
-    scope = _zone_scope(zone_ids)
-    if scope is not None:
-        statement = statement.where(scope)
 
     rows = store().query_read(statement)
     return int(rows[0]["total"]) if rows else 0
@@ -479,8 +359,6 @@ def update_sql_attribute(
     expression: str | None = None,
     source: str | None = None,
     certified: bool | None = None,
-    owner_id: str | None = None,
-    set_owner: bool = False,
     modified_by: str | None = None,
     touch: bool = False,
 ) -> None:
@@ -506,9 +384,6 @@ def update_sql_attribute(
             # column is nullable with no default.
             source=func.coalesce(literal(source, String), s.sql_attribute.c.source),
             certified=func.coalesce(certified, s.sql_attribute.c.certified),
-            owner_id=(
-                literal(owner_id, String) if set_owner else s.sql_attribute.c.owner_id
-            ),
         )
     )
 

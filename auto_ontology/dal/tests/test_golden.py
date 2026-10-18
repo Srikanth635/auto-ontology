@@ -84,8 +84,6 @@ def test_golden_covers_every_dal_module() -> None:
         "pql_analyses",
         "sql_attributes",
         "terms",
-        "users",
-        "zones",
     }
     assert expected <= covered, f"modules missing from the golden: {expected - covered}"
 
@@ -114,7 +112,6 @@ OPTIONAL_KEYS: dict[str, frozenset[str]] = {
             "description",
             "description_certified",
             "imported_id",
-            "owner_id",
             "schema_id",
         }
     ),
@@ -124,7 +121,6 @@ OPTIONAL_KEYS: dict[str, frozenset[str]] = {
             "description",
             "description_certified",
             "imported_id",
-            "owner_id",
             "schema_id",
         }
     ),
@@ -159,29 +155,3 @@ def test_no_uncaptured_reads(live) -> None:
     """A read added to the capture list but never recorded fails here."""
     extra = set(live.results) - set(GOLDEN["results"])
     assert not extra, f"captured but not in the golden, re-record: {sorted(extra)}"
-
-
-def test_zone_scoping_actually_narrows(live) -> None:
-    """Scoped access must return strictly less than admin access.
-
-    The single most valuable invariant here: a port that silently drops the
-    zone filter would still match most goldens, but would hand every user the
-    admin view. This asserts the three modes differ from each other.
-    """
-    admin = live.results.get("terms.fetch_all_terms[admin]")
-    scoped = live.results.get("terms.fetch_all_terms[scoped]")
-    none = live.results.get("terms.fetch_all_terms[none]")
-    assert admin is not None and scoped is not None and none is not None
-
-    assert len(admin) > len(scoped) > 0, (
-        f"scoped access is not narrower than admin: {len(admin)} vs {len(scoped)}"
-    )
-    assert none == [], f"empty zone list must grant nothing, got {len(none)} terms"
-
-
-def test_disabled_zone_grants_no_access(live) -> None:
-    """A disabled zone stays visible to admins but confers no data access."""
-    zones = live.results.get("zones.list_zones")
-    assert zones, "list_zones returned nothing"
-    names = {z.get("name") for z in zones}
-    assert "Retired zone" in names, "disabled zone vanished from the admin listing"

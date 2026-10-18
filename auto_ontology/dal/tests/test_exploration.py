@@ -62,7 +62,6 @@ class World:
         self.tables: dict[str, str] = {}
         self.columns: dict[str, str] = {}
         self.terms: dict[str, str] = {}
-        self.zones: dict[str, str] = {}
         self.queries: list[str] = []
 
     def table(
@@ -113,20 +112,11 @@ class World:
             _link(s.table__term, table_id=self.tables[table], term_id=tid)
         return tid
 
-    def zone(self, name: str, *tables: str) -> str:
-        zid = _add(s.zone, name=f"{self.prefix}-{name}")
-        self.zones[name] = zid
-        for table in tables:
-            _link(s.zone_target, zone_id=zid, table_id=self.tables[table])
-        return zid
-
 
 @pytest.fixture
 def world():
     w = World(f"x-{uuid.uuid4().hex[:8]}")
     yield w
-    for zone_id in w.zones.values():
-        store().query_write(s.zone.delete().where(s.zone.c.id == zone_id))
     for db_id in [w.database, *w.extra_databases]:
         store().query_write(
             s.catalog_database.delete().where(s.catalog_database.c.id == db_id)
@@ -293,48 +283,6 @@ def test_edges_are_deterministically_ordered(graph) -> None:
 
 
 # --------------------------------------------------------------------------
-# Zone scoping
-# --------------------------------------------------------------------------
-
-
-def test_edges_need_both_ends_in_zone(graph) -> None:
-    """An edge to an invisible table is not a half-edge; it is no edge."""
-    zone_id = graph.zone("Sales", "orders", "customers")
-    edges = _mine(e.fetch_data_exploration_edges(zone_ids=[zone_id]), graph)
-
-    assert len(edges) == 1
-    assert {edges[0]["source"], edges[0]["target"]} == {
-        graph.tables["orders"],
-        graph.tables["customers"],
-    }
-
-
-def test_the_degree_invariant_holds_under_scoping(graph) -> None:
-    """The invariant is worth nothing if it only holds for an admin."""
-    zone_id = graph.zone("Sales", "orders", "customers")
-    payload = e.fetch_data_exploration_graph(zone_ids=[zone_id])
-    by_id = {node["id"]: node for node in payload["nodes"]}
-
-    assert set(by_id) == {graph.tables["orders"], graph.tables["customers"]}
-    for table_id, node in by_id.items():
-        page = e.fetch_exploration_related_nodes(table_id, "data", zone_ids=[zone_id])
-        assert node["relationship_count"] == page["total"] == 1
-
-
-def test_an_out_of_zone_node_has_no_related_page(graph) -> None:
-    zone_id = graph.zone("Sales", "orders")
-    page = e.fetch_exploration_related_nodes(
-        graph.tables["audit"], "data", zone_ids=[zone_id]
-    )
-    assert page == {"nodes": [], "total": 0}
-
-
-def test_no_zone_ids_means_unscoped_not_empty(graph) -> None:
-    assert len(_mine(e.fetch_data_exploration_edges(zone_ids=None), graph)) == 3
-    assert e.fetch_data_exploration_edges(zone_ids=[]) == []
-
-
-# --------------------------------------------------------------------------
 # Table details
 # --------------------------------------------------------------------------
 
@@ -424,25 +372,15 @@ def test_table_details_drops_an_empty_statement(world) -> None:
     assert e.fetch_table_exploration_details(world.tables["orders"])["queries"] == []
 
 
-def test_an_out_of_zone_table_has_no_details(world) -> None:
-    world.table("orders")
-    world.table("secrets")
-    zone_id = world.zone("Sales", "orders")
-    assert e.fetch_table_exploration_details(
-        world.tables["secrets"], zone_ids=[zone_id]
-    ) == {"queries": [], "terms": [], "terms_total": 0}
-
-
 # --------------------------------------------------------------------------
 # The data graph payload
 # --------------------------------------------------------------------------
 
 
-def test_graph_nodes_carry_their_counts_and_zones(world) -> None:
+def test_graph_nodes_carry_their_counts(world) -> None:
     world.table("orders", columns=("id", "total"))
     world.statement(f"SELECT 1 -- {world.prefix}", "orders")
     world.term("Order", represents=("orders",))
-    zone_id = world.zone("Sales", "orders")
 
     node = next(
         n
@@ -452,7 +390,6 @@ def test_graph_nodes_carry_their_counts_and_zones(world) -> None:
     assert node["columns_count"] == 2
     assert node["sql_count"] == 1
     assert node["terms_count"] == 1
-    assert [z["id"] for z in node["zones"]] == [zone_id]
     assert node["database_name"] == world.prefix
 
 
@@ -586,14 +523,3 @@ def test_an_unknown_layer_raises(world) -> None:
     """A typo in a route parameter should not silently return an empty graph."""
     with pytest.raises(ValueError, match="Unsupported Exploration layer"):
         e.fetch_exploration_related_nodes("some-id", "nonsense")
-
-
-def test_the_zones_map_is_the_one_from_pg_zones() -> None:
-    """Re-exported, not reimplemented.
-
-    Two spellings of the zone-resolution rule is how a viewer sees a chip on one
-    screen and not another, so this asserts they are literally one function.
-    """
-    from auto_ontology.dal import zones
-
-    assert e.fetch_table_zones_map is zones.fetch_table_zones_map

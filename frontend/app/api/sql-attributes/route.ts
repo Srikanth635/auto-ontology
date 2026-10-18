@@ -2,11 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// Creating a SqlAttribute is a catalog edit and requires catalog:edit, the same
-// permission PATCH /api/nodes/{node_id} uses. A viewer does not have it.
-export const POST = withPermission({ catalog: ['edit'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
+// Create a SqlAttribute. The identity is recorded as `created_by`.
+export const POST = route((req, { user }) => proxyToBackend(req, { userId: user.id }));

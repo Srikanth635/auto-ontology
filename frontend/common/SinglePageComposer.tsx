@@ -5,7 +5,6 @@
 'use client';
 
 import { forwardRef, useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@/common/Spinner';
 import type { Breadcrumb } from '@/types/breadcrumbs';
@@ -14,10 +13,7 @@ import {
 	isComposerSection,
 	type ComposerSection,
 	type ComposerEntityTagsSection,
-	type ComposerOwnerOption,
-	type ComposerOwnerSection,
 	type ComposerTagChip,
-	type ComposerZonesSection,
 	type ComposerCertification,
 } from '@/types/composer-section';
 import { CertificationStatus } from '@/enums/certification';
@@ -33,12 +29,6 @@ import { SqlBlock } from '@/common/SqlBlock';
 import { catalogPathFromFocusId } from '@/lib/data/data-catalog-path';
 import { datasources } from '@/api/datasources';
 import type { NodePatch } from '@/api/types';
-import type { TermZone } from '@/types/terms';
-import { OwnerLabel } from '@/common/OwnerLabel';
-import { OwnersSelect } from '@/common/OwnersSelect';
-import { ownerChoices } from '@/lib/owners';
-import { ownerQueries } from '@/lib/queries/owners';
-import type { Owner } from '@/types/owners';
 import { SidePanel, type SidePanelBulk } from '@/common/SidePanel';
 import { Toast } from '@/common/Toast';
 import { Label } from '@/common/Label';
@@ -63,19 +53,6 @@ export const LabelList = ({ values }: { values: string[] }) => {
 		</ul>
 	);
 };
-
-export const ZonesRow = ({ zones }: { zones: TermZone[] }) => (
-	<div className="mt-2 flex flex-wrap items-center gap-1.5">
-		<span className="text-xs text-secondary">Zones:</span>
-		{zones.length > 0 ? (
-			zones.map((zone) => (
-				<Label key={zone.id} label={zone.name} color={zone.color} muted={!zone.enabled} />
-			))
-		) : (
-			<span className="text-xs text-secondary dark:text-slate-400">-</span>
-		)}
-	</div>
-);
 
 export type ComposerPageHeader = {
 	/** Rendered as the page title. Every composed page names the entity it shows. */
@@ -134,19 +111,16 @@ export type SinglePageComposerProps = {
 	 * dropdown's saving spinner.
 	 *
 	 * Without `canCertifyDataTableRow`, the dropdown is shown in edit mode.
-	 * With it, the row's own owner decides, including while the page is not
-	 * being edited.
+	 * With it, the callback decides, including while the page is not being
+	 * edited.
 	 */
 	onDataTableCertificationChange?: (
 		sectionId: string,
 		rowId: string,
 		certified: boolean,
 	) => void | Promise<void>;
-	/**
-	 * Whether this row's certification dropdown is offered. `ownerId` is the
-	 * row's `owner_id`, or null when that cell is empty.
-	 */
-	canCertifyDataTableRow?: (sectionId: string, rowId: string, ownerId: string | null) => boolean;
+	/** Whether this row's certification dropdown is offered. */
+	canCertifyDataTableRow?: (sectionId: string, rowId: string) => boolean;
 	/** Returns an AI-suggested body for a `suggestable` text-card section, or null when none is available. */
 	onSuggestDescription?: (sectionId: string) => Promise<string | null>;
 	inlineSaveSectionId?: string;
@@ -158,14 +132,10 @@ function composerSectionHeading(section: ComposerSection): string {
 	switch (section.type) {
 		case ComposerSectionKind.LOADING_PANEL:
 			return section.message;
-		case ComposerSectionKind.ZONES_CHIPS:
-			return `${section.title} (${section.zones.length})`;
 		case ComposerSectionKind.RELATED_TERMS_CHIPS:
 			return `${section.title} (${section.terms.length})`;
 		case ComposerSectionKind.ENTITY_TAGS:
 			return `${section.title} (${section.tags.length})`;
-		case ComposerSectionKind.OWNER:
-			return section.title;
 		default:
 			return section.title;
 	}
@@ -490,69 +460,6 @@ const EditableEntityTagsCard = ({
 	);
 };
 
-const ownerOption = (owner: Owner): ComposerOwnerOption => ({
-	id: owner.id,
-	name: owner.name,
-	kind: owner.kind,
-	color: owner.color,
-});
-
-/**
- * The directory the card was built with, replaced by a live read once it
- * arrives. Creating a group invalidates that read, so an open page picks the
- * group up without being rebuilt.
- */
-const useLiveOwnerOptions = (section: ComposerOwnerSection): ComposerOwnerOption[] => {
-	const { data } = useQuery(ownerQueries.all());
-	if (data == null) return section.options;
-	const source =
-		section.editable === false ? data : ownerChoices(data, section.permission, section.ownerId);
-	return source.map(ownerOption);
-};
-
-const OwnerSection = ({ section }: { section: ComposerOwnerSection }) => {
-	const options = useLiveOwnerOptions(section);
-	const owner = options.find((option) => option.id === section.ownerId);
-	return (
-		<div className="rounded-lg border border-slate-200/90 bg-white/90 p-5 dark:border-slate-700/90 dark:bg-slate-950/50">
-			<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
-				{section.title}
-			</h2>
-			<div className="mt-3">
-				<OwnerLabel owner={owner} />
-			</div>
-		</div>
-	);
-};
-
-const EditableOwnerCard = ({
-	section,
-	onChange,
-}: {
-	section: ComposerOwnerSection;
-	onChange: (sectionId: string, value: string) => void;
-}) => {
-	const options = useLiveOwnerOptions(section);
-	const [ownerId, setOwnerId] = useState(section.ownerId ?? '');
-	return (
-		<div className="rounded-lg border border-brand/60 bg-white/90 p-5 ring-1 ring-brand/10 dark:bg-slate-950/50">
-			<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
-				{section.title}
-			</h2>
-			<div className="mt-3">
-				<OwnersSelect
-					owners={options}
-					value={ownerId}
-					onChange={(next) => {
-						setOwnerId(next);
-						onChange(section.id, next);
-					}}
-				/>
-			</div>
-		</div>
-	);
-};
-
 const EntityTagsSection = ({ section }: { section: ComposerEntityTagsSection }) => (
 	<div className="rounded-lg border border-slate-200/90 bg-white/90 p-5 dark:border-slate-700/90 dark:bg-slate-950/50">
 		<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
@@ -572,29 +479,6 @@ const EntityTagsSection = ({ section }: { section: ComposerEntityTagsSection }) 
 	</div>
 );
 
-const ZonesSection = ({ section }: { section: ComposerZonesSection }) => {
-	const displayedZones = section.zones;
-
-	return (
-		<div className="rounded-lg border border-slate-200/90 bg-white/90 p-5 dark:border-slate-700/90 dark:bg-slate-950/50">
-			<h2 className="text-sm font-semibold text-heading dark:text-slate-100">
-				{section.title} ({displayedZones.length})
-			</h2>
-			{displayedZones.length === 0 ? (
-				<p className="mt-3 text-sm italic text-secondary dark:text-slate-400">—</p>
-			) : (
-				<ul className="mt-3 flex flex-wrap gap-2">
-					{displayedZones.map((zone) => (
-						<li key={zone.id}>
-							<Label label={zone.name} color={zone.color} muted={!zone.enabled} />
-						</li>
-					))}
-				</ul>
-			)}
-		</div>
-	);
-};
-
 function renderComposerSection(
 	section: ComposerSection,
 	onTermClick?: (termId: string) => void,
@@ -607,7 +491,7 @@ function renderComposerSection(
 		rowId: string,
 		certified: boolean,
 	) => void | Promise<void>,
-	canCertifyDataTableRow?: (sectionId: string, rowId: string, ownerId: string | null) => boolean,
+	canCertifyDataTableRow?: (sectionId: string, rowId: string) => boolean,
 ): ReactNode {
 	switch (section.type) {
 		case ComposerSectionKind.TEXT_CARD:
@@ -714,18 +598,10 @@ function renderComposerSection(
 										const rowId = section.rowIdKey
 											? row[section.rowIdKey]
 											: undefined;
-										const storedOwnerId =
-											typeof row.owner_id === 'string' && row.owner_id !== ''
-												? row.owner_id
-												: null;
 										const rowIdText = typeof rowId === 'string' ? rowId : '';
 										const mayCertify =
 											canCertifyDataTableRow != null
-												? canCertifyDataTableRow(
-														section.id,
-														rowIdText,
-														storedOwnerId,
-													)
+												? canCertifyDataTableRow(section.id, rowIdText)
 												: isEditingActive;
 										const control =
 											mayCertify &&
@@ -803,12 +679,8 @@ function renderComposerSection(
 					</p>
 				</div>
 			);
-		case ComposerSectionKind.ZONES_CHIPS:
-			return <ZonesSection section={section} />;
 		case ComposerSectionKind.ENTITY_TAGS:
 			return <EntityTagsSection section={section} />;
-		case ComposerSectionKind.OWNER:
-			return <OwnerSection section={section} />;
 		case ComposerSectionKind.RELATED_TERMS_CHIPS:
 			return (
 				<div className="rounded-lg border border-slate-200/90 bg-white/90 p-5 dark:border-slate-700/90 dark:bg-slate-950/50">
@@ -974,8 +846,8 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 			sections.some(
 				(s) =>
 					isComposerSection(s) &&
-					((s.type === ComposerSectionKind.ENTITY_TAGS && s.editable === true) ||
-						(s.type === ComposerSectionKind.OWNER && s.editable === true)),
+					s.type === ComposerSectionKind.ENTITY_TAGS &&
+					s.editable === true,
 			);
 		const [localEditingMode, setLocalEditingMode] = useState(false);
 		const [saving, setSaving] = useState(false);
@@ -1317,10 +1189,6 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 										isEditingActive &&
 										section.type === ComposerSectionKind.ENTITY_TAGS &&
 										section.editable === true;
-									const isEditableOwner =
-										isEditingActive &&
-										section.type === ComposerSectionKind.OWNER &&
-										section.editable === true;
 									return (
 										<div key={section.id}>
 											{isEditableTextCard ? (
@@ -1369,13 +1237,6 @@ export const SinglePageComposer = forwardRef<HTMLDivElement, SinglePageComposerP
 												/>
 											) : isEditableEntityTags ? (
 												<EditableEntityTagsCard
-													section={section}
-													onChange={(id, val) => {
-														pendingEditsRef.current[id] = val;
-													}}
-												/>
-											) : isEditableOwner ? (
-												<EditableOwnerCard
 													section={section}
 													onChange={(id, val) => {
 														pendingEditsRef.current[id] = val;

@@ -2,10 +2,10 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // modelInterchangeApi.importModel — upload a native Auto Ontology or Apache Ossie model
 // YAML file and apply it to the catalog + semantic layer. Admin-only: can
 // replace existing data.
-export const POST = withPermission({ modelInterchange: ['import'] })((req) => proxyToBackend(req));
+export const POST = route((req) => proxyToBackend(req));

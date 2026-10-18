@@ -98,20 +98,6 @@ export type ComposerLoadingPanelSection = {
 	message: string;
 };
 
-export type ComposerZoneChip = {
-	id: string;
-	name: string;
-	color: string | null;
-	enabled: boolean;
-};
-
-export type ComposerZonesSection = {
-	type: ComposerSectionKind.ZONES_CHIPS;
-	id: string;
-	title: string;
-	zones: ComposerZoneChip[];
-};
-
 export type ComposerRelatedTermChip = {
 	id: string;
 	name: string;
@@ -163,36 +149,6 @@ export type ComposerEntityTagsSection = {
 	editable?: boolean;
 };
 
-export type ComposerOwnerOption = {
-	id: string;
-	name: string;
-	kind: 'user' | 'group';
-	color: string | null;
-};
-
-export type ComposerOwnerSection = {
-	type: ComposerSectionKind.OWNER;
-	id: string;
-	title: string;
-	/** Null when the object is unassigned. */
-	ownerId: string | null;
-	/**
-	 * `resource:action` the picker uses when it re-reads the live directory.
-	 * The snapshot in `options` is only the first paint.
-	 */
-	permission: string;
-	/**
-	 * Who the select offers. The page filters them to the permission this
-	 * object requires, and passes everyone when the card is only showing a name.
-	 */
-	options: ComposerOwnerOption[];
-	/**
-	 * In edit mode, a select whose value Save sends as this section's id.
-	 * Empty string means unassigned.
-	 */
-	editable?: boolean;
-};
-
 export type ComposerSqlBlockSection = {
 	type: ComposerSectionKind.SQL_BLOCK;
 	id: string;
@@ -207,12 +163,10 @@ export type ComposerSection =
 	| ComposerInfoGridSection
 	| ComposerDataTableSection
 	| ComposerLoadingPanelSection
-	| ComposerZonesSection
 	| ComposerRelatedTermsSection
 	| ComposerEntitiesSection
 	| ComposerEntityTagsSection
-	| ComposerSqlBlockSection
-	| ComposerOwnerSection;
+	| ComposerSqlBlockSection;
 
 const composerSectionTypes: readonly ComposerSectionKind[] = [
 	ComposerSectionKind.TEXT_CARD,
@@ -220,12 +174,10 @@ const composerSectionTypes: readonly ComposerSectionKind[] = [
 	ComposerSectionKind.INFO_GRID,
 	ComposerSectionKind.DATA_TABLE,
 	ComposerSectionKind.LOADING_PANEL,
-	ComposerSectionKind.ZONES_CHIPS,
 	ComposerSectionKind.RELATED_TERMS_CHIPS,
 	ComposerSectionKind.ENTITY_CHIPS,
 	ComposerSectionKind.ENTITY_TAGS,
 	ComposerSectionKind.SQL_BLOCK,
-	ComposerSectionKind.OWNER,
 ];
 
 export function isComposerSection(x: unknown): x is ComposerSection {

@@ -9,10 +9,10 @@ import logging
 import threading
 import time
 from contextlib import contextmanager
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 
 from auto_ontology.utils import get_embed_params
-from auto_ontology.utils.embedding import batch_embed_chunks
+from auto_ontology.utils.embedding import batch_embed_chunks, embedding_configured
 from auto_ontology.utils.embedding_rows import (
     CatalogEmbeddingRowsOp,
 )
@@ -123,7 +123,17 @@ def run_ingest(connector: SQLDatabase) -> None:
 
     data_vdb = None
     rows_written = 0
-    for chunk in batch_embed_chunks(embed_rows, embed_params, label=database_name):
+    chunks = batch_embed_chunks(embed_rows, embed_params, label=database_name)
+    if not embedding_configured():
+        # Nothing to call. The catalog is in place; choosing an embedding model
+        # later re-embeds every database (see ``reembed.py``).
+        logger.warning(
+            "No embedding model configured (Settings -> Models); skipping "
+            "embeddings for database %s",
+            database_name,
+        )
+        chunks = iter(())
+    for chunk in chunks:
         records = to_vdb_records(chunk)
         if not records:
             # Every row in the chunk came back without an embedding. Already
@@ -164,8 +174,13 @@ def run_ingest(connector: SQLDatabase) -> None:
     )
 
 
-def trigger_ingest(connection: dict[str, Any]) -> None:
-    """Run ingest for a newly created connection without blocking the caller."""
+def trigger_ingest(
+    connection: dict[str, Any], *, on_done: Callable[[], None] | None = None
+) -> None:
+    """Run ingest for a newly created connection without blocking the caller.
+
+    *on_done* runs on the ingest thread after a successful ingest.
+    """
     database_name = str(connection.get("database") or "")
 
     def _run() -> None:
@@ -190,15 +205,15 @@ def trigger_ingest(connection: dict[str, Any]) -> None:
                 )
                 return
             run_ingest(connector)
-            # Unconditional, unlike the ingest pass's own replay: neither
-            # scheduler covers this path. It is a bare thread, and creating a
-            # connection asks for an ingest without asking for a compilation
-            # (see ``server/connections/service.py``), so nothing would label
-            # the database that was just ingested until a scheduler tick hours
-            # later. Runs even when compilation is on, which at worst repeats
-            # work the next semantic pass would have done -- the replay is a
-            # diff and writes nothing where the labels are already right.
+            # Unconditional, unlike the ingest pass's own replay: this path is
+            # a bare thread outside both background jobs, so without it nothing
+            # would label the database that was just ingested when compilation
+            # is off. With compilation on it at worst repeats work the
+            # following semantic pass does -- the replay is a diff and writes
+            # nothing where the labels are already right.
             replay_rules("ingest")
+            if on_done is not None:
+                on_done()
         except Exception:
             logger.exception(
                 "Background ingest failed for database %s",
@@ -299,7 +314,7 @@ async def _reset_semantic_layer_and_recompile(
     """Body of :func:`reset_semantic_layer_and_recompile`, one caller at a time."""
     # Paused for the whole stop-and-delete window, not just aborted. abort()
     # ends the current pass but leaves the loop ticking, and a pass started by a
-    # timer tick or /semantic/compile between the drain and the end of the
+    # /semantic/compile or a post-ingest trigger between the drain and the end of the
     # delete would read the pre-delete catalog, find every table already
     # carrying a Term, compile nothing, and leave the layer deleted but not
     # rebuilt — the exact failure this ordering exists to prevent.

@@ -21,8 +21,6 @@ on:
       - 'auto_ontology/**'
       - 'dev_tools/generate_backend_openapi.py'
       - 'docs/openapi/**'
-      # The spec is committed here as well, so a hand-edit must be caught.
-      - 'mcp/auto_ontology_mcp/auto-ontology-api.json'
 
 jobs:
   # The public spec is generated from the route handlers plus the *committed*
@@ -57,12 +55,10 @@ jobs:
         working-directory: frontend
         run: pnpm openapi
 
-      # `pnpm openapi` writes the packaged copy too (auto-ontology-mcp reads it at
-      # startup and must work outside a checkout), so both paths are diffed.
       - name: Fail if the committed spec drifted
         run: |
-          git diff --exit-code -- docs/openapi/auto-ontology-api.json mcp/auto_ontology_mcp/auto-ontology-api.json \
-            || { echo '::error::the committed OpenAPI spec is stale — run `pnpm openapi` and commit both files'; exit 1; }
+          git diff --exit-code -- docs/openapi/auto-ontology-api.json \
+            || { echo '::error::the committed OpenAPI spec is stale — run `pnpm openapi` and commit it'; exit 1; }
 
   # Building the FastAPI apps needs the full backend environment, so this job
   # is the expensive one; it only guards the internal spec it produces.

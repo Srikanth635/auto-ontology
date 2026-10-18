@@ -4,11 +4,7 @@
 
 """``CustomAnalysis`` reads and writes.
 
-A CustomAnalysis is a user-authored, named SQL statement. The zone rule here is
-the same all-or-nothing one SqlAttribute uses, and for a sharper reason: the
-analysis's **SQL text is returned to the caller**, so an analysis touching one
-out-of-zone table would leak that table's name and columns even if no rows ever
-came back.
+A CustomAnalysis is a user-authored, named SQL statement.
 
 Orchestration stays in ``auto_ontology/server/custom_analyses/service.py``.
 """
@@ -23,7 +19,6 @@ from sqlalchemy import delete, func, literal, select
 from auto_ontology.dal import schema as s
 from auto_ontology.dal.session import store, write_transaction
 from auto_ontology.dal.sql_fragments import column_description_expr, name_contains
-from auto_ontology.dal.users import resolve_accessible_catalog_ids
 from auto_ontology.server.sql_utils import SqlParseError
 
 if TYPE_CHECKING:
@@ -87,32 +82,12 @@ def _has_sql():
     )
 
 
-def _out_of_zone(table_ids: list[str]):
-    """True when the analysis's SQL touches a table outside *table_ids*."""
-    return (
-        select(literal(1))
-        .select_from(
-            s.custom_analysis__sql.join(
-                s.sql_query__table,
-                s.sql_query__table.c.sql_query_id
-                == s.custom_analysis__sql.c.sql_query_id,
-            )
-        )
-        .where(
-            s.custom_analysis__sql.c.analysis_id == s.custom_analysis.c.id,
-            s.sql_query__table.c.table_id.notin_(table_ids),
-        )
-        .correlate(s.custom_analysis)
-        .exists()
-    )
-
-
 # ---------------------------------------------------------------------------
 # Reads
 # ---------------------------------------------------------------------------
 
 
-def _matching(zone_ids: list[str] | None, search: str | None) -> list:
+def _matching(search: str | None) -> list:
     """The WHERE every read of the visible analysis set applies.
 
     One function so :func:`list_custom_analyses` and
@@ -121,27 +96,18 @@ def _matching(zone_ids: list[str] | None, search: str | None) -> list:
     for rows that are not there.
     """
     conditions = [_has_sql()]
-    if zone_ids is not None:
-        resolved = resolve_accessible_catalog_ids(zone_ids)
-        conditions.append(~_out_of_zone(list(resolved["table_ids"])))
     if search and search.strip():
         conditions.append(name_contains(s.custom_analysis.c.name, search))
     return conditions
 
 
 def list_custom_analyses(
-    zone_ids: list[str] | None = None,
     *,
     search: str | None = None,
     skip: int = 0,
     limit: int | None = None,
 ) -> list[dict[str, Any]]:
     """Analyses with their SQL text, paged.
-
-    *zone_ids* is an authorization boundary, not a relevance filter: an analysis
-    touching even one out-of-zone table is excluded outright, because returning
-    its SQL would disclose the names and columns of tables the caller may not
-    see. ``None`` returns everything, for admin callers.
 
     *search*, when given, keeps the analyses whose name contains it,
     case-insensitively.
@@ -159,7 +125,7 @@ def list_custom_analyses(
             s.custom_analysis.c.description,
             _sql_text().label("sql"),
         )
-        .where(*_matching(zone_ids, search))
+        .where(*_matching(search))
         .order_by(func.lower(s.custom_analysis.c.name), s.custom_analysis.c.id)
         .offset(skip or None)
     )
@@ -170,14 +136,13 @@ def list_custom_analyses(
 
 
 def count_custom_analyses(
-    zone_ids: list[str] | None = None,
     *,
     search: str | None = None,
 ) -> int:
     """The unpaged size of :func:`list_custom_analyses`, from the same filter."""
     rows = store().query_read(
         select(func.count(s.custom_analysis.c.id).label("total")).where(
-            *_matching(zone_ids, search)
+            *_matching(search)
         )
     )
     return int(rows[0]["total"]) if rows else 0

@@ -13,9 +13,7 @@ from pydantic import BaseModel, Field
 
 from auto_ontology.dal import sql_attributes as sql_attr_dal
 from auto_ontology.dal import terms as terms_dal
-from auto_ontology.dal.owners import CATALOG_EDIT, edit_subject
 from auto_ontology.server.identity import resolve_internal_user
-from auto_ontology.server.owners import enforce_edit, owner_from_body
 from auto_ontology.server.pagination import LIMIT_QUERY, SKIP_QUERY
 from auto_ontology.server.terms import service as term_service
 from auto_ontology.server.responses import (
@@ -36,7 +34,6 @@ class TermUpdate(BaseModel):
     description: str | None = None
     name_certified: bool | None = None
     description_certified: bool | None = None
-    owner_id: str | None = None
 
 
 class ColumnAttributeUpdate(BaseModel):
@@ -64,9 +61,8 @@ def list_terms(
     that order; ``total`` reports how many match in full, so a caller knows
     when to stop asking. Omitting *limit* returns every matching term.
 
-    Each returned term carries its resolved ``zones``, so the Terms list
-    and the Exploration graph can render Zone chips from this single
-    response without a separate per-page zones request.
+    Each returned term carries its ``tags``, so the Terms list can render tag
+    chips from this single response.
 
     ``column_attribute_counts``, ``sql_attribute_counts`` and
     ``related_counts`` are per-term breakdowns (``[{term_id, count}, ...]``)
@@ -77,9 +73,7 @@ def list_terms(
     ``/terms/{term_id}/sql-attributes`` below — this endpoint stays
     counts-only so the Terms list never pulls attribute nodes it won't show.
     """
-    return term_service.list_terms_page(
-        zone_ids=None, search=query, skip=skip, limit=limit
-    )
+    return term_service.list_terms_page(search=query, skip=skip, limit=limit)
 
 
 @router.get(
@@ -100,13 +94,13 @@ def list_term_column_attributes_by_id(
     (catalog path ids + names) for navigation from the detail page.
     """
     attrs = terms_dal.fetch_column_attributes_by_term_id(
-        term_id, zone_ids=None, skip=skip, limit=limit
+        term_id, skip=skip, limit=limit
     )
     # `len(attrs)` only equals the term's full count when neither paging
     # argument was given — a `skip` alone (no `limit`) still returns a
     # partial read, so it needs the same separate count query.
     total = (
-        terms_dal.count_column_attributes_by_term_id(term_id, zone_ids=None)
+        terms_dal.count_column_attributes_by_term_id(term_id)
         if skip or limit is not None
         else len(attrs)
     )
@@ -129,9 +123,6 @@ def update_column_attribute(
     Column's data-VDB embedding (same behaviour as catalog column edit).
     """
     patch = body.model_dump(exclude_unset=True)
-    subject = edit_subject(attr_id)
-    if subject is not None:
-        enforce_edit(request, subject)
     if not patch:
         raise HTTPException(
             status_code=422, detail="No ColumnAttribute fields to update"
@@ -189,13 +180,13 @@ def list_term_sql_attributes_by_id(
     the number of attributes the term has in full.
     """
     attrs = sql_attr_dal.fetch_sql_attributes_by_term_id(
-        term_id, zone_ids=None, skip=skip, limit=limit
+        term_id, skip=skip, limit=limit
     )
     # `len(attrs)` only equals the term's full count when neither paging
     # argument was given — a `skip` alone (no `limit`) still returns a
     # partial read, so it needs the same separate count query.
     total = (
-        sql_attr_dal.count_sql_attributes_by_term_id(term_id, zone_ids=None)
+        sql_attr_dal.count_sql_attributes_by_term_id(term_id)
         if skip or limit is not None
         else len(attrs)
     )
@@ -209,14 +200,6 @@ def update_term(request: Request, term_id: str, body: TermUpdate) -> dict:
     if not patch:
         raise HTTPException(status_code=422, detail="No Term fields to update")
 
-    subject = edit_subject(term_id)
-    if subject is not None:
-        enforce_edit(request, subject)
-    set_owner = "owner_id" in patch
-    owner_id = (
-        owner_from_body(patch.get("owner_id"), CATALOG_EDIT) if set_owner else None
-    )
-
     name = patch.get("name")
     if isinstance(name, str):
         name = name.strip()
@@ -229,8 +212,6 @@ def update_term(request: Request, term_id: str, body: TermUpdate) -> dict:
         description=patch.get("description"),
         name_certified=patch.get("name_certified"),
         description_certified=patch.get("description_certified"),
-        owner_id=owner_id,
-        set_owner=set_owner,
         modified_by=resolve_internal_user(request, required=False),
         touch=True,
     )
@@ -263,7 +244,6 @@ def update_term(request: Request, term_id: str, body: TermUpdate) -> dict:
             "description": row.get("description"),
             "name_certified": row.get("name_certified", False),
             "description_certified": row.get("description_certified", False),
-            "owner_id": row.get("owner_id"),
             "certification": terms_dal.get_term_certification(term_id),
         }
     }
@@ -271,9 +251,9 @@ def update_term(request: Request, term_id: str, body: TermUpdate) -> dict:
 
 @router.get("/terms/{term_id}", response_model=TermDetailResponse)
 def get_term(term_id: str) -> dict:
-    """Return a single Term node by id, including zones and related terms."""
-    term = terms_dal.get_full_term_by_id(term_id, zone_ids=None)
+    """Return a single Term node by id, including tags and related terms."""
+    term = terms_dal.get_full_term_by_id(term_id)
     if term is None:
         raise HTTPException(status_code=404, detail="Term not found")
-    term["related_terms"] = terms_dal.fetch_related_terms(term_id, zone_ids=None)
+    term["related_terms"] = terms_dal.fetch_related_terms(term_id)
     return {"data": term}

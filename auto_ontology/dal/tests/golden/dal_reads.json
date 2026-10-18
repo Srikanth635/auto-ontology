@@ -2434,7 +2434,7 @@
       "name": "Top rented films"
     },
     "custom_analyses.get_custom_analysis_by_id": "<analysis:Top rented films>",
-    "custom_analyses.list_custom_analyses[admin]": [
+    "custom_analyses.list_custom_analyses": [
       {
         "description": "Films ordered by rental count.",
         "id": "<analysis:Top rented films>",
@@ -2448,8 +2448,6 @@
         "sql": "SELECT staff_id, sum(amount) AS revenue FROM payment GROUP BY staff_id"
       }
     ],
-    "custom_analyses.list_custom_analyses[none]": [],
-    "custom_analyses.list_custom_analyses[scoped]": [],
     "datasources.count_columns_for_table": 14,
     "datasources.fetch_all_schema_ids": [
       "<schema:chinook.main>",
@@ -2818,33 +2816,20 @@
       "table_type": "base table"
     },
     "datasources.fetch_columns_for_table__unknown": null,
-    "datasources.fetch_databases[admin]": [
+    "datasources.fetch_databases": [
       {
         "description": null,
         "id": "<db:chinook>",
         "name": "chinook",
         "num_of_schemas": 1,
-        "schemas": [],
-        "owner_id": null
+        "schemas": []
       },
       {
         "description": null,
         "id": "<db:pagila>",
         "name": "pagila",
         "num_of_schemas": 2,
-        "schemas": [],
-        "owner_id": null
-      }
-    ],
-    "datasources.fetch_databases[none]": [],
-    "datasources.fetch_databases[scoped]": [
-      {
-        "description": null,
-        "id": "<db:pagila>",
-        "name": "pagila",
-        "num_of_schemas": 1,
-        "schemas": [],
-        "owner_id": null
+        "schemas": []
       }
     ],
     "datasources.fetch_item_by_id": {
@@ -2888,15 +2873,13 @@
           "description": null,
           "id": "<schema:pagila.analytics>",
           "schema_name": "analytics",
-          "tables_count": 3,
-          "owner_id": null
+          "tables_count": 3
         },
         {
           "description": null,
           "id": "<schema:pagila.public>",
           "schema_name": "public",
-          "tables_count": 23,
-          "owner_id": null
+          "tables_count": 23
         }
       ],
       "schemas_count": 2
@@ -3799,8 +3782,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 1,
-        "owner_id": null
+        "terms_count": 1
       },
       {
         "columns_count": 11,
@@ -3813,8 +3795,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 14,
@@ -3827,8 +3808,7 @@
         "sql_count": 2,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 1,
-        "owner_id": null
+        "terms_count": 1
       },
       {
         "columns_count": 2,
@@ -3841,8 +3821,7 @@
         "sql_count": 0,
         "table_type": "materialized view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 2,
@@ -3855,8 +3834,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3869,8 +3847,7 @@
         "sql_count": 1,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3883,8 +3860,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3897,8 +3873,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3911,8 +3886,7 @@
         "sql_count": 1,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3925,8 +3899,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 3,
@@ -3939,8 +3912,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 4,
@@ -3953,8 +3925,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 4,
@@ -3967,8 +3938,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 4,
@@ -3981,8 +3951,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 4,
@@ -3995,8 +3964,7 @@
         "sql_count": 1,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 1,
-        "owner_id": null
+        "terms_count": 1
       },
       {
         "columns_count": 4,
@@ -4009,8 +3977,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 6,
@@ -4023,8 +3990,7 @@
         "sql_count": 3,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 2,
-        "owner_id": null
+        "terms_count": 2
       },
       {
         "columns_count": 7,
@@ -4037,8 +4003,7 @@
         "sql_count": 1,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 2,
-        "owner_id": null
+        "terms_count": 2
       },
       {
         "columns_count": 8,
@@ -4051,8 +4016,7 @@
         "sql_count": 0,
         "table_type": "base table",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 8,
@@ -4065,8 +4029,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 8,
@@ -4079,8 +4042,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 8,
@@ -4093,8 +4055,7 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       },
       {
         "columns_count": 9,
@@ -4107,11 +4068,10 @@
         "sql_count": 0,
         "table_type": "view",
         "tags": [],
-        "terms_count": 0,
-        "owner_id": null
+        "terms_count": 0
       }
     ],
-    "exploration.fetch_data_exploration_edges[admin]": [
+    "exploration.fetch_data_exploration_edges": [
       {
         "foreign_keys": [],
         "queries": [
@@ -4599,30 +4559,7 @@
         "via_foreign_key": true
       }
     ],
-    "exploration.fetch_data_exploration_edges[none]": [],
-    "exploration.fetch_data_exploration_edges[scoped]": [
-      {
-        "foreign_keys": [
-          {
-            "source_column": "film_id",
-            "source_sample_values": null,
-            "target_column": "film_id",
-            "target_sample_values": null
-          }
-        ],
-        "queries": [
-          "SELECT f.title, count(r.rental_id) AS rentals FROM rental r JOIN inventory i ON i.inventory_id = r.inventory_id JOIN film f ON f.film_id = i.film_id GROUP BY f.title ORDER BY rentals DESC"
-        ],
-        "relationship_types": [
-          "FOREIGN_KEY",
-          "SQL"
-        ],
-        "source": "<table:pagila.public.film>",
-        "target": "<table:pagila.public.inventory>",
-        "via_foreign_key": true
-      }
-    ],
-    "exploration.fetch_data_exploration_graph[admin]": {
+    "exploration.fetch_data_exploration_graph": {
       "links": [
         {
           "foreign_keys": [],
@@ -5124,8 +5061,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 1,
-          "zones": []
+          "terms_count": 1
         },
         {
           "columns_count": 11,
@@ -5139,15 +5075,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#dc2626",
-              "enabled": false,
-              "id": "<zone:Retired zone>",
-              "name": "Retired zone"
-            }
-          ]
+          "terms_count": 0
         },
         {
           "columns_count": 13,
@@ -5161,8 +5089,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 14,
@@ -5176,15 +5103,7 @@
           "schema_name": "public",
           "sql_count": 2,
           "table_type": "base table",
-          "terms_count": 1,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
+          "terms_count": 1
         },
         {
           "columns_count": 15,
@@ -5198,8 +5117,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5213,8 +5131,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5228,8 +5145,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5243,8 +5159,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5258,8 +5173,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5273,8 +5187,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5288,8 +5201,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "materialized view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 2,
@@ -5303,8 +5215,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5318,8 +5229,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5333,15 +5243,7 @@
           "schema_name": "public",
           "sql_count": 1,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5355,8 +5257,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5370,8 +5271,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5385,8 +5285,7 @@
           "schema_name": "public",
           "sql_count": 1,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5400,8 +5299,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 3,
@@ -5415,8 +5313,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 4,
@@ -5430,15 +5327,7 @@
           "schema_name": "analytics",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
-          ]
+          "terms_count": 0
         },
         {
           "columns_count": 4,
@@ -5452,8 +5341,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 4,
@@ -5467,8 +5355,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 4,
@@ -5482,8 +5369,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 4,
@@ -5497,15 +5383,7 @@
           "schema_name": "public",
           "sql_count": 1,
           "table_type": "base table",
-          "terms_count": 1,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
+          "terms_count": 1
         },
         {
           "columns_count": 4,
@@ -5519,8 +5397,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 5,
@@ -5534,8 +5411,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 5,
@@ -5549,15 +5425,7 @@
           "schema_name": "analytics",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
-          ]
+          "terms_count": 0
         },
         {
           "columns_count": 5,
@@ -5571,15 +5439,7 @@
           "schema_name": "analytics",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
-          ]
+          "terms_count": 0
         },
         {
           "columns_count": 6,
@@ -5593,8 +5453,7 @@
           "schema_name": "public",
           "sql_count": 3,
           "table_type": "base table",
-          "terms_count": 2,
-          "zones": []
+          "terms_count": 2
         },
         {
           "columns_count": 7,
@@ -5608,8 +5467,7 @@
           "schema_name": "public",
           "sql_count": 1,
           "table_type": "base table",
-          "terms_count": 2,
-          "zones": []
+          "terms_count": 2
         },
         {
           "columns_count": 8,
@@ -5623,8 +5481,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 8,
@@ -5638,8 +5495,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 8,
@@ -5653,8 +5509,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 8,
@@ -5668,8 +5523,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 9,
@@ -5683,15 +5537,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 1,
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
-          ]
+          "terms_count": 1
         },
         {
           "columns_count": 9,
@@ -5705,8 +5551,7 @@
           "schema_name": "main",
           "sql_count": 0,
           "table_type": "base table",
-          "terms_count": 0,
-          "zones": []
+          "terms_count": 0
         },
         {
           "columns_count": 9,
@@ -5720,104 +5565,7 @@
           "schema_name": "public",
           "sql_count": 0,
           "table_type": "view",
-          "terms_count": 0,
-          "zones": []
-        }
-      ]
-    },
-    "exploration.fetch_data_exploration_graph[none]": {
-      "links": [],
-      "nodes": []
-    },
-    "exploration.fetch_data_exploration_graph[scoped]": {
-      "links": [
-        {
-          "foreign_keys": [
-            {
-              "source_column": "film_id",
-              "source_sample_values": null,
-              "target_column": "film_id",
-              "target_sample_values": null
-            }
-          ],
-          "queries": [
-            "SELECT f.title, count(r.rental_id) AS rentals FROM rental r JOIN inventory i ON i.inventory_id = r.inventory_id JOIN film f ON f.film_id = i.film_id GROUP BY f.title ORDER BY rentals DESC"
-          ],
-          "relationship_types": [
-            "FOREIGN_KEY",
-            "SQL"
-          ],
-          "source": "<table:pagila.public.film>",
-          "target": "<table:pagila.public.inventory>",
-          "via_foreign_key": true
-        }
-      ],
-      "nodes": [
-        {
-          "columns_count": 14,
-          "database_id": "<db:pagila>",
-          "database_name": "pagila",
-          "description": "A motion picture available for rental.",
-          "id": "<table:pagila.public.film>",
-          "name": "film",
-          "relationship_count": 1,
-          "schema_id": "<schema:pagila.public>",
-          "schema_name": "public",
-          "sql_count": 2,
-          "table_type": "base table",
-          "terms_count": 1,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
-        },
-        {
-          "columns_count": 3,
-          "database_id": "<db:pagila>",
-          "database_name": "pagila",
-          "description": null,
-          "id": "<table:pagila.public.category>",
-          "name": "category",
-          "relationship_count": 0,
-          "schema_id": "<schema:pagila.public>",
-          "schema_name": "public",
-          "sql_count": 1,
-          "table_type": "base table",
-          "terms_count": 0,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
-        },
-        {
-          "columns_count": 4,
-          "database_id": "<db:pagila>",
-          "database_name": "pagila",
-          "description": null,
-          "id": "<table:pagila.public.inventory>",
-          "name": "inventory",
-          "relationship_count": 1,
-          "schema_id": "<schema:pagila.public>",
-          "schema_name": "public",
-          "sql_count": 1,
-          "table_type": "base table",
-          "terms_count": 1,
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
+          "terms_count": 0
         }
       ]
     },
@@ -5870,7 +5618,7 @@
       "nodes": [],
       "total": 0
     },
-    "exploration.fetch_semantic_exploration_graph[admin]": {
+    "exploration.fetch_semantic_exploration_graph": {
       "links": [
         {
           "relationship_types": [
@@ -5902,8 +5650,7 @@
           "synonyms": [
             "hire",
             "loan"
-          ],
-          "zones": []
+          ]
         },
         {
           "column_attributes_count": 1,
@@ -5914,14 +5661,6 @@
           "sql_attributes_count": 0,
           "synonyms": [
             "song"
-          ],
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
           ]
         },
         {
@@ -5933,8 +5672,7 @@
           "sql_attributes_count": 1,
           "synonyms": [
             "transaction"
-          ],
-          "zones": []
+          ]
         },
         {
           "column_attributes_count": 2,
@@ -5946,8 +5684,7 @@
           "synonyms": [
             "patron",
             "renter"
-          ],
-          "zones": []
+          ]
         },
         {
           "column_attributes_count": 3,
@@ -5960,44 +5697,6 @@
             "movie",
             "picture",
             "title"
-          ],
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ]
-        }
-      ]
-    },
-    "exploration.fetch_semantic_exploration_graph[none]": {
-      "links": [],
-      "nodes": []
-    },
-    "exploration.fetch_semantic_exploration_graph[scoped]": {
-      "links": [],
-      "nodes": [
-        {
-          "column_attributes_count": 3,
-          "description": "A motion picture available for rental.",
-          "id": "<term:Film>",
-          "name": "Film",
-          "relationship_count": 0,
-          "sql_attributes_count": 1,
-          "synonyms": [
-            "movie",
-            "picture",
-            "title"
-          ],
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
           ]
         }
       ]
@@ -6026,99 +5725,6 @@
       ],
       "terms_total": 1
     },
-    "exploration.fetch_table_zones_map[admin]": {
-      "<table:chinook.main.Track>": [
-        {
-          "color": "#059669",
-          "enabled": true,
-          "id": "<zone:Cross database>",
-          "name": "Cross database"
-        }
-      ],
-      "<table:pagila.analytics.category_rollup>": [
-        {
-          "color": "#059669",
-          "enabled": true,
-          "id": "<zone:Cross database>",
-          "name": "Cross database"
-        }
-      ],
-      "<table:pagila.analytics.film_performance>": [
-        {
-          "color": "#059669",
-          "enabled": true,
-          "id": "<zone:Cross database>",
-          "name": "Cross database"
-        }
-      ],
-      "<table:pagila.analytics.top_films>": [
-        {
-          "color": "#059669",
-          "enabled": true,
-          "id": "<zone:Cross database>",
-          "name": "Cross database"
-        }
-      ],
-      "<table:pagila.public.category>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<table:pagila.public.film>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<table:pagila.public.inventory>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<table:pagila.public.staff>": [
-        {
-          "color": "#dc2626",
-          "enabled": false,
-          "id": "<zone:Retired zone>",
-          "name": "Retired zone"
-        }
-      ]
-    },
-    "exploration.fetch_table_zones_map[none]": {},
-    "exploration.fetch_table_zones_map[scoped]": {
-      "<table:pagila.public.category>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<table:pagila.public.film>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<table:pagila.public.inventory>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ]
-    },
     "pql_analyses.fetch_pql_analyses_by_ids": {
       "<pql:Customer churn>": {
         "description": "Predict which customers stop renting.",
@@ -6141,7 +5747,7 @@
       }
     ],
     "sql_attributes.count_sql_attributes_by_term_id": 2,
-    "sql_attributes.fetch_sql_attribute_counts[admin]": [
+    "sql_attributes.fetch_sql_attribute_counts": [
       {
         "count": 1,
         "term_id": "<term:Customer>"
@@ -6152,13 +5758,6 @@
       },
       {
         "count": 2,
-        "term_id": "<term:Film>"
-      }
-    ],
-    "sql_attributes.fetch_sql_attribute_counts[none]": [],
-    "sql_attributes.fetch_sql_attribute_counts[scoped]": [
-      {
-        "count": 1,
         "term_id": "<term:Film>"
       }
     ],
@@ -6174,39 +5773,37 @@
     "sql_attributes.fetch_sql_attributes_by_term_id": [
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Film count grouped by category, via the bridge table.",
         "description_suggestion": null,
         "expression": "SELECT c.name, count(fc.film_id) FROM film_category fc JOIN category c ON c.category_id = fc.category_id GROUP BY c.name",
         "id": "<sqlattr:films per category>",
+        "modified": null,
+        "modified_by": null,
         "name": "films per category",
         "source": "bridgeTable",
         "sql": "SELECT c.name, count(fc.film_id) FROM film_category fc JOIN category c ON c.category_id = fc.category_id GROUP BY c.name",
         "tags": [],
         "term_id": "<term:Film>",
-        "term_name": "Film",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Number of films in the catalog.",
         "description_suggestion": null,
         "expression": "SELECT count(film_id) FROM film",
         "id": "<sqlattr:film count>",
+        "modified": null,
+        "modified_by": null,
         "name": "film count",
         "source": "sql",
         "sql": "SELECT count(film_id) FROM film",
         "tags": [],
         "term_id": "<term:Film>",
-        "term_name": "Film",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       }
     ],
     "sql_attributes.fetch_sql_attributes_with_sql": [
@@ -6272,99 +5869,91 @@
     "sql_attributes.find_attr_by_name__absent": null,
     "sql_attributes.get_full_sql_attribute_by_id": {
       "certified": false,
+      "created": "<redacted>",
+      "created_by": null,
       "description": "Sum of all payment amounts.",
       "description_suggestion": null,
       "expression": "SELECT sum(amount) FROM payment",
       "id": "<sqlattr:total revenue>",
+      "modified": null,
+      "modified_by": null,
       "name": "total revenue",
       "source": "manual",
       "sql": "SELECT sum(amount) FROM payment",
       "tags": [],
       "term_id": "<term:Payment>",
-      "term_name": "Payment",
-      "zones": [],
-      "owner_id": null,
-      "created": "<redacted>",
-      "modified": null,
-      "created_by": null,
-      "modified_by": null
+      "term_name": "Payment"
     },
     "sql_attributes.get_sql_attribute_by_id": "<sqlattr:total revenue>",
     "sql_attributes.list_sql_attributes": [
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Film count grouped by category, via the bridge table.",
         "description_suggestion": null,
         "expression": "SELECT c.name, count(fc.film_id) FROM film_category fc JOIN category c ON c.category_id = fc.category_id GROUP BY c.name",
         "id": "<sqlattr:films per category>",
+        "modified": null,
+        "modified_by": null,
         "name": "films per category",
         "source": "bridgeTable",
         "sql": "SELECT c.name, count(fc.film_id) FROM film_category fc JOIN category c ON c.category_id = fc.category_id GROUP BY c.name",
         "term_id": "<term:Film>",
-        "term_name": "Film",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Number of films in the catalog.",
         "description_suggestion": null,
         "expression": "SELECT count(film_id) FROM film",
         "id": "<sqlattr:film count>",
+        "modified": null,
+        "modified_by": null,
         "name": "film count",
         "source": "sql",
         "sql": "SELECT count(film_id) FROM film",
         "term_id": "<term:Film>",
-        "term_name": "Film",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Sum of all payment amounts.",
         "description_suggestion": null,
         "expression": "SELECT sum(amount) FROM payment",
         "id": "<sqlattr:total revenue>",
+        "modified": null,
+        "modified_by": null,
         "name": "total revenue",
         "source": "manual",
         "sql": "SELECT sum(amount) FROM payment",
         "term_id": "<term:Payment>",
-        "term_name": "Payment",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Payment"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "description": "Total paid by each customer.",
         "description_suggestion": null,
         "expression": "SELECT customer_id, sum(amount) FROM payment GROUP BY customer_id",
         "id": "<sqlattr:customer lifetime value>",
+        "modified": null,
+        "modified_by": null,
         "name": "customer lifetime value",
         "source": "table",
         "sql": "SELECT customer_id, sum(amount) FROM payment GROUP BY customer_id",
         "term_id": "<term:Customer>",
-        "term_name": "Customer",
-        "owner_id": null,
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Customer"
       }
     ],
     "terms.count_column_attributes_by_term_id": 3,
-    "terms.count_terms[admin]": 5,
-    "terms.count_terms[none]": 0,
-    "terms.count_terms[scoped]": 1,
-    "terms.fetch_all_terms[admin]": [
+    "terms.count_terms": 5,
+    "terms.fetch_all_terms": [
       {
         "certification": "partial",
         "description": "A motion picture available for rental.",
@@ -6380,15 +5969,6 @@
           "picture",
           "title"
         ],
-        "zones": [
-          {
-            "color": "#4f46e5",
-            "enabled": true,
-            "id": "<zone:Film domain>",
-            "name": "Film domain"
-          }
-        ],
-        "owner_id": null,
         "tags": []
       },
       {
@@ -6405,8 +5985,6 @@
           "patron",
           "renter"
         ],
-        "zones": [],
-        "owner_id": null,
         "tags": []
       },
       {
@@ -6423,8 +6001,6 @@
           "hire",
           "loan"
         ],
-        "zones": [],
-        "owner_id": null,
         "tags": []
       },
       {
@@ -6440,15 +6016,6 @@
         "synonyms": [
           "song"
         ],
-        "zones": [
-          {
-            "color": "#059669",
-            "enabled": true,
-            "id": "<zone:Cross database>",
-            "name": "Cross database"
-          }
-        ],
-        "owner_id": null,
         "tags": []
       },
       {
@@ -6464,41 +6031,10 @@
         "synonyms": [
           "transaction"
         ],
-        "zones": [],
-        "owner_id": null,
         "tags": []
       }
     ],
-    "terms.fetch_all_terms[none]": [],
-    "terms.fetch_all_terms[scoped]": [
-      {
-        "certification": "partial",
-        "description": "A motion picture available for rental.",
-        "description_certified": true,
-        "id": "<term:Film>",
-        "name": "Film",
-        "name_certified": true,
-        "schema_names": [
-          "public"
-        ],
-        "synonyms": [
-          "movie",
-          "picture",
-          "title"
-        ],
-        "zones": [
-          {
-            "color": "#4f46e5",
-            "enabled": true,
-            "id": "<zone:Film domain>",
-            "name": "Film domain"
-          }
-        ],
-        "owner_id": null,
-        "tags": []
-      }
-    ],
-    "terms.fetch_all_terms_and_attributes[admin]": [
+    "terms.fetch_all_terms_and_attributes": [
       [
         {
           "certification": "partial",
@@ -6515,15 +6051,6 @@
             "picture",
             "title"
           ],
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ],
-          "owner_id": null,
           "tags": []
         },
         {
@@ -6540,8 +6067,6 @@
             "patron",
             "renter"
           ],
-          "zones": [],
-          "owner_id": null,
           "tags": []
         },
         {
@@ -6558,8 +6083,6 @@
             "hire",
             "loan"
           ],
-          "zones": [],
-          "owner_id": null,
           "tags": []
         },
         {
@@ -6575,15 +6098,6 @@
           "synonyms": [
             "song"
           ],
-          "zones": [
-            {
-              "color": "#059669",
-              "enabled": true,
-              "id": "<zone:Cross database>",
-              "name": "Cross database"
-            }
-          ],
-          "owner_id": null,
           "tags": []
         },
         {
@@ -6599,8 +6113,6 @@
           "synonyms": [
             "transaction"
           ],
-          "zones": [],
-          "owner_id": null,
           "tags": []
         }
       ],
@@ -6719,85 +6231,7 @@
         }
       ]
     ],
-    "terms.fetch_all_terms_and_attributes[none]": [
-      [],
-      []
-    ],
-    "terms.fetch_all_terms_and_attributes[scoped]": [
-      [
-        {
-          "certification": "partial",
-          "description": "A motion picture available for rental.",
-          "description_certified": true,
-          "id": "<term:Film>",
-          "name": "Film",
-          "name_certified": true,
-          "schema_names": [
-            "public"
-          ],
-          "synonyms": [
-            "movie",
-            "picture",
-            "title"
-          ],
-          "zones": [
-            {
-              "color": "#4f46e5",
-              "enabled": true,
-              "id": "<zone:Film domain>",
-              "name": "Film domain"
-            }
-          ],
-          "owner_id": null,
-          "tags": []
-        }
-      ],
-      [
-        {
-          "column_name": "film_id",
-          "datatype": "integer",
-          "description": "Primary key of film.",
-          "id": "<attr:Film/film id/film_id>",
-          "is_unique": null,
-          "name": "film id",
-          "sample_values": null,
-          "schema_name": "public",
-          "source_column": "film_id",
-          "table_id": "<table:pagila.public.film>",
-          "table_name": "film",
-          "term_name": "Film"
-        },
-        {
-          "column_name": "rating",
-          "datatype": "mpaa_rating",
-          "description": "MPAA rating; an enum.",
-          "id": "<attr:Film/film rating/rating>",
-          "is_unique": null,
-          "name": "film rating",
-          "sample_values": null,
-          "schema_name": "public",
-          "source_column": "rating",
-          "table_id": "<table:pagila.public.film>",
-          "table_name": "film",
-          "term_name": "Film"
-        },
-        {
-          "column_name": "title",
-          "datatype": "text",
-          "description": "The film's title.",
-          "id": "<attr:Film/film title/title>",
-          "is_unique": null,
-          "name": "film title",
-          "sample_values": null,
-          "schema_name": "public",
-          "source_column": "title",
-          "table_id": "<table:pagila.public.film>",
-          "table_name": "film",
-          "term_name": "Film"
-        }
-      ]
-    ],
-    "terms.fetch_column_attribute_counts[admin]": [
+    "terms.fetch_column_attribute_counts": [
       {
         "count": 1,
         "term_id": "<term:Payment>"
@@ -6814,13 +6248,6 @@
         "count": 2,
         "term_id": "<term:Customer>"
       },
-      {
-        "count": 3,
-        "term_id": "<term:Film>"
-      }
-    ],
-    "terms.fetch_column_attribute_counts[none]": [],
-    "terms.fetch_column_attribute_counts[scoped]": [
       {
         "count": 3,
         "term_id": "<term:Film>"
@@ -6854,9 +6281,13 @@
     "terms.fetch_column_attributes_by_term_id": [
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "datatype": "integer",
         "description": "Primary key of film.",
         "id": "<attr:Film/film id/film_id>",
+        "modified": null,
+        "modified_by": null,
         "name": "film id",
         "primary_column": {
           "column_name": "film_id",
@@ -6880,25 +6311,17 @@
         "source_column": "film_id",
         "table_id": "<table:pagila.public.film>",
         "tags": [],
-        "term_name": "Film",
-        "zones": [
-          {
-            "color": "#4f46e5",
-            "enabled": true,
-            "id": "<zone:Film domain>",
-            "name": "Film domain"
-          }
-        ],
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "datatype": "mpaa_rating",
         "description": "MPAA rating; an enum.",
         "id": "<attr:Film/film rating/rating>",
+        "modified": null,
+        "modified_by": null,
         "name": "film rating",
         "primary_column": {
           "column_name": "rating",
@@ -6913,25 +6336,17 @@
         "source_column": "rating",
         "table_id": "<table:pagila.public.film>",
         "tags": [],
-        "term_name": "Film",
-        "zones": [
-          {
-            "color": "#4f46e5",
-            "enabled": true,
-            "id": "<zone:Film domain>",
-            "name": "Film domain"
-          }
-        ],
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       },
       {
         "certified": false,
+        "created": "<redacted>",
+        "created_by": null,
         "datatype": "text",
         "description": "The film's title.",
         "id": "<attr:Film/film title/title>",
+        "modified": null,
+        "modified_by": null,
         "name": "film title",
         "primary_column": {
           "column_name": "title",
@@ -6946,24 +6361,12 @@
         "source_column": "title",
         "table_id": "<table:pagila.public.film>",
         "tags": [],
-        "term_name": "Film",
-        "zones": [
-          {
-            "color": "#4f46e5",
-            "enabled": true,
-            "id": "<zone:Film domain>",
-            "name": "Film domain"
-          }
-        ],
-        "created": "<redacted>",
-        "modified": null,
-        "created_by": null,
-        "modified_by": null
+        "term_name": "Film"
       }
     ],
     "terms.fetch_related_term_ids": [],
     "terms.fetch_related_terms": [],
-    "terms.fetch_related_terms_counts[admin]": [
+    "terms.fetch_related_terms_counts": [
       {
         "count": 0,
         "term_id": "<term:Film>"
@@ -6983,13 +6386,6 @@
       {
         "count": 2,
         "term_id": "<term:Customer>"
-      }
-    ],
-    "terms.fetch_related_terms_counts[none]": [],
-    "terms.fetch_related_terms_counts[scoped]": [
-      {
-        "count": 0,
-        "term_id": "<term:Film>"
       }
     ],
     "terms.fetch_table_schema_map": {
@@ -7075,7 +6471,7 @@
         "title"
       ]
     },
-    "terms.fetch_term_table_pairs[admin]": [
+    "terms.fetch_term_table_pairs": [
       {
         "path": "HAS_ATTRIBUTE",
         "table_id": "<table:chinook.main.Track>",
@@ -7142,53 +6538,6 @@
         "term_id": "<term:Customer>"
       }
     ],
-    "terms.fetch_term_table_pairs[none]": [],
-    "terms.fetch_term_table_pairs[scoped]": [
-      {
-        "path": "HAS_ATTRIBUTE",
-        "table_id": "<table:pagila.public.film>",
-        "term_id": "<term:Film>"
-      },
-      {
-        "path": "REPRESENTS",
-        "table_id": "<table:pagila.public.film>",
-        "term_id": "<term:Film>"
-      },
-      {
-        "path": "SEMANTIC_FK",
-        "table_id": "<table:pagila.public.inventory>",
-        "term_id": "<term:Film>"
-      }
-    ],
-    "terms.fetch_term_zones_map[admin]": {
-      "<term:Film>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "<term:Track>": [
-        {
-          "color": "#059669",
-          "enabled": true,
-          "id": "<zone:Cross database>",
-          "name": "Cross database"
-        }
-      ]
-    },
-    "terms.fetch_term_zones_map[none]": {},
-    "terms.fetch_term_zones_map[scoped]": {
-      "<term:Film>": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ]
-    },
     "terms.fetch_terms_and_attributes_for_table": [
       [
         {
@@ -7260,9 +6609,13 @@
     "terms.find_column_attribute_by_column_id": "<attr:Film/film id/film_id>",
     "terms.get_full_term_by_id": {
       "certification": "partial",
+      "created": "<redacted>",
+      "created_by": null,
       "description": "A motion picture available for rental.",
       "description_certified": true,
       "id": "<term:Film>",
+      "modified": null,
+      "modified_by": null,
       "name": "Film",
       "name_certified": true,
       "synonyms": [
@@ -7279,20 +6632,7 @@
           "schema_id": "<schema:pagila.public>"
         }
       ],
-      "tags": [],
-      "zones": [
-        {
-          "color": "#4f46e5",
-          "enabled": true,
-          "id": "<zone:Film domain>",
-          "name": "Film domain"
-        }
-      ],
-      "owner_id": null,
-      "created": "<redacted>",
-      "modified": null,
-      "created_by": null,
-      "modified_by": null
+      "tags": []
     },
     "terms.get_full_term_by_id__unknown": null,
     "terms.get_slim_term_by_id": {
@@ -7305,114 +6645,6 @@
       "id": "<term:Film>",
       "name": "Film"
     },
-    "terms.semantic_layer_calculated": true,
-    "users.get_accessible_catalog_ids_for_zones[admin]": {
-      "db_ids": [],
-      "schema_ids": [],
-      "table_ids": []
-    },
-    "users.get_accessible_catalog_ids_for_zones[none]": {
-      "db_ids": [],
-      "schema_ids": [],
-      "table_ids": []
-    },
-    "users.get_accessible_catalog_ids_for_zones[scoped]": {
-      "db_ids": [
-        "<db:pagila>"
-      ],
-      "schema_ids": [
-        "<schema:pagila.public>"
-      ],
-      "table_ids": [
-        "<table:pagila.public.category>",
-        "<table:pagila.public.film>",
-        "<table:pagila.public.inventory>"
-      ]
-    },
-    "users.resolve_accessible_catalog_ids[admin]": null,
-    "users.resolve_accessible_catalog_ids[none]": {
-      "db_ids": [],
-      "schema_ids": [],
-      "table_ids": []
-    },
-    "users.resolve_accessible_catalog_ids[scoped]": {
-      "db_ids": [
-        "<db:pagila>"
-      ],
-      "schema_ids": [
-        "<schema:pagila.public>"
-      ],
-      "table_ids": [
-        "<table:pagila.public.category>",
-        "<table:pagila.public.film>",
-        "<table:pagila.public.inventory>"
-      ]
-    },
-    "zones.get_zone_by_id__disabled": {
-      "color": "#dc2626",
-      "description": "Disabled; grants no access but stays visible to admins.",
-      "enabled": false,
-      "id": "<zone:Retired zone>",
-      "items": [
-        {
-          "id": "<table:pagila.public.staff>",
-          "label": "table",
-          "name": "staff"
-        }
-      ],
-      "label": "Zone",
-      "name": "Retired zone"
-    },
-    "zones.get_zone_by_id__enabled": {
-      "color": "#4f46e5",
-      "description": "Tables describing films and their inventory.",
-      "enabled": true,
-      "id": "<zone:Film domain>",
-      "items": [
-        {
-          "id": "<table:pagila.public.category>",
-          "label": "table",
-          "name": "category"
-        },
-        {
-          "id": "<table:pagila.public.film>",
-          "label": "table",
-          "name": "film"
-        },
-        {
-          "id": "<table:pagila.public.inventory>",
-          "label": "table",
-          "name": "inventory"
-        }
-      ],
-      "label": "Zone",
-      "name": "Film domain"
-    },
-    "zones.list_zones": [
-      {
-        "color": "#059669",
-        "description": "A schema in one database plus a table in another.",
-        "enabled": true,
-        "id": "<zone:Cross database>",
-        "label": "Zone",
-        "name": "Cross database"
-      },
-      {
-        "color": "#4f46e5",
-        "description": "Tables describing films and their inventory.",
-        "enabled": true,
-        "id": "<zone:Film domain>",
-        "label": "Zone",
-        "name": "Film domain"
-      },
-      {
-        "color": "#dc2626",
-        "description": "Disabled; grants no access but stays visible to admins.",
-        "enabled": false,
-        "id": "<zone:Retired zone>",
-        "label": "Zone",
-        "name": "Retired zone"
-      }
-    ]
+    "terms.semantic_layer_calculated": true
   }
 }

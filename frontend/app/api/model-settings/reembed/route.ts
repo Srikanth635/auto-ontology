@@ -2,13 +2,11 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // modelSettingsApi.reembedStatus — whether vectors are being rebuilt.
-export const GET = withPermission({ modelSettings: ['read'] })(async (req) => proxyToBackend(req));
+export const GET = route(async (req) => proxyToBackend(req));
 
 // modelSettingsApi.reembed — rebuild every vector with the current embedding model.
-export const POST = withPermission({ modelSettings: ['manage'] })(async (req) =>
-	proxyToBackend(req),
-);
+export const POST = route(async (req) => proxyToBackend(req));

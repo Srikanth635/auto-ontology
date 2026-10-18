@@ -10,7 +10,6 @@ import { usePathname } from 'next/navigation';
 type NavItem = { label: string; href: string };
 
 const CONNECTIONS_NAV_ITEM: NavItem = { label: 'Connections', href: '/settings/connections' };
-const ZONES_NAV_ITEM: NavItem = { label: 'Zones', href: '/settings/zones' };
 const TAGS_NAV_ITEM: NavItem = { label: 'Tags', href: '/settings/tags' };
 const RULES_NAV_ITEM: NavItem = { label: 'Rules', href: '/settings/rules' };
 const PII_SETTINGS_NAV_ITEM: NavItem = {
@@ -21,7 +20,6 @@ const SEMANTIC_INPUT_NAV_ITEM: NavItem = {
 	label: 'Semantic Input',
 	href: '/settings/semantic-input',
 };
-const USERS_NAV_ITEM: NavItem = { label: 'Users', href: '/settings/users' };
 const MODELS_NAV_ITEM: NavItem = { label: 'Models', href: '/settings/models' };
 const SEMANTIC_COMPILATION_NAV_ITEM: NavItem = {
 	label: 'Semantic Compilation',
@@ -54,8 +52,6 @@ export type SettingsNavProps = {
 	connectionsEnvManaged: boolean;
 };
 
-// The whole Settings section is admin-only (gated in app/settings/layout.tsx),
-// so no per-item role checks are needed here.
 export const SettingsNav = ({ connectionsEnvManaged }: SettingsNavProps) => {
 	const pathname = usePathname();
 
@@ -63,12 +59,10 @@ export const SettingsNav = ({ connectionsEnvManaged }: SettingsNavProps) => {
 	if (!connectionsEnvManaged) items.push(CONNECTIONS_NAV_ITEM);
 	items.push(
 		MODELS_NAV_ITEM,
-		ZONES_NAV_ITEM,
 		TAGS_NAV_ITEM,
 		RULES_NAV_ITEM,
 		PII_SETTINGS_NAV_ITEM,
 		SEMANTIC_INPUT_NAV_ITEM,
-		USERS_NAV_ITEM,
 		SEMANTIC_COMPILATION_NAV_ITEM,
 		AGENT_SETTINGS_NAV_ITEM,
 		IMPORT_EXPORT_NAV_ITEM,

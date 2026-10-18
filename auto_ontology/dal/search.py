@@ -24,13 +24,6 @@ The label vocabulary is deliberate, not a leftover from the graph. ``label`` is
 the API's ``type`` field and the key the frontend tabs results by, so ``Term``
 and ``ColumnAttribute`` are part of the response contract -- renaming them here
 renames them in the UI.
-
-**Nothing here filters by zone.** Every other read path in ``auto_ontology.dal`` takes a
-``zone_ids`` argument -- :func:`auto_ontology.dal.terms.fetch_all_terms` calls it "a hard
-authorization boundary" -- and these functions have no such parameter. That is
-not a leak today, because every router passes ``zone_ids=None`` and the
-filtering is switched off application-wide; the point is that when it is
-switched on, this is the module with nowhere to pass it.
 """
 
 from __future__ import annotations

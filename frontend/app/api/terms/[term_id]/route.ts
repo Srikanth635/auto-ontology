@@ -2,19 +2,13 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 import { withTagAuthors } from '@/lib/tagAuthors';
 
 // termsApi.getById — fetch one Term node. Authors are resolved here so Last
 // Modified can name the person who saved it.
-export const GET = withPermission({ catalog: ['read'] })(async (req) =>
-	withTagAuthors(await proxyToBackend(req)),
-);
+export const GET = route(async (req) => withTagAuthors(await proxyToBackend(req)));
 
-// The backend authorizes the write against either the account role or this
-// term's owner group. Requiring read here admits authenticated owner-group
-// viewers without granting them writes to terms owned by anyone else.
-export const PATCH = withPermission({ catalog: ['read'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
+// termsApi.update — edit a Term. The identity is recorded as `modified_by`.
+export const PATCH = route((req, { user }) => proxyToBackend(req, { userId: user.id }));

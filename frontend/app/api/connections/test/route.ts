@@ -2,8 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// connectionsApi.test — validate a connection config (admin only).
-export const POST = withPermission({ connection: ['manage'] })((req) => proxyToBackend(req));
+// connectionsApi.test — validate a connection config.
+export const POST = route((req) => proxyToBackend(req));

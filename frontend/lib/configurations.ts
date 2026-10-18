@@ -45,7 +45,7 @@ export function readOptInFlag(value: string | null | undefined): boolean {
 
 /**
  * Global "Visualize SQL Results" flag. A missing row counts as enabled, so the
- * feature is on by default until an admin turns it off from
+ * feature is on by default until someone turns it off from
  * Settings > Agent Settings.
  */
 export async function isVisualizationEnabled(): Promise<boolean> {
@@ -57,7 +57,7 @@ export async function isVisualizationEnabled(): Promise<boolean> {
 
 /**
  * Global "PII Detection" flag. A missing row counts as disabled, so ingest
- * skips classification until an admin turns it on from Settings > PII
+ * skips classification until someone turns it on from Settings > PII
  * Settings. Canonicalized through `readOptInFlag` so this cannot disagree
  * with the ingestion service about what the stored value means.
  */

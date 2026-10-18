@@ -176,7 +176,7 @@ def _resolve_chat_target_db(target_db: str | None) -> str | None:
         return None
 
     requested = target_db.strip()
-    databases = datasources_dal.fetch_databases(zone_ids=None)
+    databases = datasources_dal.fetch_databases()
     for database in databases:
         database_id = str(database.get("id") or "").strip()
         database_name = str(database.get("name") or "").strip()

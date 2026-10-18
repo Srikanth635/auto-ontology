@@ -4,17 +4,13 @@
 
 import type { Metadata } from 'next';
 import { SettingsPanelLayout } from '@/components/settings/SettingsPanelLayout';
-import { requireAdmin } from '@/auth/auth-guards';
 import { readConnectionsEnvSource } from '@/lib/server/connections';
 
 export const metadata: Metadata = {
 	title: 'Settings',
 };
 
-// The entire Settings section (Connections, Zones, Users) is admin-only.
-// This is the real gate; the nav rail also hides Settings from non-admins.
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
-	await requireAdmin();
 	// Read once here so the nav renders its final shape on the first paint, and
 	// so navigating between sections does not re-ask: the layout survives those
 	// navigations, the nav's own effect did not. The page rendering inside this

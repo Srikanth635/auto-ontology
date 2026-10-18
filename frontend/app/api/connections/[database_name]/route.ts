@@ -2,11 +2,11 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// connectionsApi.update — rewrite a connection's settings (admin only).
-export const PUT = withPermission({ connection: ['manage'] })((req) => proxyToBackend(req));
+// connectionsApi.update — rewrite a connection's settings.
+export const PUT = route((req) => proxyToBackend(req));
 
-// connectionsApi.delete — remove a connection (admin only).
-export const DELETE = withPermission({ connection: ['manage'] })((req) => proxyToBackend(req));
+// connectionsApi.delete — remove a connection.
+export const DELETE = route((req) => proxyToBackend(req));

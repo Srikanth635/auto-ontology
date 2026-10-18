@@ -22,7 +22,6 @@ from auto_ontology.dal.exploration import (
     fetch_sql_attribute_exploration_details,
     fetch_sql_exploration_details,
     fetch_table_exploration_details,
-    fetch_table_zones_map,
     fetch_term_exploration_details,
 )
 
@@ -38,6 +37,5 @@ __all__ = [
     "fetch_sql_attribute_exploration_details",
     "fetch_sql_exploration_details",
     "fetch_table_exploration_details",
-    "fetch_table_zones_map",
     "fetch_term_exploration_details",
 ]

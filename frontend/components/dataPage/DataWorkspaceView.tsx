@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { BackPanelLayout } from '@/common/BackPanelLayout';
 import type { NodePatch } from '@/api/types';
 import type { BreadcrumbItem } from '@/common/Breadcrumbs';
@@ -27,9 +27,6 @@ import { isCatalogBranchLoadedForFocus } from '@/lib/data/catalog-branch-loaded'
 import { catalogPathFromFocusId } from '@/lib/data/data-catalog-path';
 import { buildTreeFocusPageFormat, resolveTreeNode } from '@/lib/data/tree-focus-page';
 import { TAGS_SECTION_ID, fetchTagOptions, stagedTagIds, syncTags } from '@/lib/tags';
-import { canEditEntity } from '@/lib/owners';
-import { fetchOwnerDirectory, ownerQueries } from '@/lib/queries/owners';
-import { useSession } from '@/auth/auth-client';
 import {
 	mergeColumnsIntoTable,
 	mergeSchemasIntoDatabase,
@@ -103,8 +100,6 @@ export function DataWorkspaceView() {
 	// page that offers them, so walking the tree doesn't re-read the
 	// vocabulary at each table and column.
 	const queryClient = useQueryClient();
-	const { data: session } = useSession();
-	const { data: owners = [] } = useQuery(ownerQueries.all());
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const rawFocus = searchParams.get('focus');
@@ -234,17 +229,11 @@ export function DataWorkspaceView() {
 		async (_dataId: string, treeFocus: string | null): Promise<SinglePageFormat> => {
 			// The picker's options are read only for the kinds that have a tags
 			// section, and beside the hydration rather than after it.
-			const [, tagOptions, ownerDirectory] = await Promise.all([
+			const [, tagOptions] = await Promise.all([
 				hydrateBranchForFocus(treeFocus),
 				focusedTagType(treeFocus) == null ? [] : fetchTagOptions(queryClient),
-				fetchOwnerDirectory(queryClient),
 			]);
-			return buildTreeFocusPageFormat(
-				treeFocus,
-				databasesRef.current,
-				tagOptions,
-				ownerDirectory,
-			);
+			return buildTreeFocusPageFormat(treeFocus, databasesRef.current, tagOptions);
 		},
 		[hydrateBranchForFocus, queryClient],
 	);
@@ -317,7 +306,6 @@ export function DataWorkspaceView() {
 
 			if (Object.keys(nodeEdits).length > 0) {
 				const nodePatch = { ...nodeEdits } as NodePatch;
-				if (nodePatch.owner_id === '') nodePatch.owner_id = null;
 				const res = await datasources.updateNode(focusedEntityId, nodePatch);
 				if (res.error) {
 					return { error: true, message: res.message ?? 'Failed to save changes' };
@@ -387,23 +375,6 @@ export function DataWorkspaceView() {
 		},
 		[applyNodePatch],
 	);
-
-	const catalogActor = session?.user
-		? { id: session.user.id, role: session.user.role ?? null }
-		: null;
-	const focusedCatalogOwnerId = useMemo(() => {
-		const resolved = resolveTreeNode(treeFocusId, treeDatabases);
-		if (resolved.type === DataModels.DB) return resolved.database.owner_id;
-		if (resolved.type === DataModels.SCHEMA) return resolved.schema.owner_id;
-		if (resolved.type === DataModels.TABLE) return resolved.table.owner_id;
-		return undefined;
-	}, [treeFocusId, treeDatabases]);
-	const canEditFocusedCatalog = canEditEntity({
-		user: catalogActor,
-		permission: { catalog: ['edit'] },
-		ownerId: focusedCatalogOwnerId,
-		owners,
-	});
 
 	if (loadError) {
 		return (
@@ -476,15 +447,7 @@ export function DataWorkspaceView() {
 					onDataTableRowClick={handleDataTableRowClick}
 					onCertificationChange={handleCertificationChange}
 					onDataTableCertificationChange={handleChildCertificationChange}
-					canCertifyDataTableRow={(_sectionId, _rowId, ownerId) =>
-						canEditEntity({
-							user: catalogActor,
-							permission: { catalog: ['edit'] },
-							ownerId,
-							owners,
-						})
-					}
-					hideEditToolbar={!canEditFocusedCatalog}
+					canCertifyDataTableRow={() => true}
 				/>
 			</main>
 			<Toast

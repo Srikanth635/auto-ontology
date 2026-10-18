@@ -8,11 +8,9 @@ import type { NextConfig } from 'next';
 
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
-// NOTE: there are intentionally no `rewrites()`. Every /api/* path that used to
-// be proxied to the Python backend via a rewrite is now served by a dedicated,
-// permission-gated route handler under app/api/** that forwards to the backend
-// (see auth/proxy-backend.ts + withPermission). Rewrites bypass route handlers,
-// so they can't be access-controlled — hence the move.
+// NOTE: there are intentionally no `rewrites()`. Every /api/* path is served by
+// a route handler under app/api/** that forwards to the backend (see
+// lib/server/proxy-backend.ts), which is also what the OpenAPI generator reads.
 const nextConfig: NextConfig = {
 	output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
 	outputFileTracingRoot: path.resolve(__dirname, '..'),

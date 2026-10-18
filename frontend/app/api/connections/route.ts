@@ -2,10 +2,10 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// connectionsApi.getAll — list connections (viewable by all).
-export const GET = withPermission({ connection: ['read'] })((req) => proxyToBackend(req));
-// connectionsApi.create — add a connection (admin only; carries credentials).
-export const POST = withPermission({ connection: ['manage'] })((req) => proxyToBackend(req));
+// connectionsApi.getAll — list connections.
+export const GET = route((req) => proxyToBackend(req));
+// connectionsApi.create — add a connection (it carries credentials).
+export const POST = route((req) => proxyToBackend(req));

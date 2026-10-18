@@ -479,8 +479,20 @@ def embed_rows(
     :func:`~auto_ontology.vdb.records.write_embedded_rows`. Raises
     ``RuntimeError`` when the endpoint fails or returns no embeddings; *what*
     names the rows in that message.
+
+    With no embedding model configured there is nothing to call, so the edit
+    that asked for this still saves: no rows come back, and choosing a model
+    later re-embeds everything.
     """
     if not rows:
+        return []
+    if not params.model_name:
+        logger.warning(
+            "No embedding model configured (Settings -> Models); not embedding "
+            "%d %s row(s)",
+            len(rows),
+            what,
+        )
         return []
     try:
         vectors = embed_texts(

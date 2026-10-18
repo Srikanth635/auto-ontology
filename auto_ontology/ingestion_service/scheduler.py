@@ -2,12 +2,11 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Interval scheduler shared by the ingestion service's background jobs.
+"""Background job runner shared by the ingestion service's jobs.
 
-A scheduler runs its job once at startup, then again every ``interval``
-measured from the *end* of the previous run. An API-triggered run happens
-immediately and, because the loop always reschedules from "now" after any run,
-resets that interval timer.
+A runner does its job once at startup, then only when asked: an API trigger
+starts a pass immediately. There is no recurring timer -- this is a local
+setup, so nothing re-runs behind the user's back.
 
 Subclasses implement :meth:`_run_once`. A subclass whose work depends on
 another scheduler's data (e.g. semantic compilation reading the catalog that
@@ -20,23 +19,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 
-# Upper bound on a single sleep chunk so shutdown/trigger events are observed
-# promptly even while waiting out a full interval.
-_WAIT_CHUNK_SECONDS = 500
 
-
-class IntervalScheduler:
-    """Runs a job at startup, on a fixed interval, and on demand."""
+class JobRunner:
+    """Runs a job once at startup and then on demand."""
 
     #: Short label used as a log prefix; overridden by subclasses.
     name = "scheduler"
 
-    def __init__(self, interval: timedelta) -> None:
-        self._interval = interval
+    def __init__(self) -> None:
         self._stop = asyncio.Event()
         self._trigger = asyncio.Event()
         self._abort = asyncio.Event()
@@ -68,16 +61,15 @@ class IntervalScheduler:
     def trigger(self) -> None:
         """Request an immediate run without blocking the caller.
 
-        The run happens on the scheduler's own task; when it finishes the loop
-        reschedules the next automatic run one interval later.
+        The run happens on the scheduler's own task.
         """
         self._trigger.set()
 
     def abort(self) -> None:
         """Ask the in-flight pass to stop at its next safe point.
 
-        Only the current pass is cut short: the loop keeps running and the next
-        automatic run happens on schedule. A queued trigger is dropped as well,
+        Only the current pass is cut short: the loop keeps waiting for the next
+        trigger. A queued trigger is dropped as well,
         so aborting cannot be followed immediately by another pass.
         """
         self._abort.set()
@@ -87,10 +79,10 @@ class IntervalScheduler:
         """Suppress passes until :meth:`resume`.
 
         ``abort`` alone is not enough to hold the scheduler off: it stops the
-        *current* pass, but the loop keeps ticking and ``_run_pass`` clears the
+        *current* pass, but the loop keeps going and ``_run_pass`` clears the
         abort flag before each new one. A caller that has to mutate the data a
         pass reads — the semantic reset deleting the layer — would otherwise
-        race a timer tick or an API trigger that starts a pass against the
+        race an API trigger that starts a pass against the
         half-changed state.
         """
         self._paused = True
@@ -111,7 +103,7 @@ class IntervalScheduler:
 
     @property
     def running(self) -> bool:
-        """Whether a pass is executing right now, as opposed to idling between ticks."""
+        """Whether a pass is executing right now, as opposed to idling between triggers."""
         return self._running
 
     @property
@@ -153,45 +145,33 @@ class IntervalScheduler:
         try:
             await self._run_once()
         except Exception:
-            logger.exception("%s: unhandled error; will retry on next tick", self.name)
+            logger.exception(
+                "%s: unhandled error; will retry on next trigger", self.name
+            )
         finally:
             self._running = False
             self._first_pass_done.set()
 
-    async def _wait_for_next(self, next_run: datetime) -> None:
-        """Sleep until ``next_run``, returning early on stop or trigger."""
-        while not self._stop.is_set() and not self._trigger.is_set():
-            remaining = (next_run - datetime.now(timezone.utc)).total_seconds()
-            if remaining <= 0:
-                return
-            waiters = [
-                asyncio.create_task(self._stop.wait()),
-                asyncio.create_task(self._trigger.wait()),
-            ]
-            try:
-                await asyncio.wait(
-                    waiters,
-                    timeout=min(remaining, _WAIT_CHUNK_SECONDS),
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-            finally:
-                for w in waiters:
-                    w.cancel()
+    async def _wait_for_trigger(self) -> None:
+        """Sleep until a trigger or stop arrives."""
+        waiters = [
+            asyncio.create_task(self._stop.wait()),
+            asyncio.create_task(self._trigger.wait()),
+        ]
+        try:
+            await asyncio.wait(waiters, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            for w in waiters:
+                w.cancel()
 
     async def _run_forever(self) -> None:
-        # Run once at startup so a fresh deploy refreshes existing connections
-        # without waiting for the next scheduled slot.
+        # Run once at startup so connections configured in the environment, or
+        # changed while the service was down, are picked up.
         await self._run_pass()
 
         while not self._stop.is_set():
-            # Schedule the next run one interval out from now, so a long run or a
-            # manual trigger naturally pushes the next automatic run back.
-            next_run = datetime.now(timezone.utc) + self._interval
-            logger.info("%s: next run at %s", self.name, next_run.isoformat())
-            await self._wait_for_next(next_run)
+            await self._wait_for_trigger()
             if self._stop.is_set():
                 break
-
-            # A trigger fired (or the interval elapsed) — consume it and run now.
             self._trigger.clear()
             await self._run_pass()

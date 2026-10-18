@@ -4,14 +4,14 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { acronymSelect } from '@/lib/apiSelects';
 
 // List every acronym, newest first.
 //
 // With `?name=`, the route answers `{ exists }` instead of listing — the create
 // form uses it to pre-check the unique constraint before submitting.
-export const GET = withPermission({ acronym: ['read'] })(async (req) => {
+export const GET = route(async (req) => {
 	const prisma = getPrisma();
 	const { searchParams } = new URL(req.url);
 	const name = searchParams.get('name')?.trim();
@@ -31,7 +31,7 @@ export const GET = withPermission({ acronym: ['read'] })(async (req) => {
 // Create an acronym: the term plus the expansion the agent should read it as.
 //
 // `name` must be unique; `description` is optional and defaults to empty.
-export const POST = withPermission({ acronym: ['create'] })(async (req) => {
+export const POST = route(async (req) => {
 	const prisma = getPrisma();
 	const body = await req.json();
 	const acronym = await prisma.acronym.create({

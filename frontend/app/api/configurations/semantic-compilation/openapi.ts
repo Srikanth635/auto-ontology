@@ -10,7 +10,7 @@ export const openapi: OpenApiRoute = {
 	get: {
 		responses: {
 			200: {
-				description: 'Whether scheduled semantic compilation is on. Off when unset.',
+				description: 'Whether semantic compilation is on. Off when unset.',
 				schema: enabledFlagSchema,
 			},
 		},

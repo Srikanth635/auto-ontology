@@ -29,14 +29,12 @@ const SECTION_LABELS: Record<string, string> = {
 
 const SETTINGS_SECTION_LABELS: Record<string, string> = {
 	connections: 'Connections',
-	zones: 'Zones',
 	tags: 'Tags',
 	rules: 'Rules',
 	'semantic-input': 'Semantic Input',
 	'semantic-compilation': 'Semantic Compilation',
 	pii: 'PII Settings',
 	'agent-settings': 'Agent Settings',
-	users: 'Users',
 	models: 'Models',
 	'import-export': 'Import / Export',
 };

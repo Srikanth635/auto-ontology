@@ -2,13 +2,9 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// Editing/deleting a custom analysis is admin-only (analysis:manage).
-export const PUT = withPermission({ analysis: ['manage'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
-export const DELETE = withPermission({ analysis: ['manage'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
+// Edit or delete a custom analysis.
+export const PUT = route((req, { user }) => proxyToBackend(req, { userId: user.id }));
+export const DELETE = route((req, { user }) => proxyToBackend(req, { userId: user.id }));

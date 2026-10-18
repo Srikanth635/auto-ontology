@@ -13,7 +13,6 @@ type NavItem = {
 	icon: IconName;
 	href: string;
 	label: string;
-	adminOnly?: boolean;
 };
 
 const navItems: NavItem[] = [
@@ -23,16 +22,13 @@ const navItems: NavItem[] = [
 	{ icon: IconName.ChartBar, href: '/analysis', label: 'Analysis' },
 	{ icon: IconName.Exploration, href: '/exploration', label: 'Exploration' },
 	{ icon: IconName.Database, href: '/data', label: 'Data' },
-	{ icon: IconName.ChartLine, href: '/analytics', label: 'Analytics', adminOnly: true },
-	// Settings is admin-only and also contains Users and Models
-	// (see app/settings/*). Viewers don't see it.
-	{ icon: IconName.Settings, href: '/settings', label: 'Settings', adminOnly: true },
+	{ icon: IconName.ChartLine, href: '/analytics', label: 'Analytics' },
+	{ icon: IconName.Settings, href: '/settings', label: 'Settings' },
 ];
 
-export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
+export const NavRail = () => {
 	const pathname = usePathname();
 	const [isExpanded, setIsExpanded] = useState(false);
-	const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
 
 	return (
 		<nav className="relative h-full w-12 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -48,7 +44,7 @@ export const NavRail = ({ isAdmin = false }: { isAdmin?: boolean }) => {
 				<div
 					className={`flex flex-1 flex-col gap-2 ${isExpanded ? 'px-1.5' : 'items-center'}`}
 				>
-					{visibleItems.map((item) => {
+					{navItems.map((item) => {
 						const isActive = pathname.startsWith(item.href);
 
 						return (

@@ -2,8 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // connectionsApi.isEnvSource — whether connections come from env config.
-export const GET = withPermission({ connection: ['read'] })((req) => proxyToBackend(req));
+export const GET = route((req) => proxyToBackend(req));

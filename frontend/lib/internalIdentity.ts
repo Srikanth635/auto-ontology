@@ -5,7 +5,7 @@
 export const INTERNAL_USER_HEADER = 'x-auto-ontology-user-id';
 
 /**
- * Forward the authenticated user identity across the private Next.js →
+ * Forward the local user identity across the private Next.js →
  * FastAPI hop. FastAPI must not be publicly reachable because this header is
  * trusted without independent verification.
  */

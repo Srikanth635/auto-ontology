@@ -2,9 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
-// Validating SQL is part of the create/edit flow, so it shares the same
-// analysis:manage permission as POST /custom-analyses.
-export const POST = withPermission({ analysis: ['manage'] })((req) => proxyToBackend(req));
+// Validate an analysis's SQL before it is saved.
+export const POST = route((req) => proxyToBackend(req));

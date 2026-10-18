@@ -4,14 +4,14 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { conversationSelect } from '@/lib/apiSelects';
 
 // List the caller's own conversations, newest first, without their messages.
 //
 // Scoped to the authenticated user: a conversation is only ever visible to its
 // owner, so there is no way to list someone else's.
-export const GET = withPermission({ conversation: ['read'] })(async (_req, { user }) => {
+export const GET = route(async (_req, { user }) => {
 	const prisma = getPrisma();
 	const conversations = await prisma.conversation.findMany({
 		where: { user_id: user.id },
@@ -25,7 +25,7 @@ export const GET = withPermission({ conversation: ['read'] })(async (_req, { use
 //
 // `title` is optional and defaults to empty. Chat clients usually create the
 // conversation here first, then pass its id to `POST /api/chat/completions`.
-export const POST = withPermission({ conversation: ['write'] })(async (req, { user }) => {
+export const POST = route(async (req, { user }) => {
 	const prisma = getPrisma();
 	const body = await req.json();
 	const conversation = await prisma.conversation.create({

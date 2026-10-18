@@ -5,26 +5,15 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
 import { Button } from '@/common/Button';
 import { Icon, IconName } from '@/common/icons';
 import { Label } from '@/common/Label';
-import { OwnerLabel } from '@/common/OwnerLabel';
-import { OwnersSelect } from '@/common/OwnersSelect';
 import { PopoverMenu } from '@/common/PopoverMenu';
 import { formatDate } from '@/common/date';
 import { AUTO_GENERATED_LABEL } from '@/constants/tags';
 import { Size, ButtonTheme } from '@/enums/button';
-import { ownerChoices } from '@/lib/owners';
-import { ownerQueries } from '@/lib/queries/owners';
-import type {
-	ComposerEntityTagsSection,
-	ComposerOwnerOption,
-	ComposerOwnerSection,
-	ComposerTagChip,
-} from '@/types/composer-section';
-import type { Owner } from '@/types/owners';
+import type { ComposerEntityTagsSection, ComposerTagChip } from '@/types/composer-section';
 import type { TagAuthor } from '@/types/tags';
 import type { GlossaryActivity } from '@/types/terms';
 
@@ -38,39 +27,28 @@ export type SidePanelActivity = {
 };
 
 export type SidePanelBulk =
-	| { kind: 'owner'; section: ComposerOwnerSection }
 	| { kind: 'tags'; section: ComposerEntityTagsSection }
 	| SidePanelActivity;
 
 const byName = (a: ComposerTagChip, b: ComposerTagChip) =>
 	a.name.toLowerCase().localeCompare(b.name.toLowerCase()) || a.id.localeCompare(b.id);
 
-const ownerOption = (owner: Owner): ComposerOwnerOption => ({
-	id: owner.id,
-	name: owner.name,
-	kind: owner.kind,
-	color: owner.color,
-});
-
 /**
- * Owner and tags for a detail page, on the left or the right.
+ * Activity and tags for a detail page, on the left or the right.
  * Pass `activity` for Last Modified. Created By is only for a row a person
  * can insert, such as a SQL attribute.
  */
 export const entitySidePanel = ({
-	owner,
 	tags,
 	activity,
 	showCreatedBy = false,
 }: {
-	owner: ComposerOwnerSection;
 	tags: ComposerEntityTagsSection;
 	activity?: GlossaryActivity;
 	showCreatedBy?: boolean;
 }): { bulks: SidePanelBulk[]; width: string } => ({
 	width: SIDE_PANEL_WIDTH,
 	bulks: [
-		{ kind: 'owner', section: owner },
 		...(showCreatedBy
 			? [
 					{
@@ -94,14 +72,6 @@ export const entitySidePanel = ({
 		{ kind: 'tags', section: tags },
 	],
 });
-
-const useLiveOwnerOptions = (section: ComposerOwnerSection): ComposerOwnerOption[] => {
-	const { data } = useQuery(ownerQueries.all());
-	if (data == null) return section.options;
-	const source =
-		section.editable === false ? data : ownerChoices(data, section.permission, section.ownerId);
-	return source.map(ownerOption);
-};
 
 const PanelBlock = ({
 	title,
@@ -172,51 +142,6 @@ const ActivityBody = ({ bulk }: { bulk: SidePanelActivity }) => {
 				</span>
 			)}
 		</div>
-	);
-};
-
-const OwnerEditor = ({
-	section,
-	options,
-	onChange,
-}: {
-	section: ComposerOwnerSection;
-	options: ComposerOwnerOption[];
-	onChange: (id: string, value: string) => void;
-}) => {
-	const [ownerId, setOwnerId] = useState(section.ownerId ?? '');
-	return (
-		<OwnersSelect
-			owners={options}
-			value={ownerId}
-			onChange={(next) => {
-				setOwnerId(next);
-				onChange(section.id, next);
-			}}
-		/>
-	);
-};
-
-const OwnerBulk = ({
-	section,
-	editing,
-	onChange,
-}: {
-	section: ComposerOwnerSection;
-	editing: boolean;
-	onChange: (id: string, value: string) => void;
-}) => {
-	const options = useLiveOwnerOptions(section);
-	const canEdit = editing && section.editable !== false;
-	const owner = options.find((option) => option.id === section.ownerId);
-	return (
-		<PanelBlock title={section.title} editing={canEdit}>
-			{canEdit ? (
-				<OwnerEditor section={section} options={options} onChange={onChange} />
-			) : (
-				<OwnerLabel owner={owner} />
-			)}
-		</PanelBlock>
 	);
 };
 
@@ -333,16 +258,6 @@ export const SidePanel = ({
 }) => (
 	<div className="flex w-full min-w-0 flex-col gap-5 px-4 py-5">
 		{bulks.map((bulk) => {
-			if (bulk.kind === 'owner') {
-				return (
-					<OwnerBulk
-						key={bulk.section.id}
-						section={bulk.section}
-						editing={isEditing}
-						onChange={onChange}
-					/>
-				);
-			}
 			if (bulk.kind === 'tags') {
 				return (
 					<TagBulk

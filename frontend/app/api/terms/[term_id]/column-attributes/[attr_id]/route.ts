@@ -2,11 +2,9 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // Updating a ColumnAttribute changes only name/description; backend refreshes
 // the corresponding semantic VDB embedding.
-export const PATCH = withPermission({ catalog: ['edit'] })((req, { user }) =>
-	proxyToBackend(req, { userId: user.id }),
-);
+export const PATCH = route((req, { user }) => proxyToBackend(req, { userId: user.id }));

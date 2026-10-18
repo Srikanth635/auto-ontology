@@ -129,7 +129,6 @@ def _persist_attr_with_sql(
         "sql_id": query_obj.sql_node.get_id(),
         "sql": sql,
         "certified": props.get("certified", False),
-        "owner_id": props.get("owner_id"),
     }
 
 
@@ -219,15 +218,12 @@ def create_sql_attribute(
     term_id: str,
     connector: str | None = None,
     source: str = "manual",
-    owner_id: str | None = None,
     created_by: str | None = None,
 ) -> dict[str, Any]:
     """Create a SqlAttribute, its Sql node, link to a Term, and embed.
 
     The connector is resolved server-side (see
     :func:`_resolve_database_name`) — callers never need to pass one.
-    ``owner_id`` is stored when given; ``None`` leaves the attribute
-    unassigned. The caller has already checked that the id may own it.
     ``created_by`` is the user id from the gateway. Compilation leaves it
     unset, which the panel shows as Auto Generated.
 
@@ -267,8 +263,6 @@ def create_sql_attribute(
         "expression": expression,
         "source": source,
     }
-    if owner_id is not None:
-        props["owner_id"] = owner_id
     if created_by is not None:
         props["created_by"] = created_by
     attr_node = CatalogNode(
@@ -305,8 +299,6 @@ def update_sql_attribute(
     connector: str | None = None,
     source: str = "manual",
     certified: bool | None = None,
-    owner_id: str | None = None,
-    set_owner: bool = False,
     modified_by: str | None = None,
     touch: bool = False,
 ) -> dict[str, Any] | None:
@@ -411,7 +403,6 @@ def update_sql_attribute(
             "term_id": term_id,
             "sql": expression,
             "certified": existing.get("certified", False),
-            "owner_id": existing.get("owner_id"),
         }
 
     next_name = name.strip() if name is not None else existing.get("name", "")
@@ -425,13 +416,7 @@ def update_sql_attribute(
     name_changed = (existing.get("name") or "").strip() != next_name
     description_changed = (existing.get("description") or "") != next_description
     certification_changed = certified is not None
-    owner_changed = set_owner and existing.get("owner_id") != owner_id
-    if (
-        not name_changed
-        and not description_changed
-        and not certification_changed
-        and not owner_changed
-    ):
+    if not name_changed and not description_changed and not certification_changed:
         return existing
 
     if name_changed:
@@ -448,8 +433,6 @@ def update_sql_attribute(
         name=next_name if name_changed else None,
         description=next_description if description_changed else None,
         certified=certified,
-        owner_id=owner_id,
-        set_owner=set_owner,
         modified_by=modified_by,
         touch=touch,
     )

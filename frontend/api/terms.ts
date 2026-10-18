@@ -34,7 +34,6 @@ type TermUpdateResult = {
 		name_certified: boolean;
 		description_certified: boolean;
 		certification: CertificationStatus;
-		owner_id?: string | null;
 	};
 };
 type TermUpdateResponse = ResponseWithError<TermUpdateResult>;
@@ -57,8 +56,6 @@ type TermUpdatePayload = {
 	description?: string | null;
 	name_certified?: boolean;
 	description_certified?: boolean;
-	/** A user id or a group id. Null clears the owner. */
-	owner_id?: string | null;
 };
 type ColumnAttributeUpdatePayload = {
 	name?: string;

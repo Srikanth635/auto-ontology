@@ -2,8 +2,8 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // datasources.getColumnsForTable — list columns for one table.
-export const GET = withPermission({ catalog: ['read'] })((req) => proxyToBackend(req));
+export const GET = route((req) => proxyToBackend(req));

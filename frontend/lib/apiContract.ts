@@ -58,20 +58,10 @@ const acronymMatches: Exact<
 	z.infer<typeof acronymSchema>
 > = true;
 
-/**
- * The analytics handler is the one that transforms its row: `User.role` is
- * nullable in the database and the report substitutes `viewer`, so the
- * published type is narrower than the select. Spelling that out here keeps the
- * exception visible instead of weakening the check for every other field.
- */
-type AnalyticsPayload = Serialized<
-	Prisma.ConversationAnalyticsGetPayload<{ select: typeof analyticsSelect }>
->;
-type AnalyticsPublished = Omit<AnalyticsPayload, 'user'> & {
-	user: Omit<AnalyticsPayload['user'], 'role'> & { role: string };
-};
-
-const analyticsMatches: Exact<AnalyticsPublished, z.infer<typeof analyticsRow>> = true;
+const analyticsMatches: Exact<
+	Serialized<Prisma.ConversationAnalyticsGetPayload<{ select: typeof analyticsSelect }>>,
+	z.infer<typeof analyticsRow>
+> = true;
 
 export type { Exact, Serialized };
 export { acronymMatches, analyticsMatches, conversationMatches, messageMatches };

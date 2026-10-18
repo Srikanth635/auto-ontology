@@ -8,8 +8,8 @@
  * The Next.js route handlers are the real API edge — the Python services are
  * ClusterIP-only and reachable only through this proxy — so the spec is built
  * from `app/api/**\/route.ts`, not from FastAPI directly. File-based routing
- * makes the paths deterministic and `withPermission(...)`/`withPublic` makes
- * the auth requirement readable off the AST.
+ * makes the paths deterministic. There is no sign-in, so no operation carries
+ * a security requirement.
  *
  * Handlers that call `proxyToBackend` forward `incoming.pathname` verbatim, so
  * their path matches the FastAPI path 1:1 and their request/response schemas
@@ -21,13 +21,13 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { z } from 'zod';
 import type { ZodObject, ZodType } from 'zod';
 import { Node, Project, SyntaxKind } from 'ts-morph';
-import type { ObjectLiteralExpression, VariableStatement } from 'ts-morph';
+import type { VariableStatement } from 'ts-morph';
 import type { OpenApiResponse, OpenApiRoute } from '../types/openapi';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const;
@@ -38,8 +38,6 @@ type Json = Record<string, unknown>;
 type Operation = {
 	path: string;
 	method: HttpMethod;
-	/** `null` for `withPublic`, otherwise the required permission map. */
-	permissions: Record<string, string[]> | null;
 	proxied: boolean;
 	/** Backend path this handler calls directly, for hand-rolled proxies. */
 	upstreamPath?: string;
@@ -53,7 +51,6 @@ const repoRoot = resolve(frontendDir, '..');
 const apiDir = resolve(frontendDir, 'app/api');
 const backendSpecPath = resolve(repoRoot, 'docs/openapi/backend.json');
 const outputPath = resolve(repoRoot, 'docs/openapi/auto-ontology-api.json');
-const mcpSpecPath = resolve(repoRoot, 'mcp/auto_ontology_mcp/auto-ontology-api.json');
 
 /** `app/api/terms/[term_id]/route.ts` → `/api/terms/{term_id}`. */
 const routePath = (filePath: string): string => {
@@ -66,23 +63,9 @@ const routePath = (filePath: string): string => {
 	return `/api${segments.length ? `/${segments.join('/')}` : ''}`;
 };
 
-/** `{ catalog: ['read'], zone: ['manage'] }` → the same, as data. */
-const readPermissions = (literal: ObjectLiteralExpression): Record<string, string[]> => {
-	const result: Record<string, string[]> = {};
-	literal.getProperties().forEach((property) => {
-		if (!Node.isPropertyAssignment(property)) return;
-		const initializer = property.getInitializer();
-		if (!Node.isArrayLiteralExpression(initializer)) return;
-		result[property.getName().replace(/['"]/g, '')] = initializer
-			.getElements()
-			.map((element) => element.getText().replace(/['"]/g, ''));
-	});
-	return result;
-};
-
 /**
  * The nodes to search for a given export: the initializer itself, plus any
- * same-file function it names. `export const GET = withPermission(...)(handler)`
+ * same-file function it names. `export const GET = route(handler)`
  * keeps the `proxyToBackend` call in `handler`, one hop away.
  */
 const searchScope = (statement: VariableStatement): Node[] => {
@@ -139,11 +122,10 @@ const leadingComment = (statement: VariableStatement): string | undefined => {
 /**
  * The HTTP methods a `export const …` statement contributes.
  *
- * Usually one per statement (`export const GET = …`), but Better Auth's
- * catch-all mounts several at once via a destructuring export:
- * `export const { GET, POST } = toNextJsHandler(auth)`. Reading only the first
- * declaration's name yields the binding-pattern text and silently drops the
- * whole file.
+ * Usually one per statement (`export const GET = …`), but a file may mount
+ * several at once via a destructuring export: `export const { GET, POST } = …`.
+ * Reading only the first declaration's name yields the binding-pattern text and
+ * silently drops the whole file.
  */
 const exportedMethods = (statement: VariableStatement): HttpMethod[] => {
 	const isMethod = (name: string): name is HttpMethod =>
@@ -176,27 +158,12 @@ const collectOperations = (): Operation[] => {
 			if (!statement.isExported()) return;
 
 			const scope = searchScope(statement);
-			const permissionCall = scope
-				.flatMap((node) => node.getDescendantsOfKind(SyntaxKind.CallExpression))
-				.find((call) => call.getExpression().getText().endsWith('withPermission'));
-			const permissionArg = permissionCall?.getArguments()[0];
-			if (permissionCall && !Node.isObjectLiteralExpression(permissionArg)) {
-				// Falling back to "public" here would document a gated route as
-				// needing no auth, so refuse to guess.
-				throw new Error(
-					`${file}: withPermission(${permissionArg?.getText() ?? ''}) is not an inline ` +
-						'object literal, so the required permission cannot be read.',
-				);
-			}
 
 			exportedMethods(statement).forEach((method) => {
 				found += 1;
 				operations.push({
 					path,
 					method,
-					permissions: permissionArg
-						? readPermissions(permissionArg as ObjectLiteralExpression)
-						: null,
 					proxied: callsFunction(scope, 'proxyToBackend'),
 					upstreamPath: upstreamFetchPath(scope),
 					description: leadingComment(statement),
@@ -260,7 +227,7 @@ const resourceOf = (path: string): string => path.split('/')[2] ?? 'root';
  * Route comments are prose and wrap freely, so the first *line* is often a
  * fragment ("…every chat user may trigger"). Taking the first sentence and
  * requiring it to be short keeps genuine titles like
- * `zonesApi.getAll — list zones (viewable by all).` and drops the rest, which
+ * `tagsApi.getAll — list tags.` and drops the rest, which
  * survives in full as the description. Without a summary a viewer falls back
  * to `METHOD /path`, which reads better than a truncated sentence.
  */
@@ -268,34 +235,6 @@ const titleOf = (comment: string | undefined): string | undefined => {
 	if (!comment) return undefined;
 	const [sentence] = comment.replace(/\s+/g, ' ').split(/(?<=\.)\s/);
 	return sentence.length <= 80 ? sentence : undefined;
-};
-
-const AUTH_RESPONSES: Json = {
-	401: { description: 'No authenticated caller could be resolved' },
-	403: { description: 'The caller lacks the required permission' },
-};
-
-// Of the three credentials resolveUser() accepts, the API token is the only one
-// a script can obtain for itself — a session cookie needs a browser login and an
-// OAuth access token needs an interactive MCP sign-in. So it is the one documented here,
-// and the one a generated client should be wired to send.
-const SECURITY_SCHEMES: Json = {
-	ApiToken: {
-		type: 'apiKey',
-		in: 'header',
-		name: 'x-api-key',
-		description:
-			'A Auto Ontology API token (`auto_ontology_…`), created under Account → API Tokens. The token ' +
-			'carries its owner’s permissions. `Authorization: Bearer <token>` is accepted too.',
-	},
-	SessionCookie: {
-		type: 'apiKey',
-		in: 'cookie',
-		name: 'better-auth.session_token',
-		description:
-			'A browser session from an interactive sign-in. Only the few operations that ' +
-			'manage API tokens require this — a token may not mint or revoke tokens.',
-	},
 };
 
 const UNDOCUMENTED_BODY: Json = {
@@ -589,25 +528,10 @@ const build = async (): Promise<{
 				(Object.keys(((body as Json).content ?? {}) as Json).length > 0 ||
 					declaredCodes.has(code)),
 		);
-		// AUTH_RESPONSES first: it is the generic fallback text for 401/403, so a
-		// route that documented what its own 403 actually means must override it,
-		// not be overwritten by it.
-		merged.responses = {
-			...(operation.permissions ? AUTH_RESPONSES : {}),
-			...(documented ? responses : { ...responses, 200: UNDOCUMENTED_BODY }),
-		};
+		merged.responses = documented ? responses : { ...responses, 200: UNDOCUMENTED_BODY };
 		if (!documented) undocumented.push(operation);
 
-		// An empty array marks a route as deliberately unauthenticated, which is
-		// what `withPublic` means — without it the global requirement would apply.
-		// A `sessionOnly` route is gated but rejects tokens, so it advertises the
-		// cookie instead: publishing `ApiToken` there would send a generated
-		// client straight into a 403.
-		if (!operation.permissions) merged.security = [];
-		else merged.security = declared?.sessionOnly ? [{ SessionCookie: [] }] : [{ ApiToken: [] }];
-
 		merged['x-auto-ontology-source'] = operation.file;
-		merged['x-auto-ontology-permissions'] = operation.permissions ?? 'public';
 		merged['x-auto-ontology-proxied'] = operation.proxied;
 
 		paths[operation.path] = { ...(paths[operation.path] ?? {}), [operation.method]: merged };
@@ -624,11 +548,9 @@ const build = async (): Promise<{
 				'Public HTTP surface of Auto Ontology, served by the Next.js route handlers. ' +
 				'Generated by `pnpm openapi` — do not edit by hand.',
 		},
-		security: [{ ApiToken: [] }],
 		paths: Object.fromEntries(Object.entries(paths).sort(([a], [b]) => a.localeCompare(b))),
 		components: {
 			schemas: reachableSchemas(paths, backend.components?.schemas ?? {}),
-			securitySchemes: SECURITY_SCHEMES,
 		},
 	};
 
@@ -642,12 +564,6 @@ writeFileSync(outputPath, `${JSON.stringify(spec, null, 2)}\n`);
 execFileSync('npx', ['prettier', '--write', '--log-level', 'silent', outputPath], {
 	cwd: frontendDir,
 });
-
-// The MCP server builds its tool surface from this spec and has to run from an
-// ordinary `pip`/`uvx` install, where there is no docs/ directory to read — so a
-// copy ships inside the package. Copied after Prettier so the two are
-// byte-identical; CI diffs both paths, and auto-ontology-mcp's tests compare them.
-copyFileSync(outputPath, mcpSpecPath);
 
 const paths = Object.keys(spec.paths as Json).length;
 console.log(`${relative(repoRoot, outputPath)}: ${paths} paths, ${operations.length} operations`);

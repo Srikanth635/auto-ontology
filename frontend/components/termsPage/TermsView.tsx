@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Placeholders } from '@/assets/images/placeholders';
 import type { BreadcrumbItem } from '@/common/Breadcrumbs';
@@ -42,15 +42,9 @@ import {
 	syncTags,
 } from '@/lib/tags';
 import { sampleValuesEditable, sampleValuesReadOnlyHint } from '@/lib/column-types';
-import { canEditEntity, changedOwnerId, entityOwnerSection, findOwner } from '@/lib/owners';
-import { fetchOwnerDirectory, ownerQueries } from '@/lib/queries/owners';
-import { OwnerPermission } from '@/types/owners';
-import { useSession } from '@/auth/auth-client';
 import { SinglePageView, type SinglePageFormat } from '@/common/SinglePageView';
 import { SqlEditor } from '@/common/SqlBlock';
 import { Toast } from '@/common/Toast';
-import { OwnerLabel } from '@/common/OwnerLabel';
-import type { Owner } from '@/types/owners';
 import type { ColumnAttribute, SqlAttribute, Term, TermCount, TermDetail } from '@/types/terms';
 
 const termFocusTrail = ({
@@ -81,7 +75,6 @@ const termFocusTrail = ({
 
 type TermCardProps = {
 	term: Term;
-	owners: Owner[];
 	columnAttributeCount: number;
 	sqlAttributeCount: number;
 	relatedCount: number;
@@ -118,7 +111,6 @@ export const TermsLoadingSkeleton = () => (
 
 const TermCard = ({
 	term,
-	owners,
 	columnAttributeCount,
 	sqlAttributeCount,
 	relatedCount,
@@ -169,7 +161,6 @@ const TermCard = ({
 							+{hiddenTagCount}
 						</span>
 					) : null}
-					<OwnerLabel owner={findOwner(owners, term.owner_id)} />
 					<CertificationBadge status={certificationStatus} />
 				</div>
 			</div>
@@ -184,8 +175,8 @@ const TermCard = ({
 				)}
 			</div>
 
-			{/* Four-column section */}
-			<div className="mt-4 grid grid-cols-4 gap-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+			{/* Three-column section */}
+			<div className="mt-4 grid grid-cols-3 gap-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
 				{/* Column Attributes */}
 				<div className="border-r border-slate-200 dark:border-slate-700">
 					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
@@ -221,7 +212,7 @@ const TermCard = ({
 				</div>
 
 				{/* Related Terms */}
-				<div className="border-r border-slate-200 dark:border-slate-700">
+				<div>
 					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
 						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
 							Related Terms
@@ -232,29 +223,6 @@ const TermCard = ({
 						<span className="font-medium text-heading dark:text-slate-100">
 							{relatedCount}
 						</span>
-					</div>
-				</div>
-
-				{/* Zones */}
-				<div>
-					<div className="border-b border-slate-200 px-4 py-2.5 dark:border-slate-700">
-						<span className="text-xs font-semibold text-secondary dark:text-slate-400">
-							Zones
-						</span>
-					</div>
-					<div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
-						{term.zones.length > 0 ? (
-							term.zones.map((zone) => (
-								<Label
-									key={zone.id}
-									label={zone.name}
-									color={zone.color}
-									muted={!zone.enabled}
-								/>
-							))
-						) : (
-							<span className="text-sm text-secondary dark:text-slate-400">-</span>
-						)}
 					</div>
 				</div>
 			</div>
@@ -296,8 +264,6 @@ export const TermsView = () => {
 	// this page's own, so opening a term after a column attribute doesn't ask
 	// for the vocabulary twice.
 	const queryClient = useQueryClient();
-	const { data: session } = useSession();
-	const { data: owners = [] } = useQuery(ownerQueries.all());
 	const searchParams = useSearchParams();
 	const focusId = searchParams.get('focus');
 	const sqlAttrId = searchParams.get('sqlAttr');
@@ -746,15 +712,13 @@ export const TermsView = () => {
 				? payload.description
 				: (focusedTerm.description ?? '');
 
-		const patch: { name?: string; description?: string; owner_id?: string | null } = {};
+		const patch: { name?: string; description?: string } = {};
 		if (name !== focusedTerm.name.trim()) {
 			patch.name = name;
 		}
 		if (description !== (focusedTerm.description ?? '')) {
 			patch.description = description;
 		}
-		const nextOwner = changedOwnerId(payload.owner_id, focusedTerm.owner_id);
-		if (nextOwner !== undefined) patch.owner_id = nextOwner;
 		const nextTagIds = stagedTagIds(payload[TAGS_SECTION_ID]);
 		if (Object.keys(patch).length === 0 && nextTagIds == null) {
 			return { error: false };
@@ -768,7 +732,6 @@ export const TermsView = () => {
 			patchTerm(focusId, {
 				name: res.data.name,
 				description: res.data.description,
-				owner_id: res.data.owner_id,
 			});
 		}
 
@@ -995,14 +958,9 @@ export const TermsView = () => {
 					header: { header: { title: 'Column Attribute Not Found' } },
 				};
 			}
-			// TODO: viewer zone-scoping handled in a separate PR — for now the
-			// client treats a viewer the same as an admin here (no zone fetch,
-			// userZoneIds = null → all zones accessible).
-			const [res, tagOptions, ownerDirectory, termRes] = await Promise.all([
+			const [res, tagOptions] = await Promise.all([
 				termsApi.getColumnAttributes(focusId),
 				fetchTagOptions(queryClient),
-				fetchOwnerDirectory(queryClient),
-				termsApi.get(focusId),
 			]);
 			const attrs = res.error ? [] : (res.data ?? []);
 			const attr = attrs.find((a) => a.id === attrId);
@@ -1016,7 +974,6 @@ export const TermsView = () => {
 
 			const primaryColumn = attr.primary_column ?? null;
 			const referencedColumns = attr.referenced_columns ?? [];
-			const userZoneIds: string[] | null = null;
 			// Sample values live on the owning Column, so its declared SQL type is
 			// what decides whether they can be edited here.
 			const samplesEditable = sampleValuesEditable(attr.datatype);
@@ -1045,18 +1002,6 @@ export const TermsView = () => {
 						values: Array.isArray(attr.sample_values) ? attr.sample_values : [],
 						editable: samplesEditable,
 						hint: samplesEditable ? undefined : sampleValuesReadOnlyHint(attr.datatype),
-					},
-					{
-						type: ComposerSectionKind.ZONES_CHIPS,
-						id: 'zones',
-						title: 'Zones',
-						zones: (attr.zones ?? []).map((zone) => ({
-							id: zone.id,
-							name: zone.name,
-							color: zone.color,
-							enabled: zone.enabled,
-						})),
-						userZoneIds,
 					},
 					{
 						type: ComposerSectionKind.ENTITY_CHIPS,
@@ -1089,13 +1034,6 @@ export const TermsView = () => {
 					},
 				],
 				leftPanel: entitySidePanel({
-					owner: entityOwnerSection(
-						termRes.error ? null : termRes.data.owner_id,
-						ownerDirectory,
-						OwnerPermission.catalog,
-						false,
-						'Term Owner',
-					),
 					tags: entityTagsSection(attr.tags, tagOptions),
 					activity: attr,
 				}),
@@ -1106,10 +1044,9 @@ export const TermsView = () => {
 
 	const getSqlAttributeSinglePage = useCallback(
 		async (attrId: string): Promise<SinglePageFormat> => {
-			const [res, tagOptions, ownerDirectory] = await Promise.all([
+			const [res, tagOptions] = await Promise.all([
 				sqlAttributesApi.get(attrId),
 				fetchTagOptions(queryClient),
-				fetchOwnerDirectory(queryClient),
 			]);
 			if (res.error || !res.data) {
 				return {
@@ -1128,8 +1065,6 @@ export const TermsView = () => {
 				if (!exists) return [...prev, attr];
 				return prev.map((a) => (a.id === attr.id ? attr : a));
 			});
-
-			const termRes = await termsApi.get(attr.term_id);
 
 			return {
 				header: {
@@ -1156,26 +1091,8 @@ export const TermsView = () => {
 						sql: attr.expression ?? '',
 						editable: true,
 					},
-					{
-						type: ComposerSectionKind.ZONES_CHIPS,
-						id: 'zones',
-						title: 'Zones',
-						zones: (attr.zones ?? []).map((z) => ({
-							id: z.id,
-							name: z.name,
-							color: z.color,
-							enabled: z.enabled,
-						})),
-					},
 				],
 				leftPanel: entitySidePanel({
-					owner: entityOwnerSection(
-						termRes.error ? null : termRes.data.owner_id,
-						ownerDirectory,
-						OwnerPermission.catalog,
-						false,
-						'Term Owner',
-					),
 					tags: entityTagsSection(attr.tags, tagOptions),
 					activity: attr,
 					showCreatedBy: true,
@@ -1187,12 +1104,11 @@ export const TermsView = () => {
 
 	const getSinglePage = useCallback(
 		async (termId: string): Promise<SinglePageFormat> => {
-			const [res, attrsRes, sqlAttrsRes, tagOptions, ownerDirectory] = await Promise.all([
+			const [res, attrsRes, sqlAttrsRes, tagOptions] = await Promise.all([
 				termsApi.get(termId),
 				termsApi.getColumnAttributes(termId),
 				termsApi.getSqlAttributes(termId),
 				fetchTagOptions(queryClient),
-				fetchOwnerDirectory(queryClient),
 			]);
 			if (res.error || !res.data) {
 				return {
@@ -1251,17 +1167,6 @@ export const TermsView = () => {
 							id: table.id,
 							name: table.name,
 							focusId: [table.db_id, table.schema_id, table.id].join('|'),
-						})),
-					},
-					{
-						type: ComposerSectionKind.ZONES_CHIPS,
-						id: 'zones',
-						title: 'Zones',
-						zones: term.zones.map((z) => ({
-							id: z.id,
-							name: z.name,
-							color: z.color,
-							enabled: z.enabled,
 						})),
 					},
 					{
@@ -1324,13 +1229,6 @@ export const TermsView = () => {
 					},
 				],
 				leftPanel: entitySidePanel({
-					owner: entityOwnerSection(
-						term.owner_id,
-						ownerDirectory,
-						OwnerPermission.catalog,
-						true,
-						'Term Owner',
-					),
 					tags: entityTagsSection(term.tags, tagOptions),
 					activity: term,
 				}),
@@ -1359,23 +1257,8 @@ export const TermsView = () => {
 		}),
 	);
 
-	const actor = session?.user ? { id: session.user.id, role: session.user.role ?? null } : null;
-	const canEditCatalog = canEditEntity({
-		user: actor,
-		permission: { catalog: ['edit'] },
-	});
-	const canEditFocusedTerm = canEditEntity({
-		user: actor,
-		permission: { catalog: ['edit'] },
-		ownerId: focusedTerm?.owner_id,
-		owners,
-	});
-	// A SQL attribute shows the term's owner and does not grant edit through an
-	// owner of its own. The button and the certification dropdown follow the
-	// account role, the same way a column attribute does.
-	const canEditFocusedSqlAttr = canEditCatalog;
-	const canEditFocusedColAttr = canEditCatalog;
-	const canCertifyAttributeRow = (): boolean => canEditCatalog;
+	// Attribute rows offer their certification dropdown outside edit mode too.
+	const canCertifyAttributeRow = (): boolean => true;
 
 	if (focusId != null && sqlAttrId != null) {
 		const sqlAttrTitle = focusedSqlAttr?.name ?? sqlAttrId;
@@ -1389,7 +1272,7 @@ export const TermsView = () => {
 						treeDataEpoch={sqlAttrsEpoch}
 						headerActions={
 							<>
-								{sqlAttrEditing || !canEditFocusedSqlAttr ? null : (
+								{sqlAttrEditing ? null : (
 									<>
 										<Button
 											theme={ButtonTheme.Primary}
@@ -1526,7 +1409,7 @@ export const TermsView = () => {
 						treeDataEpoch={columnAttrsEpoch}
 						headerActions={
 							<>
-								{columnAttrEditing || !canEditFocusedColAttr ? null : (
+								{columnAttrEditing ? null : (
 									<Button
 										theme={ButtonTheme.Primary}
 										size={Size.REGULAR}
@@ -1582,7 +1465,7 @@ export const TermsView = () => {
 						treeDataEpoch={sqlAttrsEpoch}
 						headerActions={
 							<>
-								{termEditing || !canEditFocusedTerm ? null : (
+								{termEditing ? null : (
 									<Button
 										theme={ButtonTheme.Primary}
 										size={Size.REGULAR}
@@ -1596,19 +1479,17 @@ export const TermsView = () => {
 										Edit
 									</Button>
 								)}
-								{canEditCatalog ? (
-									<Button
-										theme={ButtonTheme.Primary}
-										size={Size.REGULAR}
-										type="button"
-										onClick={() => setCreateSqlAttrModalOpen(true)}
-										iconPosition="left"
-										shadow
-									>
-										<Icon name={IconName.Plus} className="h-4 w-4" />
-										Create New SQL Attribute
-									</Button>
-								) : null}
+								<Button
+									theme={ButtonTheme.Primary}
+									size={Size.REGULAR}
+									type="button"
+									onClick={() => setCreateSqlAttrModalOpen(true)}
+									iconPosition="left"
+									shadow
+								>
+									<Icon name={IconName.Plus} className="h-4 w-4" />
+									Create New SQL Attribute
+								</Button>
 							</>
 						}
 						isEditing={termEditing}
@@ -1758,7 +1639,6 @@ export const TermsView = () => {
 							<TermCard
 								key={term.id}
 								term={term}
-								owners={owners}
 								columnAttributeCount={
 									badgeCounts.columnAttributes.get(term.id) ?? 0
 								}

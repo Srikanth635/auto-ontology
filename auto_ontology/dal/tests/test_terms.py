@@ -4,14 +4,12 @@
 
 """Term reads and writes.
 
-Three rules carry most of the risk, and each gets a test that fails for a
+Two rules carry most of the risk, and each gets a test that fails for a
 *different* reason than "the number is wrong":
 
 * **the list, its total, and the single-id check must agree** — a total that
   describes a different set than the list it pages is a pager that runs off the
   end, and nothing raises;
-* **all-or-nothing zone scoping** — a term representing one out-of-zone table is
-  hidden entirely, so the fixture builds a term that straddles the boundary;
 * **one definition of "related"** — the badge, the relationship column and the
   list behind them are computed from the same rows, and the way that breaks is
   three plausible numbers rather than an error.
@@ -66,7 +64,6 @@ class World:
         self.columns: dict[str, str] = {}
         self.terms: dict[str, str] = {}
         self.attributes: dict[str, str] = {}
-        self.zones: dict[str, str] = {}
         self.queries: list[str] = []
 
     def table(self, name: str, columns: tuple[str, ...] = ("id",)) -> str:
@@ -145,19 +142,11 @@ class World:
             _link(s.sql_query__table, sql_query_id=qid, table_id=self.tables[table])
         return aid
 
-    def zone(self, name: str, *, table: str, enabled: bool = True) -> str:
-        zid = _add(s.zone, name=f"{self.prefix}-{name}", enabled=enabled)
-        self.zones[name] = zid
-        _link(s.zone_target, zone_id=zid, table_id=self.tables[table])
-        return zid
-
 
 @pytest.fixture
 def world():
     w = World(f"t-{uuid.uuid4().hex[:8]}")
     yield w
-    for zone_id in w.zones.values():
-        store().query_write(s.zone.delete().where(s.zone.c.id == zone_id))
     store().query_write(
         s.catalog_database.delete().where(s.catalog_database.c.id == w.database)
     )
@@ -240,48 +229,6 @@ def test_paging_is_stable_and_covers_every_row(world) -> None:
 
 
 # --------------------------------------------------------------------------
-# All-or-nothing zone scoping
-# --------------------------------------------------------------------------
-
-
-@pytest.fixture
-def straddling(world):
-    """`Shared` represents one in-zone table and one out. It must be hidden."""
-    world.table("orders")
-    world.table("secrets")
-    world.term("Order", represents=("orders",))
-    world.term("Secret", represents=("secrets",))
-    world.term("Shared", represents=("orders", "secrets"))
-    world.zone_id = world.zone("Sales", table="orders")
-    return world
-
-
-def test_a_term_representing_one_out_of_zone_table_is_hidden(straddling) -> None:
-    """The case the positive form of the check gets wrong.
-
-    `Shared` represents an in-zone table, so "is any representing table
-    allowed?" answers yes. The rule is the other way round.
-    """
-    visible = {r["name"] for r in t.fetch_all_terms(zone_ids=[straddling.zone_id])}
-    assert visible == {f"{straddling.prefix}-Order"}
-    assert t.count_terms(zone_ids=[straddling.zone_id]) == 1
-    assert t.term_is_in_scope(straddling.terms["Shared"], [straddling.zone_id]) is False
-
-
-def test_get_full_term_applies_the_same_boundary(straddling) -> None:
-    """Otherwise a viewer bypasses the list scoping by asking for an id."""
-    assert (
-        t.get_full_term_by_id(straddling.terms["Shared"], [straddling.zone_id]) is None
-    )
-    assert t.get_full_term_by_id(straddling.terms["Order"], [straddling.zone_id])
-
-
-def test_no_zone_ids_means_unscoped_not_empty(straddling) -> None:
-    assert len(_mine(t.fetch_all_terms(zone_ids=None), straddling)) == 3
-    assert t.fetch_all_terms(zone_ids=[]) == []
-
-
-# --------------------------------------------------------------------------
 # Certification rollup
 # --------------------------------------------------------------------------
 
@@ -327,20 +274,6 @@ def test_both_attribute_kinds_count(world) -> None:
         .values(certified=True)
     )
     assert t.get_term_certification(term) == "certified"
-
-
-def test_the_rollup_ignores_attributes_the_viewer_cannot_see(world) -> None:
-    """A badge must not be dragged down by something the list does not show."""
-    world.table("orders", columns=("id",))
-    world.table("secrets", columns=("id",))
-    term = world.term("Order", represents=("orders",))
-    t.update_term(term, name_certified=True, description_certified=True)
-    world.column_attribute("visible", "Order", table="orders", certified=True)
-    world.column_attribute("hidden", "Order", table="secrets", certified=False)
-    zone_id = world.zone("Sales", table="orders")
-
-    assert t.get_term_certification(term, None) == "partial"
-    assert t.get_term_certification(term, [zone_id]) == "certified"
 
 
 def test_the_list_card_and_the_detail_page_agree(world) -> None:
@@ -526,82 +459,8 @@ def test_semantic_layer_calculated(world) -> None:
 
 
 # --------------------------------------------------------------------------
-# Zone chips
-# --------------------------------------------------------------------------
-
-
-def test_zones_come_from_both_attribute_paths(world) -> None:
-    """A SqlAttribute can reach tables no ColumnAttribute touches.
-
-    Resolving only the column path would drop the chip for a term whose content
-    arrives entirely through a cross-table formula.
-    """
-    world.table("orders", columns=("id",))
-    world.table("payments")
-    world.term("Order", represents=("orders",))
-    world.column_attribute("order-id", "Order", table="orders", column="id")
-    world.sql_attribute("revenue", "Order", tables=("payments",))
-    orders_zone = world.zone("Orders", table="orders")
-    payments_zone = world.zone("Payments", table="payments")
-
-    chips = t.get_full_term_by_id(world.terms["Order"])["zones"]
-    assert {z["id"] for z in chips} == {orders_zone, payments_zone}
-
-
-def test_a_viewer_never_sees_a_disabled_zone_chip(world) -> None:
-    world.table("orders", columns=("id",))
-    world.term("Order", represents=("orders",))
-    world.column_attribute("order-id", "Order", table="orders", column="id")
-    live = world.zone("Live", table="orders")
-    retired = world.zone("Retired", table="orders", enabled=False)
-
-    chips = t.get_full_term_by_id(world.terms["Order"], [live, retired])["zones"]
-    assert [z["id"] for z in chips] == [live]
-
-    admin = t.get_full_term_by_id(world.terms["Order"], None)["zones"]
-    assert {z["id"]: z["enabled"] for z in admin} == {live: True, retired: False}
-
-
-def test_the_zones_map_matches_the_detail_page(world) -> None:
-    """The whole reason the map exists is to agree with the per-term read."""
-    world.table("orders", columns=("id",))
-    world.term("Order", represents=("orders",))
-    world.column_attribute("order-id", "Order", table="orders", column="id")
-    world.zone("Orders", table="orders")
-
-    detail = t.get_full_term_by_id(world.terms["Order"])["zones"]
-    mapped = t.fetch_term_zones_map(term_ids=[world.terms["Order"]])[
-        world.terms["Order"]
-    ]
-    assert detail == mapped
-
-
-def test_an_empty_term_id_list_means_no_terms(world) -> None:
-    """Not "all of them" — the distinction a truthiness check would lose."""
-    assert t.fetch_term_zones_map(term_ids=[]) == {}
-
-
-# --------------------------------------------------------------------------
 # ColumnAttributes of a Term
 # --------------------------------------------------------------------------
-
-
-def test_attributes_use_plain_membership_not_all_or_nothing(world) -> None:
-    """A genuine difference from the Term rule, not an oversight.
-
-    A ColumnAttribute is owned by exactly one table, so there is no "spans the
-    boundary" case to protect against.
-    """
-    world.table("orders", columns=("id",))
-    world.table("secrets", columns=("id",))
-    term = world.term("Order", represents=("orders",))
-    world.column_attribute("visible", "Order", table="orders", column="id")
-    world.column_attribute("hidden", "Order", table="secrets", column="id")
-    zone_id = world.zone("Sales", table="orders")
-
-    rows = t.fetch_column_attributes_by_term_id(term, [zone_id])
-    assert [r["name"] for r in rows] == [f"{world.prefix}-visible"]
-    assert t.count_column_attributes_by_term_id(term, [zone_id]) == 1
 
 
 def test_attribute_counts_agree_with_the_list(world) -> None:
@@ -632,7 +491,7 @@ def test_an_attribute_on_several_columns_still_yields_one_row(world) -> None:
     assert t.count_column_attributes_by_term_id(term) == 1
 
 
-def test_attributes_carry_their_columns_and_zones(world) -> None:
+def test_attributes_carry_their_columns(world) -> None:
     world.table("orders", columns=("id",))
     world.table("invoices", columns=("order_id",))
     term = world.term("Order", represents=("orders",))
@@ -642,12 +501,10 @@ def test_attributes_carry_their_columns_and_zones(world) -> None:
         column_id=world.columns["invoices.order_id"],
         attribute_id=attr,
     )
-    zone_id = world.zone("Sales", table="orders")
 
     row = t.fetch_column_attributes_by_term_id(term)[0]
     assert row["primary_column"]["column_name"] == "id"
     assert [c["table_name"] for c in row["referenced_columns"]] == ["invoices"]
-    assert [z["id"] for z in row["zones"]] == [zone_id]
 
 
 def test_sample_values_are_parsed_not_returned_raw(world) -> None:
@@ -723,25 +580,6 @@ def test_narrowing_term_ids_does_not_shrink_a_count(related) -> None:
     everything = t.fetch_related_terms_counts()
     by_term = {r["term_id"]: r["count"] for r in everything}
     assert narrowed == [{"term_id": term, "count": by_term[term]}]
-
-
-def test_related_terms_respect_the_zone_boundary(related) -> None:
-    """A chip a viewer could not open must not be shown.
-
-    `Customer` also represents an out-of-zone table, so opening it would 404 —
-    and a chip that 404s is worse than no chip.
-    """
-    related.table("secrets")
-    _link(
-        s.table__term,
-        table_id=related.tables["secrets"],
-        term_id=related.terms["Customer"],
-    )
-    zone_id = related.zone("Sales", table="orders")
-    related.zone("More", table="customers")
-    zones = [zone_id, related.zones["More"]]
-
-    assert t.fetch_related_terms(related.terms["Order"], zones) == []
 
 
 def test_terms_by_ids_orders_by_name_case_insensitively(world) -> None:

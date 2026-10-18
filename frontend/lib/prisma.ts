@@ -15,7 +15,7 @@ function buildConnectionString(): string {
 	const database = process.env.POSTGRES_DATABASE;
 
 	if (!user || !password || !database) {
-		// `next build` evaluates the module graph (e.g. the Better Auth route)
+		// `next build` evaluates the module graph
 		// but never opens a DB connection — all routes are dynamic. Return a
 		// non-connecting placeholder so the build doesn't require Postgres env;
 		// real values are still required at runtime.

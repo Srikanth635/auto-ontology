@@ -46,12 +46,6 @@ def writes(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     return calls
 
 
-@pytest.fixture
-def unchecked_target(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Keep cascade tests focused on tag cleanup, not entity authorization."""
-    monkeypatch.setattr(router, "edit_subject", lambda _item_id: None)
-
-
 @pytest.mark.parametrize("name", ["PII", "pii", " Pii "])
 def test_the_pii_tag_cannot_be_deleted(
     monkeypatch: pytest.MonkeyPatch, writes: list[str], name: str
@@ -100,7 +94,6 @@ def test_an_unknown_tag_is_still_a_404(
 
 def test_detaching_pii_from_a_column_untags_its_attributes(
     monkeypatch: pytest.MonkeyPatch,
-    unchecked_target: None,
 ) -> None:
     seen: list[tuple[str, str]] = []
     monkeypatch.setattr(router.dal, "detach_tag", lambda **_k: [])
@@ -113,7 +106,7 @@ def test_detaching_pii_from_a_column_untags_its_attributes(
         lambda column_id, tag_id: seen.append((column_id, tag_id)),
     )
 
-    assert detach_tag(None, "tag-1", TagTargetType.COLUMN, "col-1") == {  # type: ignore[arg-type]
+    assert detach_tag("tag-1", TagTargetType.COLUMN, "col-1") == {
         "data": [],
         "count": 0,
     }
@@ -122,7 +115,6 @@ def test_detaching_pii_from_a_column_untags_its_attributes(
 
 def test_detaching_pii_from_a_term_does_not_untag_attributes(
     monkeypatch: pytest.MonkeyPatch,
-    unchecked_target: None,
 ) -> None:
     monkeypatch.setattr(router.dal, "detach_tag", lambda **_k: [])
     monkeypatch.setattr(router.dal, "get_tag", lambda _tag_id: _tag("PII"))
@@ -132,12 +124,11 @@ def test_detaching_pii_from_a_term_does_not_untag_attributes(
 
     monkeypatch.setattr(router, "untag_attributes_of_column", unexpected)
 
-    detach_tag(None, "tag-1", TagTargetType.TERM, "term-1")  # type: ignore[arg-type]
+    detach_tag("tag-1", TagTargetType.TERM, "term-1")
 
 
 def test_detaching_an_ordinary_tag_from_a_column_does_not_untag_attributes(
     monkeypatch: pytest.MonkeyPatch,
-    unchecked_target: None,
 ) -> None:
     monkeypatch.setattr(router.dal, "detach_tag", lambda **_k: [])
     monkeypatch.setattr(router.dal, "get_tag", lambda _tag_id: _tag("GDPR"))
@@ -148,4 +139,4 @@ def test_detaching_an_ordinary_tag_from_a_column_does_not_untag_attributes(
 
     monkeypatch.setattr(router, "untag_attributes_of_column", unexpected)
 
-    detach_tag(None, "tag-1", TagTargetType.COLUMN, "col-1")  # type: ignore[arg-type]
+    detach_tag("tag-1", TagTargetType.COLUMN, "col-1")

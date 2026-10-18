@@ -10,7 +10,7 @@ import {
 	MIN_SQL_QUERY_TIMEOUT_SECONDS,
 	readSqlQueryTimeout,
 } from '@/lib/sqlQueryTimeout';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { sqlQueryTimeoutBody } from './openapi';
 
 // Key/value stored in the `configurations` table. The text-to-SQL pipeline
@@ -20,19 +20,19 @@ import { sqlQueryTimeoutBody } from './openapi';
 // this frontend uses.
 
 // Report the instance-wide SQL query timeout, in seconds.
-export const GET = withPermission({ visualization: ['read'] })(async () => {
+export const GET = route(async () => {
 	const row = await getPrisma().configuration.findUnique({
 		where: { key: SQL_QUERY_TIMEOUT_SECONDS_KEY },
 	});
 	return NextResponse.json({ seconds: readSqlQueryTimeout(row?.value) });
 });
 
-// Set the instance-wide SQL query timeout (admin-only).
+// Set the instance-wide SQL query timeout.
 //
 // Rejects anything but an in-range integer rather than coercing it: the backend
 // treats an unusable stored value as the default, so a coerced value would be
 // silently ignored while the page showed it as saved.
-export const PUT = withPermission({ visualization: ['manage'] })(async (req) => {
+export const PUT = route(async (req) => {
 	let raw: unknown;
 	try {
 		raw = await req.json();

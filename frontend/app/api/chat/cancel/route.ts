@@ -11,7 +11,7 @@
 // Cancelling ends the run without a final answer, so FastAPI leaves the
 // persisted user turn without an assistant reply.
 
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { findOwnedConversation } from '@/lib/chatConversations';
 import { buildInternalIdentityHeaders } from '@/lib/internalIdentity';
 
@@ -27,7 +27,7 @@ export const runtime = 'nodejs';
 // slot claimed and the next question is rejected with 409. Cancelling ends the
 // run without a final answer, so the persisted user turn keeps no assistant
 // reply. 404 when the conversation does not exist or belongs to someone else.
-export const POST = withPermission({ conversation: ['write'] })(async (req, { user }) => {
+export const POST = route(async (req, { user }) => {
 	const conversationId = new URL(req.url).searchParams.get('conversation_id');
 	const conversation = conversationId ? await findOwnedConversation(user, conversationId) : null;
 

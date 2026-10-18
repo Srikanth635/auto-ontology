@@ -137,7 +137,7 @@ def _edited() -> tuple[Column, Column, Column, Column]:
 
     ``modified`` and ``modified_by`` stay null until a person saves an edit.
     Compilation rewrites descriptions on its own and does not count: the panel's
-    Last Modified is that save. ``modified_by`` is a Better Auth user id, null
+    Last Modified is that save. ``modified_by`` is the gateway's user id, null
     when the request carried no identity, which the page reads as Auto Generated.
     """
     return (
@@ -151,25 +151,6 @@ def _edited() -> tuple[Column, Column, Column, Column]:
         Column("created_by", Text, nullable=True),
         Column("modified_by", Text, nullable=True),
     )
-
-
-def _owner_id() -> Column:
-    """The account or group that owns the row, or null when nobody does.
-
-    Stored on a database, a schema, a table, a term, and a sql attribute. The
-    catalog page edits it on a table, and the glossary page edits it on a
-    term. A column shows that table's owner and a column attribute shows its
-    term's owner; neither stores one of its own. A sql attribute keeps the
-    column, and its page shows the term's owner. The edit check for a column,
-    a column attribute, and a sql attribute does not read an owner on that
-    row. A database and a schema keep the column, and the page does not edit
-    it there. One column holds either id. An account id is
-    ``frontend."user".id`` and a group id is ``user_group.id``; neither can
-    be a foreign key, because the account table is outside this schema and
-    one reference cannot name both. An empty write clears it. A deleted
-    account or group leaves the id behind, which reads as unassigned.
-    """
-    return Column("owner_id", Text, nullable=True)
 
 
 # ---------------------------------------------------------------------------
@@ -191,7 +172,6 @@ catalog_database = Table(
     Column("description", Text, nullable=True),
     _certified("description_certified"),
     _imported_id(),
-    _owner_id(),
     Column("created", DateTime(timezone=True), server_default=func.now()),
     Column("pulled", DateTime(timezone=True), nullable=True),
 )
@@ -210,7 +190,6 @@ catalog_schema = Table(
     Column("description", Text, nullable=True),
     _certified("description_certified"),
     _imported_id(),
-    _owner_id(),
     UniqueConstraint("database_id", "name", name="uq_catalog_schema_database_name"),
 )
 
@@ -233,7 +212,6 @@ catalog_table = Table(
     # column the PATCH still returns 200 and the checkbox still ticks; the flag
     # is simply dropped on the way in and reads back false forever.
     _certified("description_certified"),
-    _owner_id(),
     # Primary key column names. A list on the node today, so a text[] here
     # rather than a join table -- nothing ever queries "which tables have this
     # pk column", and a join table would make every read a second query.
@@ -461,7 +439,6 @@ term = Table(
     Column("synonyms", ARRAY(Text), nullable=True),
     _certified("name_certified"),
     _certified("description_certified"),
-    _owner_id(),
     *_edited(),
     _imported_id(),
     UniqueConstraint("name", "source", name="uq_term_name_source"),
@@ -597,7 +574,6 @@ sql_attribute = Table(
     Column("expression", Text, nullable=True),
     Column("source", Text, nullable=True),
     Column("certified", Boolean, nullable=False, server_default=text("false")),
-    _owner_id(),
     Column("description_suggestion", Text, nullable=True),
     # Set once PII propagation from the attribute's columns has handled it.
     # Like `catalog_column.pii_processed`, tag edits are independent of it:
@@ -715,71 +691,6 @@ analysis = Table(
 )
 
 # ---------------------------------------------------------------------------
-# Zones
-# ---------------------------------------------------------------------------
-
-zone = Table(
-    "zone",
-    METADATA,
-    _id(),
-    # Deliberately **not** unique. The rule the application enforces is neither
-    # what a plain UNIQUE gives you nor a stricter version of it:
-    #
-    #   * it is case-insensitive on the *trimmed* name, so a UNIQUE column would
-    #     admit "Sales" alongside "sales", which the application rejects; and
-    #   * it is scoped to zones sharing a database with the zone's items, so a
-    #     UNIQUE column would reject the same zone name in two unrelated
-    #     databases, which the application allows.
-    #
-    # A constraint that is wrong in both directions is worse than none. The
-    # check stays in application code, exactly as today. Making it a database
-    # constraint would mean a partial index on `lower(trim(name))` *per
-    # database*, which zone membership -- being many-to-many through
-    # zone_target -- cannot express.
-    Column("name", Text, nullable=False),
-    Column("description", Text, nullable=True),
-    Column("color", Text, nullable=True),
-    # A disabled zone still exists and is still administrable; it just grants
-    # nothing. A boolean rather than a separate table so every read says
-    # `enabled` once instead of unioning two sources.
-    Column("enabled", Boolean, nullable=False, server_default=text("true")),
-)
-
-# ZONE_OF is polymorphic: a zone can target a Database, a Schema or a Table.
-# Three nullable FKs with a CHECK beats a (kind, id) pair because it keeps real
-# referential integrity and lets a deleted table remove its zone membership by
-# cascade -- a (kind, id) pair cannot have an FK at all, and would leave
-# dangling grants behind, which is an access-control bug rather than untidiness.
-zone_target = Table(
-    "zone_target",
-    METADATA,
-    _id(),
-    Column("zone_id", Text, ForeignKey(zone.c.id, ondelete="CASCADE"), nullable=False),
-    Column(
-        "database_id",
-        Text,
-        ForeignKey(catalog_database.c.id, ondelete="CASCADE"),
-        nullable=True,
-    ),
-    Column(
-        "schema_id",
-        Text,
-        ForeignKey(catalog_schema.c.id, ondelete="CASCADE"),
-        nullable=True,
-    ),
-    Column(
-        "table_id",
-        Text,
-        ForeignKey(catalog_table.c.id, ondelete="CASCADE"),
-        nullable=True,
-    ),
-    CheckConstraint(
-        "num_nonnulls(database_id, schema_id, table_id) = 1",
-        name="exactly_one_target",
-    ),
-)
-
-# ---------------------------------------------------------------------------
 # Tags
 # ---------------------------------------------------------------------------
 
@@ -810,13 +721,8 @@ tag = Table(
         server_default=func.now(),
         onupdate=func.now(),
     ),
-    # Who created the tag and who last edited it, as Better Auth user ids --
-    # the `id` of a row in `frontend."user"`, which Prisma owns.
-    #
-    # Deliberately not foreign keys. That table is in another schema Alembic
-    # does not manage, so there is nothing here to reference; and a tag must
-    # outlive the account that made it, which a FK with any `ondelete` would
-    # either forbid or quietly rewrite.
+    # Who created the tag and who last edited it, as the gateway's user id.
+    # There is no sign-in, so that is always the one local user (`local`).
     #
     # Nullable because the gateway's identity header is not guaranteed: FastAPI
     # is reachable directly on the private network, so a caller that skips the
@@ -833,10 +739,9 @@ tag = Table(
     # way it reads a null, having nobody to name either way.
     Column("created_by", Text, nullable=True),
     Column("modified_by", Text, nullable=True),
-    # The tag name rule as a constraint rather than a convention. Unlike
-    # `zone.name` -- whose rule is scoped to the databases a zone's items live
-    # in, which no index can express -- a tag name is unique across the whole
-    # deployment, so an expression index states the rule exactly. It also closes
+    # The tag name rule as a constraint rather than a convention. A tag name is
+    # unique across the whole deployment, so an expression index states the
+    # rule exactly. It also closes
     # the window between the DAL's duplicate check and its insert, which two
     # concurrent creates of the same name would otherwise slip through.
     #
@@ -850,15 +755,13 @@ tag = Table(
 )
 
 # TAGGED is polymorphic: a tag can label a Term, a Table, a Column, a
-# ColumnAttribute or a SqlAttribute. Same nullable-FKs-and-a-CHECK shape as
-# `zone_target`, and for the same reason -- a (kind, id) pair can carry no
-# foreign key, so deleting a column would leave a row pointing at nothing and
+# ColumnAttribute or a SqlAttribute. Nullable FKs and a CHECK rather than a
+# (kind, id) pair, because a (kind, id) pair can carry no foreign key, so deleting a column would leave a row pointing at nothing and
 # the tag's page would list objects that no longer exist. Here the cascade
 # removes the label with the thing it labelled.
 #
 # Databases and Schemas are deliberately absent. A tag is applied to the objects
-# a query names, and the two container tiers already reach their contents
-# through `zone_target`, which is what scopes access.
+# a query names.
 tag_target = Table(
     "tag_target",
     METADATA,
@@ -901,10 +804,8 @@ tag_target = Table(
         nullable=False,
         server_default=func.now(),
     ),
-    # Who applied it, for the "Tagged By" column beside it. A Better Auth user
-    # id from the gateway's identity header, and not a foreign key: the accounts
-    # live in the `frontend` schema Prisma owns, which this database has no
-    # table for -- the same arrangement as `tag.created_by`.
+    # Who applied it, for the "Tagged By" column beside it: the user id from the
+    # gateway's identity header -- the same arrangement as `tag.created_by`.
     #
     # Null for a label a rule applied, where `rule_id` names the source
     # instead; for one the deployment applied itself, which is what an attach
@@ -1170,89 +1071,6 @@ model_setting = Table(
 
 
 # ---------------------------------------------------------------------------
-# User groups
-# ---------------------------------------------------------------------------
-#
-# A group is a named set of accounts. Illumex loads the same idea from
-# Frontegg (id, name, description, color, roles, users, and the permissions
-# those roles expand to). There is no Frontegg here, so the group is a row
-# this schema owns.
-#
-# The role is one of the two an account already has, ``admin`` or ``viewer``.
-# A group does not carry a list of identity-provider roles, and membership
-# does not change the account's own role: that stays on ``frontend."user"``.
-# The API expands this single role into ``roles`` and ``permissions`` when it
-# answers, which is the shape a caller that learned groups elsewhere expects.
-#
-# ``user_id`` on the membership table is a Better Auth id — the ``id`` of a
-# row in ``frontend."user"``, which Prisma owns. Deliberately not a foreign
-# key, for the same reason ``tag.created_by`` is not one: that table is in a
-# schema Alembic does not manage, so there is nothing here to reference. A
-# deleted account can therefore leave a membership behind. Reads still return
-# that id, with no name, so the membership stays visible instead of vanishing.
-
-
-class GroupRole(StrEnum):
-    """The two roles an account and a group share. A group does not invent a third."""
-
-    ADMIN = "admin"
-    VIEWER = "viewer"
-
-
-#: The only roles a group can carry. The same two Better Auth stores on an account.
-GROUP_ROLE_ADMIN = GroupRole.ADMIN
-GROUP_ROLE_VIEWER = GroupRole.VIEWER
-
-user_group = Table(
-    "user_group",
-    METADATA,
-    _id(),
-    # Unique case-insensitively on the trimmed name, across the deployment.
-    # Unlike ``zone.name`` — whose rule is per database, which no index can
-    # express — a group name is global, so the expression index states it
-    # exactly and closes the window between the DAL's check and its insert.
-    #
-    # Spelled as ``text()`` in Postgres's own deparsed form, and declared on
-    # the table rather than beside the other indexes, for the same two reasons
-    # as ``uq_tag_name_lower``.
-    Column("name", Text, nullable=False),
-    Column("description", Text, nullable=True),
-    Column("color", Text, nullable=False),
-    Column("role", Text, nullable=False),
-    CheckConstraint(
-        f"role IN ('{GROUP_ROLE_ADMIN}', '{GROUP_ROLE_VIEWER}')",
-        name="role_value",
-    ),
-    Column(
-        "created",
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-    ),
-    Index(
-        "uq_user_group_name_lower",
-        text("lower(TRIM(BOTH FROM name))"),
-        unique=True,
-    ),
-)
-
-# Who belongs to a group. The composite primary key leads with ``group_id``,
-# which answers "the members of this group". The reverse — "the groups of this
-# account" — is ``ix_user_group__member_user_id`` below.
-user_group__member = Table(
-    "user_group__member",
-    METADATA,
-    Column(
-        "group_id",
-        Text,
-        ForeignKey(user_group.c.id, ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column("user_id", Text, primary_key=True),
-)
-
-
-# ---------------------------------------------------------------------------
 # Indexes for the read paths
 # ---------------------------------------------------------------------------
 
@@ -1280,17 +1098,6 @@ Index("ix_sql_attribute__term_term_id", sql_attribute__term.c.term_id)
 # primary key already indexes the column_id order; these cover the reverse.
 Index("ix_column__has_attribute_attribute_id", column__has_attribute.c.attribute_id)
 Index("ix_column__semantic_fk_attribute_id", column__semantic_fk.c.attribute_id)
-
-# Supports the case-insensitive name check that replaces a unique constraint.
-Index("ix_zone_name_lower", func.lower(zone.c.name))
-Index("ix_zone_target_zone_id", zone_target.c.zone_id)
-Index("ix_zone_target_database_id", zone_target.c.database_id)
-Index("ix_zone_target_schema_id", zone_target.c.schema_id)
-Index("ix_zone_target_table_id", zone_target.c.table_id)
-
-# "The groups of this account". The primary key of ``user_group__member`` leads
-# with ``group_id`` and so cannot serve it.
-Index("ix_user_group__member_user_id", user_group__member.c.user_id)
 
 # "The tags on this object", which every detail page asks for its own kind. The
 # unique constraints on tag_target lead with `tag_id` and so cannot serve it.
@@ -1475,14 +1282,7 @@ __all__ = [
     "table__term",
     "term",
     "text_attribute",
-    "user_group",
-    "user_group__member",
-    "GroupRole",
     "ModelProvider",
     "ModelRole",
     "model_setting",
-    "GROUP_ROLE_ADMIN",
-    "GROUP_ROLE_VIEWER",
-    "zone",
-    "zone_target",
 ]

@@ -10,7 +10,7 @@
 // failed/dropped watch connection here has no effect on the underlying run or
 // on what eventually gets saved.
 
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { findOwnedConversation } from '@/lib/chatConversations';
 import { buildInternalIdentityHeaders } from '@/lib/internalIdentity';
 
@@ -25,7 +25,7 @@ export const runtime = 'nodejs';
 // passive observer: it never submits a question and persists nothing, so a
 // dropped watch connection has no effect on the run or on what gets saved. 400
 // without `conversation_id`, 404 when the conversation is not the caller's.
-export const GET = withPermission({ conversation: ['read'] })(async (req, { user }) => {
+export const GET = route(async (req, { user }) => {
 	const conversationId = new URL(req.url).searchParams.get('conversation_id');
 	if (!conversationId) {
 		return new Response('Missing conversation_id', { status: 400 });

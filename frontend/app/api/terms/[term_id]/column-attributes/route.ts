@@ -2,13 +2,11 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 import { withTagAuthors } from '@/lib/tagAuthors';
 
 // termsApi.getColumnAttributes — ColumnAttribute nodes for one term (with
 // primary/referenced columns). Authors ride along so the side panel can name
 // who last edited each attribute.
-export const GET = withPermission({ catalog: ['read'] })(async (req) =>
-	withTagAuthors(await proxyToBackend(req)),
-);
+export const GET = route(async (req) => withTagAuthors(await proxyToBackend(req)));

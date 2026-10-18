@@ -20,7 +20,7 @@ import { usePagination } from '@/hooks/usePagination';
 import type { ConversationAnalytics } from '@/types/analytics';
 import type { TableColumn } from '@/types/table';
 
-const CSV_HEADERS = ['Timestamp', 'User', 'Source', 'Question', 'Reasoning', 'SQL'];
+const CSV_HEADERS = ['Timestamp', 'Source', 'Question', 'Reasoning', 'SQL'];
 const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
 
 const COLUMNS: TableColumn<ConversationAnalytics>[] = [
@@ -31,16 +31,6 @@ const COLUMNS: TableColumn<ConversationAnalytics>[] = [
 		nowrap: true,
 		className: 'text-body dark:text-slate-300',
 		cell: (row) => formatDate(row.question_timestamp),
-	},
-	{
-		key: 'user',
-		header: 'User',
-		width: 'w-40',
-		nowrap: true,
-		truncate: true,
-		className: 'text-body dark:text-slate-300',
-		cell: (row) => row.user.name || row.user.email,
-		title: (row) => row.user.name || row.user.email,
 	},
 	{
 		key: 'source',
@@ -118,7 +108,6 @@ export const AnalyticsView = () => {
 			...analytics.map((row) =>
 				[
 					formatDate(row.question_timestamp),
-					row.user.name || row.user.email,
 					row.source ?? '',
 					row.question ?? '',
 					row.response ?? '',

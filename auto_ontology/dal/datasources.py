@@ -43,7 +43,6 @@ from auto_ontology.dal.sql_fragments import (
     table_description_expr,
 )
 from auto_ontology.dal.tags import TARGET_COLUMN, TARGET_TABLE, fetch_tags_map
-from auto_ontology.dal.users import resolve_accessible_catalog_ids
 from auto_ontology.semantic.constants import SQL_ATTR_SOURCE_BRIDGE
 from auto_ontology.utils.sample_values import (
     dump_sample_values,
@@ -90,15 +89,12 @@ def _table_join():
 # ---------------------------------------------------------------------------
 
 
-def fetch_databases(zone_ids: list[str] | None = None) -> list[dict[str, Any]]:
+def fetch_databases() -> list[dict[str, Any]]:
     """Databases with a schema count. ``schemas`` is empty — the tree is lazy."""
-    scoped = resolve_accessible_catalog_ids(zone_ids)
-
     statement = (
         select(
             s.catalog_database.c.id,
             s.catalog_database.c.name,
-            s.catalog_database.c.owner_id,
             func.count(s.catalog_schema.c.id).label("schema_count"),
         )
         .select_from(
@@ -107,20 +103,9 @@ def fetch_databases(zone_ids: list[str] | None = None) -> list[dict[str, Any]]:
                 s.catalog_schema.c.database_id == s.catalog_database.c.id,
             )
         )
-        .group_by(
-            s.catalog_database.c.id,
-            s.catalog_database.c.name,
-            s.catalog_database.c.owner_id,
-        )
+        .group_by(s.catalog_database.c.id, s.catalog_database.c.name)
         .order_by(s.catalog_database.c.name)
     )
-    if scoped is not None:
-        statement = statement.where(
-            and_(
-                s.catalog_database.c.id.in_(list(scoped["db_ids"])),
-                s.catalog_schema.c.id.in_(list(scoped["schema_ids"])),
-            )
-        )
 
     return [
         {
@@ -129,7 +114,6 @@ def fetch_databases(zone_ids: list[str] | None = None) -> list[dict[str, Any]]:
             # Nothing writes a database description, so this is always None.
             # Kept in the shape because callers read the key.
             "description": None,
-            "owner_id": r["owner_id"],
             "num_of_schemas": int(r["schema_count"]),
             "schemas": [],
         }
@@ -142,23 +126,17 @@ def fetch_databases(zone_ids: list[str] | None = None) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
-def fetch_schemas_for_database(
-    db_id: str,
-    zone_ids: list[str] | None = None,
-) -> dict[str, Any] | None:
+def fetch_schemas_for_database(db_id: str) -> dict[str, Any] | None:
     """``{schemas_count, schemas}`` for a database, or ``None`` if it has none.
 
     ``None`` rather than an empty result: the join requires at least one table,
     so a database with no tables produces no rows at all and the caller treats
     that as absent.
     """
-    scoped = resolve_accessible_catalog_ids(zone_ids)
-
     statement = (
         select(
             s.catalog_schema.c.id,
             s.catalog_schema.c.name.label("schema_name"),
-            s.catalog_schema.c.owner_id,
             func.count(s.catalog_table.c.id).label("tables_count"),
         )
         .select_from(
@@ -167,20 +145,9 @@ def fetch_schemas_for_database(
             )
         )
         .where(s.catalog_schema.c.database_id == db_id)
-        .group_by(
-            s.catalog_schema.c.id,
-            s.catalog_schema.c.name,
-            s.catalog_schema.c.owner_id,
-        )
+        .group_by(s.catalog_schema.c.id, s.catalog_schema.c.name)
         .order_by(s.catalog_schema.c.name)
     )
-    if scoped is not None:
-        statement = statement.where(
-            and_(
-                s.catalog_schema.c.id.in_(list(scoped["schema_ids"])),
-                s.catalog_table.c.id.in_(list(scoped["table_ids"])),
-            )
-        )
 
     rows = store().query_read(statement)
     if not rows:
@@ -192,7 +159,6 @@ def fetch_schemas_for_database(
                 "id": r["id"],
                 "schema_name": r["schema_name"],
                 "description": None,
-                "owner_id": r["owner_id"],
                 "tables_count": int(r["tables_count"]),
             }
             for r in rows
@@ -803,7 +769,6 @@ def fetch_tables_for_schema(
     schema_id: str,
     *,
     database_name: str | None = None,
-    zone_ids: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Tables in a schema, with column, SQL, and Term counts.
 
@@ -811,8 +776,6 @@ def fetch_tables_for_schema(
     it can only ever agree with *schema_id* or contradict it. It stays in the
     signature because callers pass it.
     """
-    scoped = resolve_accessible_catalog_ids(zone_ids)
-
     statement = (
         select(
             s.catalog_table.c.id,
@@ -822,7 +785,6 @@ def fetch_tables_for_schema(
             s.catalog_schema.c.name.label("schema_name"),
             table_description_expr().label("description"),
             s.catalog_table.c.description_certified,
-            s.catalog_table.c.owner_id,
             _count_of(
                 s.catalog_column, s.catalog_column.c.table_id == s.catalog_table.c.id
             ).label("columns_count"),
@@ -836,9 +798,6 @@ def fetch_tables_for_schema(
         .where(s.catalog_table.c.schema_id == schema_id)
         .order_by(s.catalog_table.c.name)
     )
-    if scoped is not None:
-        statement = statement.where(s.catalog_table.c.id.in_(list(scoped["table_ids"])))
-
     rows = [dict(r) for r in store().query_read(statement)]
     # Read here rather than on a table detail read, because there is none: the
     # catalog tree builds a table's page out of the schema's list, so this is

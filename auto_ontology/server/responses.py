@@ -49,8 +49,6 @@ from auto_ontology.server.models import (
     TableColumns,
     TableExplorationDetails,
     TableSummary,
-    Group,
-    Owner,
     Tag,
     TagChip,
     TagItem,
@@ -59,8 +57,6 @@ from auto_ontology.server.models import (
     TermDetail,
     TermExplorationDetails,
     TermListItem,
-    Zone,
-    ZoneChip,
 )
 
 T = TypeVar("T")
@@ -87,9 +83,6 @@ __all__ = [
     "ExplorationEdgeListResponse",
     "ExplorationRelatedNodesResponse",
     "GlobalSearchCountResponse",
-    "GroupListResponse",
-    "GroupResponse",
-    "OwnerListResponse",
     "GlobalSearchListResponse",
     "HealthResponse",
     "IdResponse",
@@ -126,7 +119,6 @@ __all__ = [
     "TableColumnsPageResponse",
     "TableExplorationDetailsResponse",
     "TableListResponse",
-    "TableZonesResponse",
     "TagChipListResponse",
     "TagItemPageResponse",
     "TagPageResponse",
@@ -135,8 +127,6 @@ __all__ = [
     "TermExplorationDetailsResponse",
     "TermResponse",
     "TermsPageResponse",
-    "ZoneListResponse",
-    "ZoneResponse",
 ]
 
 
@@ -361,15 +351,6 @@ class TermsPageResponse(_Payload):
 
 IdResponse = DataResponse[IdRef]
 
-# Zones
-ZoneResponse = DataResponse[Zone]
-ZoneListResponse = ListResponse[Zone]
-
-# Groups. Accounts are read from Better Auth; groups are stored here.
-GroupResponse = DataResponse[Group]
-GroupListResponse = ListResponse[Group]
-OwnerListResponse = ListResponse[Owner]
-
 # Tags
 TagResponse = DataResponse[Tag]
 # Paged, but optionally: the settings list reads a window of the vocabulary and
@@ -425,7 +406,6 @@ SqlAttributeExplorationDetailsResponse = DataResponse[SqlAttributeExplorationDet
 SqlExplorationDetailsResponse = DataResponse[SqlExplorationDetails]
 ExplorationLinkPathResponse = DataResponse[ExplorationLinkPath]
 ExplorationRelatedNodesResponse = DataResponse[ExplorationRelatedNodes]
-TableZonesResponse = DataResponse[dict[str, list[ZoneChip]]]
 
 # Connections
 ConnectionResponse = DataResponse[PublicConnection]

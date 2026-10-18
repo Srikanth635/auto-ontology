@@ -18,9 +18,7 @@ import type { ComposerCertification, ComposerSection } from '@/types/composer-se
 import type { TagChip } from '@/types/tags';
 import { isCatalogBranchLoadedForFocus } from '@/lib/data/catalog-branch-loaded';
 import { fieldStatus } from '@/lib/certification';
-import { entityOwnerSection } from '@/lib/owners';
 import { entityTagsSection } from '@/lib/tags';
-import { OwnerPermission, type Owner } from '@/types/owners';
 import { sampleValuesEditable, sampleValuesReadOnlyHint } from '@/lib/column-types';
 
 export type TreeResolved =
@@ -120,7 +118,6 @@ export function buildTreeFocusPageFormat(
 	focusId: string | null,
 	databases: Database[],
 	tagOptions: TagChip[] = [],
-	owners: Owner[] = [],
 ): SinglePageFormat {
 	const resolvedFocus = resolveTreeNode(focusId, databases);
 
@@ -238,7 +235,6 @@ export function buildTreeFocusPageFormat(
 					name: table.name,
 					columns: String(table.columns_count),
 					certification: fieldStatus(table.description_certified === true),
-					owner_id: table.owner_id ?? '',
 				})),
 			});
 			return {
@@ -303,13 +299,12 @@ export function buildTreeFocusPageFormat(
 					},
 				},
 				rightPanel: entitySidePanel({
-					owner: entityOwnerSection(table.owner_id, owners, OwnerPermission.catalog),
 					tags: entityTagsSection(table.tags, tagOptions),
 				}),
 			};
 		}
 		case DataModels.COLUMN: {
-			const { column, table } = resolvedFocus;
+			const { column } = resolvedFocus;
 			const samplesEditable = sampleValuesEditable(column.data_type);
 			sections.push(
 				{
@@ -353,13 +348,6 @@ export function buildTreeFocusPageFormat(
 					},
 				},
 				rightPanel: entitySidePanel({
-					owner: entityOwnerSection(
-						table.owner_id,
-						owners,
-						OwnerPermission.catalog,
-						false,
-						'Table Owner',
-					),
 					tags: entityTagsSection(column.tags, tagOptions),
 				}),
 			};

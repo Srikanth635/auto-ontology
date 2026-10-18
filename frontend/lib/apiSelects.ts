@@ -52,5 +52,4 @@ export const analyticsSelect = {
 	response: true,
 	response_timestamp: true,
 	sql: true,
-	user: { select: { id: true, name: true, email: true, role: true } },
 } as const;

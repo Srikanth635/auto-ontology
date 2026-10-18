@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
 import { DISTINCT_VALUE_PROBING_ENABLED_KEY, readOptOutFlag } from '@/lib/configurations';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { distinctValueProbingBody } from './openapi';
 
 // Key/value stored in the `configurations` table. The Python ingestion service
@@ -20,13 +20,13 @@ import { distinctValueProbingBody } from './openapi';
 const CONFIG_KEY = DISTINCT_VALUE_PROBING_ENABLED_KEY;
 
 // Report whether compilation scans low-cardinality columns for distinct values.
-export const GET = withPermission({ semanticCompilation: ['read'] })(async () => {
+export const GET = route(async () => {
 	const prisma = getPrisma();
 	const row = await prisma.configuration.findUnique({ where: { key: CONFIG_KEY } });
 	return NextResponse.json({ enabled: readOptOutFlag(row?.value) });
 });
 
-// Turn distinct value scanning on or off instance-wide (admin-only).
+// Turn distinct value scanning on or off instance-wide.
 //
 // Deliberately does NOT trigger a compilation run. The flag is read at the top
 // of each run, so it applies from the next one onward — flipping it is a change
@@ -39,7 +39,7 @@ export const GET = withPermission({ semanticCompilation: ['read'] })(async () =>
 // This one is opt-out: coercion would silently turn OFF something that is on by
 // default, so `{"enabled": "true"}` from a shell client would disable scanning
 // while reading as if it enabled it.
-export const PUT = withPermission({ semanticCompilation: ['manage'] })(async (req) => {
+export const PUT = route(async (req) => {
 	const prisma = getPrisma();
 
 	let raw: unknown;

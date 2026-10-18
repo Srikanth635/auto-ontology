@@ -138,9 +138,9 @@ export const SemanticCompilationForm = ({
 					Semantic Compilation
 				</h1>
 				<p className="mb-4 text-xs text-secondary">
-					When enabled, the ingestion service compiles the semantic layer for every
-					connected database on startup and once every 24 hours. Enabling it also triggers
-					a compilation run immediately.
+					When enabled, the ingestion service compiles the semantic layer on startup and
+					whenever a connection is added or changed. Enabling it also triggers a
+					compilation run immediately.
 				</p>
 
 				{!hasDatabases && (
@@ -232,7 +232,7 @@ export const SemanticCompilationForm = ({
 									Enable Semantic Compilation
 								</span>
 								<span className="text-xs text-secondary">
-									{enabled ? 'Running on the 24h schedule.' : 'Currently off.'}
+									{enabled ? 'On.' : 'Currently off.'}
 								</span>
 							</div>
 							<Toggle

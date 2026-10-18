@@ -2,12 +2,9 @@
 // All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { withPermission } from '@/auth/with-auth';
-import { proxyToBackend } from '@/auth/proxy-backend';
+import { route } from '@/lib/server/route';
+import { proxyToBackend } from '@/lib/server/proxy-backend';
 
 // semanticCompilationApi.reset — delete every database's compiled semantic
-// layer. Destructive, so it sits behind `manage` rather than the `read` tier
-// that may view the toggle.
-export const POST = withPermission({ semanticCompilation: ['manage'] })((req) =>
-	proxyToBackend(req),
-);
+// layer.
+export const POST = route((req) => proxyToBackend(req));

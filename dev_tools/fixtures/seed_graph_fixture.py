@@ -32,7 +32,6 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-from typing import Any
 
 logger = logging.getLogger("dev_tools.fixtures.seed_graph_fixture")
 
@@ -389,49 +388,6 @@ def seed_pql_analyses() -> None:
         upsert_pql_analysis_node(analysis_id, name, description, pql)
 
 
-def seed_zones() -> list[dict[str, Any]]:
-    """Three zones: one scoped to a schema, one spanning databases, one disabled.
-
-    Zone scoping is where a silent access-control regression would hide, so the
-    fixture has to make the three interesting cases distinguishable.
-    """
-    from auto_ontology.dal.zones import create_zone, set_zone_enabled
-
-    film_domain = create_zone(
-        name="Film domain",
-        description="Tables describing films and their inventory.",
-        color="#4f46e5",
-        item_ids=[
-            _table_id("pagila", "public", "film"),
-            _table_id("pagila", "public", "inventory"),
-            _table_id("pagila", "public", "category"),
-        ],
-    )
-    # Spans both databases *and* targets a Schema rather than a Table, which is
-    # the polymorphic ZONE_OF case.
-    cross_database = create_zone(
-        name="Cross database",
-        description="A schema in one database plus a table in another.",
-        color="#059669",
-        item_ids=[
-            _schema_id("pagila", "analytics"),
-            _table_id("chinook", "main", "Track"),
-        ],
-    )
-    retired = create_zone(
-        name="Retired zone",
-        description="Disabled; grants no access but stays visible to admins.",
-        color="#dc2626",
-        item_ids=[_table_id("pagila", "public", "staff")],
-    )
-    set_zone_enabled(retired["id"], False)
-    return [film_domain, cross_database, retired]
-
-
-def _schema_id(database: str, schema: str) -> str:
-    return _lookup("schemas", (database, schema))
-
-
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -456,21 +412,13 @@ def reset_graph() -> None:
     """Empty the store, whichever one is selected.
 
     ``delete_all_data(None)`` is the DAL's own definition of a full wipe, so the
-    fixture is built from the same empty state a reset produces — **plus the
-    zones, which that reset does not touch.** Zones are not part of either
-    layer: the SQL's semantic labels never included them, so
-    ``delete_all_data`` left them standing on both backends. The old
-    ``MATCH (n) DETACH DELETE n`` swept them up incidentally, and a fixture
-    built on top of leftover zones is not reproducible.
+    fixture is built from the same empty state a reset produces.
     """
     from auto_ontology.dal.reset import delete_all_data
-    from auto_ontology.dal.zones import delete_zone, list_zones
 
     global _CATALOG_INDEX
     _CATALOG_INDEX = None
     delete_all_data(None)
-    for zone in list_zones():
-        delete_zone(zone["id"])
     logger.info("store cleared")
 
 
@@ -514,13 +462,10 @@ def main() -> None:
     logger.info("seeding PQL analyses...")
     seed_pql_analyses()
 
-    logger.info("seeding zones...")
-    zones = seed_zones()
-
-    _log_summary(zones)
+    _log_summary()
 
 
-def _log_summary(zones: list[dict[str, Any]]) -> None:
+def _log_summary() -> None:
     """Print what was built, counted through the DAL rather than the store.
 
     A summary is worth having — it is how you notice a fixture that seeded
@@ -546,7 +491,6 @@ def _log_summary(zones: list[dict[str, Any]]) -> None:
     logger.info("--- fixture ---")
     for name, total in counts.items():
         logger.info("  %-16s %s", name, total)
-    logger.info("  %-16s %s", "zones", [z["name"] for z in zones])
 
 
 if __name__ == "__main__":

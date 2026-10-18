@@ -49,7 +49,7 @@ async def reset() -> dict[str, str]:
     """Ask the ingestion service to rebuild every database's semantic layer.
 
     The service deletes the semantic nodes and embeddings and compiles them
-    again, so the layer is rebuilt without waiting for the next scheduled run.
+    again, so the layer is rebuilt straight away.
     """
     trigger_semantic_reset()
     return {"status": "accepted"}

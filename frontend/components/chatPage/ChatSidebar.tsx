@@ -6,8 +6,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSession } from '@/auth/auth-client';
-import { userCan } from '@/auth/permissions';
 import type { Conversation } from '@/types/chat';
 import { Button, SelectButton } from '@/common/Button';
 import { EmptyState } from '@/common/EmptyState';
@@ -17,7 +15,7 @@ import { formatDate } from '@/common/date';
 import { Icon, IconName } from '@/common/icons';
 import { SkeletonRows } from '@/common/Skeleton';
 import { ConfirmModal } from '@/common/modal';
-import { PopoverMenu, type PopoverMenuItem } from '@/common/PopoverMenu';
+import { PopoverMenu } from '@/common/PopoverMenu';
 import { Text } from '@/common/Text';
 
 type ChatSidebarProps = {
@@ -38,14 +36,12 @@ function ConversationItem({
 	onSelect,
 	onRename,
 	onDelete,
-	canDelete,
 }: {
 	conv: Conversation;
 	isActive: boolean;
 	onSelect: () => void;
 	onRename: (title: string) => void;
 	onDelete: () => void;
-	canDelete: boolean;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [confirmDelete, setConfirmDelete] = useState(false);
@@ -116,18 +112,12 @@ function ConversationItem({
 							setEditing(true);
 						},
 					},
-					// Delete stays with admins. A viewer who can save a chat still
-					// lacks conversation:delete, and the request would fail silently.
-					...(canDelete
-						? [
-								{
-									label: 'Delete',
-									icon: <Icon name={IconName.Trash} className="h-3.5 w-3.5" />,
-									onClick: () => setConfirmDelete(true),
-									danger: true,
-								} satisfies PopoverMenuItem,
-							]
-						: []),
+					{
+						label: 'Delete',
+						icon: <Icon name={IconName.Trash} className="h-3.5 w-3.5" />,
+						onClick: () => setConfirmDelete(true),
+						danger: true,
+					},
 				]}
 				trigger={({ toggle }) => (
 					<Button
@@ -143,18 +133,16 @@ function ConversationItem({
 				)}
 			/>
 
-			{canDelete ? (
-				<ConfirmModal
-					open={confirmDelete}
-					title="Delete Conversation"
-					message="Are you sure you want to delete this conversation? This action cannot be undone."
-					onConfirm={() => {
-						setConfirmDelete(false);
-						onDelete();
-					}}
-					onCancel={() => setConfirmDelete(false)}
-				/>
-			) : null}
+			<ConfirmModal
+				open={confirmDelete}
+				title="Delete Conversation"
+				message="Are you sure you want to delete this conversation? This action cannot be undone."
+				onConfirm={() => {
+					setConfirmDelete(false);
+					onDelete();
+				}}
+				onCancel={() => setConfirmDelete(false)}
+			/>
 		</li>
 	);
 }
@@ -170,11 +158,6 @@ export const ChatSidebar = ({
 	onToggle,
 	sidebarLoading = false,
 }: ChatSidebarProps) => {
-	const { data } = useSession();
-	const canDelete = data?.user
-		? userCan({ id: data.user.id, role: data.user.role ?? null }, { conversation: ['delete'] })
-		: false;
-
 	return (
 		<>
 			{/* Mobile toggle */}
@@ -249,7 +232,6 @@ export const ChatSidebar = ({
 									onSelect={() => onSelect(conv.id)}
 									onRename={(title) => onRename(conv.id, title)}
 									onDelete={() => onDelete(conv.id)}
-									canDelete={canDelete}
 								/>
 							))}
 						</ul>

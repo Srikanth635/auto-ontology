@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { acronymSelect } from '@/lib/apiSelects';
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -13,7 +13,7 @@ type Ctx = { params: Promise<{ id: string }> };
 //
 // Both fields are optional and only the ones present in the body are written,
 // so a partial body leaves the rest of the record untouched.
-export const PATCH = withPermission<Ctx>({ acronym: ['update'] })(async (req, { params }) => {
+export const PATCH = route<Ctx>(async (req, { params }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	const body = await req.json();
@@ -31,7 +31,7 @@ export const PATCH = withPermission<Ctx>({ acronym: ['update'] })(async (req, { 
 });
 
 // Delete an acronym permanently. Answers 204 with no body.
-export const DELETE = withPermission<Ctx>({ acronym: ['delete'] })(async (_req, { params }) => {
+export const DELETE = route<Ctx>(async (_req, { params }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	await prisma.acronym.delete({ where: { id } });

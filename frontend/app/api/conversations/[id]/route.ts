@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { withPermission } from '@/auth/with-auth';
+import { route } from '@/lib/server/route';
 import { conversationSelect, messageSelect } from '@/lib/apiSelects';
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -15,10 +15,7 @@ const notFound = () => NextResponse.json({ error: 'Conversation not found' }, { 
 //
 // Scoped to the caller, so another user's conversation reads as 404 rather than
 // 403 — ownership is not disclosed.
-export const GET = withPermission<Ctx>({ conversation: ['read'] })(async (
-	_req,
-	{ params, user },
-) => {
+export const GET = route<Ctx>(async (_req, { params, user }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	// Scope by userId so one user can't read another's conversation.
@@ -38,10 +35,7 @@ export const GET = withPermission<Ctx>({ conversation: ['read'] })(async (
 });
 
 // Rename a conversation the caller owns; 404 when it is not theirs.
-export const PATCH = withPermission<Ctx>({ conversation: ['write'] })(async (
-	req,
-	{ params, user },
-) => {
+export const PATCH = route<Ctx>(async (req, { params, user }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	const body = await req.json();
@@ -65,10 +59,7 @@ export const PATCH = withPermission<Ctx>({ conversation: ['write'] })(async (
 // Delete a conversation and its messages; 404 when it is not the caller's.
 //
 // Answers 204 with no body. The delete cascades to the conversation's messages.
-export const DELETE = withPermission<Ctx>({ conversation: ['delete'] })(async (
-	_req,
-	{ params, user },
-) => {
+export const DELETE = route<Ctx>(async (_req, { params, user }) => {
 	const prisma = getPrisma();
 	const { id } = await params;
 	const result = await prisma.conversation.deleteMany({ where: { id, user_id: user.id } });

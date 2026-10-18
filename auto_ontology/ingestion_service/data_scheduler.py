@@ -2,11 +2,12 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Recurring scheduler for data ingestion.
+"""Background job for data ingestion.
 
-Runs :func:`run_ingest` for every configured connection once at startup, then
-again every 24h measured from the end of the previous run. Connections are
-reloaded on every pass so newly added ones are picked up without a restart.
+Runs :func:`run_ingest` for every configured connection once at startup, so
+connections from ``CONNECTION_STRINGS`` or changed while the service was down
+are picked up. There is no recurring timer: a connection created or edited in
+the UI is ingested right away by ``trigger_ingest`` instead.
 
 A pass also replays the tagging rules, but only when semantic compilation is
 switched off — with it on, the semantic pass is the better moment and does it
@@ -18,7 +19,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from datetime import timedelta
 
 from auto_ontology.connectors.registry import (
     get_connectors,
@@ -27,22 +27,15 @@ from auto_ontology.connectors.registry import (
 from auto_ontology.ingestion_service.config import is_semantic_compilation_enabled
 from auto_ontology.ingestion_service.ingest import run_ingest
 from auto_ontology.ingestion_service.rules import replay_rules_in_thread
-from auto_ontology.ingestion_service.scheduler import IntervalScheduler
+from auto_ontology.ingestion_service.scheduler import JobRunner
 
 logger = logging.getLogger(__name__)
 
-# Cadence measured from the end of the previous run rather than a fixed
-# wall-clock time.
-INGEST_INTERVAL = timedelta(hours=24)
 
-
-class DataScheduler(IntervalScheduler):
-    """Drives data ingestion on startup, on a 24h timer, and on demand."""
+class DataScheduler(JobRunner):
+    """Drives data ingestion once at startup."""
 
     name = "ingest"
-
-    def __init__(self, interval: timedelta = INGEST_INTERVAL) -> None:
-        super().__init__(interval)
 
     async def _run_once(self) -> None:
         # Reload connectors each pass so newly added connections are picked up
@@ -76,7 +69,7 @@ class DataScheduler(IntervalScheduler):
         # the only point at which both are current. With compilation off there
         # is no such pass and no semantic layer to be stale, and this becomes
         # the only thing left that can put a standing rule's tags on a column
-        # ingested tonight -- without it such a deployment labels the catalog
+        # ingested at startup -- without it such a deployment labels the catalog
         # once, when each rule is created, and never again.
         if not is_semantic_compilation_enabled():
             await replay_rules_in_thread(self.name)
