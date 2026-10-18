@@ -4,32 +4,71 @@ All rights reserved.
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# Auto Ontology
+# neemontology
 
-Agents can retrieve documents and query databases, but reliability gates agentic analytics: a revenue metric answered faster is worth nothing if the number is wrong. Agents need a context layer that tells them where data lives, what it means, whether to use it, how to use it, where it came from, and what is similar. NVIDIA Auto Ontology is an open library that builds that layer from enterprise metadata, reconciles definitions across systems, and exposes it to any agent harness through its HTTP API. It complements the semantic models customers already own.
+neemontology is a lightweight, single-user fork of
+[NVIDIA Auto Ontology](https://github.com/NVIDIA/auto-ontology), set up to run
+on your own machine with the model provider of your choice.
 
-It enables developers to:
+Agents can query databases, but a revenue metric answered faster is worth
+nothing if the number is wrong. They need a context layer that says where data
+lives, what it means, and how to use it. neemontology builds that layer — a
+semantic layer of business terms, descriptions and relationships — from a SQL
+database's own structure, and uses it to answer natural-language questions with
+SQL.
 
-- Discover: generate enterprise ontologies from metadata; connect existing ontologies and semantic models; build AI-ready knowledge graphs.
-- Ground: give agents trusted business meaning for metrics, entities, and relationships; reconcile inconsistent definitions across systems.
-- Validate: check generated queries against certified definitions and lineage; return provenance with every answer.
-- Expose: serve context to any agent harness through the HTTP API.
-Learn: fold certified corrections and usage back into the ontology, so shared context improves with every question.
+It lets you:
+
+- **Discover:** generate a semantic layer (terms, column descriptions,
+  relationships between tables) from your database's metadata.
+- **Ground:** give questions trusted business meaning for metrics, entities and
+  relationships, and certify the definitions you have checked.
+- **Validate:** check generated SQL against the catalog before it runs, and see
+  the SQL and the rows behind every answer.
+- **Expose:** serve the same context to scripts and agents through the HTTP API.
+- **Learn:** fold certified corrections back into the semantic layer, so answers
+  improve as you curate it.
+
+> **Input is a SQL database.** neemontology reads tables and columns through its
+> connectors (PostgreSQL, MySQL, SQLite, DuckDB, Snowflake, Databricks). It does
+> not read documents, import OWL/RDF ontologies, or build a knowledge graph from
+> unstructured text. CSV or Parquet files can be loaded into a SQLite or DuckDB
+> file first.
+
+## How this branch differs from upstream
+
+| Area | Upstream Auto Ontology | neemontology |
+| --- | --- | --- |
+| Models | NVIDIA NIM endpoints | Your choice per role under **Settings → Models**: OpenAI, Anthropic, or any OpenAI-compatible server (Ollama, vLLM, …) |
+| Access | Sign-in, users, groups, roles, zones and row owners | No sign-in, one local user, ports bound to `127.0.0.1` |
+| Agent integration | MCP server, OAuth provider, API tokens, agent skills | The plain HTTP API |
+| Background jobs | Ingestion and compilation every 24 hours | Once at startup, then on demand; adding a connection ingests and compiles it straight away |
+| Deployment | Helm chart, release tooling, Vault, SSO, invitations | Docker Compose only |
+| Connectors | Also HeavyDB, Kyuubi, Trino, ClickHouse | PostgreSQL, MySQL, SQLite, DuckDB, Snowflake, Databricks |
+| Look | NVIDIA black and green | Slate and teal |
+
+Kept as they were: KumoRFM predictive queries, pgAdmin, PII detection, tags and
+rules, import/export of the semantic model, and the analytics page.
+
+Internal identifiers still use the upstream name — the `auto_ontology` Python
+package, the `auto-ontology` Docker images, and the `x-auto-ontology-user-id`
+header — so the code stays easy to compare with upstream.
 
 ## Benchmarks
 
 To run a text-to-SQL benchmark such as BIRD, refer to the
 [ontology SQL evaluation repository](https://github.com/NVIDIA/ontology-sql-eval/).
 
-> **Licensing & contributions.** Auto Ontology is distributed under the
+> **Licensing.** neemontology, like Auto Ontology, is distributed under the
 > [Apache License 2.0](./LICENSE). Third-party open-source components
 > bundled, linked, or otherwise used by this project are listed in
-> [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md). **This project
-> is currently not accepting external contributions.**
+> [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md).
 
 <p>
-<img src="./docs/assets/arch.png" alt="Auto Ontology Architecture" width="800">
+<img src="./docs/assets/arch.png" alt="Upstream Auto Ontology architecture" width="800">
 </p>
+
+The diagram is upstream's; in this branch the MCP server and sign-in are gone.
 
 ## Key Features
 
@@ -38,7 +77,8 @@ To run a text-to-SQL benchmark such as BIRD, refer to the
   OpenAI, Anthropic, or any OpenAI-compatible server such as Ollama or vLLM.
 - **Semantic catalog / ontology layer** over relational sources, stored in
   Postgres alongside the catalog it describes.
-- **Web UI** for chat, analysis, data catalog, analytics, and settings.
+- **Web UI** for chat, analysis, the data catalog, the glossary of terms, an
+  exploration graph, analytics, and settings.
 - **Local deployment** — Docker Compose brings up the full stack, for one
   person on their own machine (no sign-in; see [Access](#access)).
 
@@ -92,14 +132,15 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
 - An API key for a model provider (OpenAI, Anthropic), or a local
   OpenAI-compatible server such as Ollama. You enter it in the UI.
 - Connection details for the source database(s) you want to query
-  (Databricks, Postgres, Snowflake, or DuckDB).
+  (PostgreSQL, MySQL, SQLite, DuckDB, Snowflake, or Databricks).
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the `neemontology` branch:
 
    ```bash
-   git clone <repo-url> auto_ontology && cd auto_ontology
+   git clone -b neemontology https://github.com/Srikanth635/auto-ontology.git neemontology
+   cd neemontology
    ```
 
 2. Create your environment file (.env) from the template and fill in the values
@@ -124,17 +165,26 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    docker compose up -d --build
    ```
 
-   This builds the backend (`auto_ontology`) and frontend (`auto-ontology-frontend`) images, brings
-   up Postgres and pgAdmin, runs the one-shot `frontend-migrate` job to
-   sync the database schema, and starts the app (backend, ingestion service,
-   and frontend).
+   This builds the backend (`auto-ontology`) and frontend (`auto-ontology-frontend`) images, brings
+   up Postgres and pgAdmin, runs the one-shot migration jobs to set up the
+   database schema, and starts the app (backend, ingestion service, and
+   frontend).
 
 4. Open the UI at <http://localhost:3000> (the backend API is on `:3001`,
    pgAdmin on `:5050`). There is no sign-in — see [Access](#access).
 
+5. Under **Settings → Models**, choose a chat model and an embedding model.
+   Then turn on **Settings → Semantic Compilation** and add a connection under
+   **Settings → Connections**. The database is ingested and its semantic layer
+   built straight away; once that finishes you can ask questions in **Chat**.
+
+   Upgrading an install from before this branch removed sign-in is safe: the
+   migrations drop the account, zone and group tables, and existing
+   conversations move to the local user.
+
 ## Connections Management
 
-Auto Ontology resolves the source databases it connects to from two sources:
+neemontology resolves the source databases it connects to from two sources:
 
 1. **Added through the UI** — connections created from within the app. The
    full connection object (including the password) is JSON-serialized and
@@ -144,9 +194,14 @@ Auto Ontology resolves the source databases it connects to from two sources:
    connection strings supplied at deploy time in `.env`. This is a fallback: it
    is used only when there are no UI-added connections.
 
+Each connection is ingested when it is added or changed, and every connection
+is ingested again when the ingestion service starts. With semantic compilation
+on, a compilation pass follows each ingest. Nothing runs on a timer; use
+**Settings → Semantic Compilation** to rebuild the semantic layer on demand.
+
 ## Access
 
-Auto Ontology is set up for one person on their own machine: there is **no
+neemontology is set up for one person on their own machine: there is **no
 sign-in, no user accounts and no roles**. Everyone who can reach the frontend can
 do everything, and everything they do is recorded as the single local user.
 
@@ -210,10 +265,10 @@ opened in the UI at `/chat?focus=<conversation_id>`.
 
 ## License
 
-Auto Ontology is licensed under the [Apache License, Version 2.0](./LICENSE).
+neemontology is a fork of NVIDIA Auto Ontology and, like it, is licensed under the [Apache License, Version 2.0](./LICENSE).
 SPDX identifier: `Apache-2.0`.
 
-Each NVIDIA-authored source file in this repository carries an SPDX header
+Each source file inherited from Auto Ontology carries NVIDIA's SPDX header
 of the form:
 
 ```text
@@ -222,7 +277,7 @@ All rights reserved.
 SPDX-License-Identifier: Apache-2.0
 ```
 
-Third-party open-source components used by Auto Ontology are enumerated, with their
+Third-party open-source components used by neemontology are enumerated, with their
 upstream licenses and project URLs, in
 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md). Components added by the
 container images are listed separately in
@@ -243,7 +298,7 @@ liabilities or legal consequences from your use or inability to use this
 software or any retrieved materials. Use this software and the retrieved
 materials at your own risk.
 
-External materials Auto Ontology interacts with at run time:
+External materials neemontology interacts with at run time:
 
 | Material | When | Terms |
 | --- | --- | --- |
@@ -253,8 +308,9 @@ External materials Auto Ontology interacts with at run time:
 
 ## Contributing
 
-**This project is currently not accepting contributions.** Issues, pull
-requests, and patches submitted from outside the Auto Ontology maintainer team will
-not be reviewed or merged. Security-relevant reports should follow the
-process described in [`SECURITY.md`](./SECURITY.md). Maintainer workflow is in
-[`CONTRIBUTING.md`](./CONTRIBUTING.md).
+This branch is a personal fork. Changes to upstream Auto Ontology go through
+[NVIDIA/auto-ontology](https://github.com/NVIDIA/auto-ontology), which is
+currently not accepting external contributions; its security reporting
+process is in [`SECURITY.md`](./SECURITY.md). The development workflow for this
+repository is in [`CONTRIBUTING.md`](./CONTRIBUTING.md) and
+[`CLAUDE.md`](./CLAUDE.md).
