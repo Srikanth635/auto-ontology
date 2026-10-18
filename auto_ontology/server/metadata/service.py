@@ -17,9 +17,7 @@ import logging
 import threading
 
 from auto_ontology.retrieval.entity_coverage.main import get_coverage_response
-from auto_ontology.retrieval.entity_coverage.main import (
-    llm_client as coverage_llm_client,
-)
+from auto_ontology.retrieval.entity_coverage.main import current_llm
 from auto_ontology.retrieval.entity_coverage.state import (
     DEFAULT_MAX_DISTANCE,
     EntityCoveragePayload,
@@ -70,7 +68,7 @@ def entity_coverage(
 
     Raises :class:`PredictionFlowError` when the flow cannot produce a result.
     """
-    if coverage_llm_client is None:
+    if current_llm() is None:
         raise PredictionFlowError("LLM client is not configured.")
     with _run_lock:
         try:

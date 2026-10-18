@@ -47,17 +47,21 @@ class AgentRunError(RuntimeError):
         self.partial_answer = partial_answer or {}
 
 
-try:
-    llm_client = get_non_reasoning_llm_client()
-except (ValueError, EnvironmentError) as e:
-    logger.error("Failed to initialize non-reasoning LLM client: %s", e)
-    llm_client = None
+#: Overrides for tests. ``None`` means "the model configured right now",
+#: resolved per question so a change under Settings -> Models applies at once.
+llm_client = None
+reasoning_llm_client = None
 
-try:
-    reasoning_llm_client = get_llm_client()
-except (ValueError, EnvironmentError) as e:
-    logger.error("Failed to initialize reasoning LLM client: %s", e)
-    reasoning_llm_client = None
+
+def _resolve(override, factory, label: str):
+    if override is not None:
+        return override
+    try:
+        return factory()
+    except (ValueError, EnvironmentError) as e:
+        logger.error("No %s LLM client available: %s", label, e)
+        return None
+
 
 graph = create_graph()
 app = graph.compile()
@@ -216,8 +220,8 @@ def _build_state(payload: TextToSQLPayload) -> AgentState:
     }
 
     state: dict = {
-        "llm": llm_client,
-        "reasoning_llm": reasoning_llm_client,
+        "llm": _resolve(llm_client, get_non_reasoning_llm_client, "fast chat"),
+        "reasoning_llm": _resolve(reasoning_llm_client, get_llm_client, "chat"),
         "initial_question": submitted_question,
         "evidence": initial_evidence,
         "sql_examples": initial_sql_examples,

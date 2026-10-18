@@ -22,17 +22,27 @@ from auto_ontology.utils.llm_invoke import get_llm_client
 
 logger = logging.getLogger(__name__)
 
-try:
-    llm_client = get_llm_client()
-except (ValueError, EnvironmentError, OSError) as exc:
-    logger.error("Failed to initialize LLM client: %s", exc)
-    llm_client = None
+#: Override for tests. ``None`` means "the chat model configured right now",
+#: resolved per request so a change under Settings -> Models applies at once.
+llm_client = None
+
+
+def current_llm():
+    """The client to run with, or ``None`` when no chat model is configured."""
+    if llm_client is not None:
+        return llm_client
+    try:
+        return get_llm_client()
+    except (ValueError, EnvironmentError, OSError) as exc:
+        logger.warning("Entity coverage: no chat model available: %s", exc)
+        return None
+
 
 graph = create_graph()
 app = graph.compile()
 
 
-def _build_state(payload: EntityCoveragePayload) -> AgentState:
+def _build_state(payload: EntityCoveragePayload, llm: Any = None) -> AgentState:
     connectors = payload.get("connectors", [])
     if not connectors:
         raise ValueError(
@@ -69,7 +79,7 @@ def _build_state(payload: EntityCoveragePayload) -> AgentState:
             initial_path_state["target_db"] = connector_db
 
     state: dict[str, Any] = {
-        "llm": llm_client,
+        "llm": llm,
         "initial_question": payload["question"],
         "connectors": connectors,
         "messages": [HumanMessage(content=payload["question"])],
@@ -85,10 +95,11 @@ def _build_state(payload: EntityCoveragePayload) -> AgentState:
 
 def get_coverage_response(payload: EntityCoveragePayload) -> dict:
     """Run the entity-coverage graph and return coverage and ranked candidates."""
-    if llm_client is None:
+    llm = current_llm()
+    if llm is None:
         raise RuntimeError("LLM client is not configured.")
 
-    state = _build_state(payload)
+    state = _build_state(payload, llm)
     final_state = app.invoke(state, config={"recursion_limit": 10})
 
     path_state = final_state.get("path_state", {})
@@ -105,5 +116,6 @@ __all__ = [
     "get_coverage_response",
     "app",
     "graph",
+    "current_llm",
     "llm_client",
 ]
