@@ -80,6 +80,11 @@ Brings up the Auto Ontology environment via `docker compose`.
 | `bash ./dev_tools/setup_env.sh` | Full stack — infra (Postgres, pgAdmin, ingestion service) **and** the `auto_ontology` + `auto-ontology-frontend` images (built with `--build`). |
 | `bash ./dev_tools/setup_env.sh --dev` | Infra only. You run `auto_ontology` / `auto-ontology-frontend` locally yourself. |
 | `bash ./dev_tools/setup_env.sh --ds` | Infra **+** `auto-ontology-frontend` in docker. You run `auto_ontology` locally on `:3001`; the containerised frontend reaches it via `host.docker.internal:3001`. |
+| `bash ./dev_tools/setup_env.sh --stop` | Stops and removes every container (`docker compose down`). Volumes are kept, so no data is lost. |
+| `bash ./dev_tools/setup_env.sh --status` | Lists the containers and their state (`docker compose ps -a`). |
+| `bash ./dev_tools/setup_env.sh --logs [service...]` | Follows the logs of the named services, or of all of them. |
+
+The start modes first check that `.env` exists and sets `AUTH_SECRET`.
 
 ### Endpoints
 

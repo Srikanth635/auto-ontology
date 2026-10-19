@@ -162,10 +162,20 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
 3. Build the images and start the stack:
 
    ```bash
-   docker compose up -d --build
+   ./dev_tools/setup_env.sh
    ```
 
-   This builds the backend (`auto-ontology`) and frontend (`auto-ontology-frontend`) images, brings
+   The script checks that `.env` exists and sets `AUTH_SECRET`, then runs
+   `docker compose up -d --build`. It also stops and starts the stack for you:
+
+   | Command | What it does |
+   |---|---|
+   | `./dev_tools/setup_env.sh` | Build and start everything |
+   | `./dev_tools/setup_env.sh --stop` | Stop everything (your data is kept) |
+   | `./dev_tools/setup_env.sh --status` | List the containers and their state |
+   | `./dev_tools/setup_env.sh --logs [service]` | Follow the logs, e.g. `--logs ingestion-service` |
+
+   Running `docker compose up -d --build` yourself does the same thing. This builds the backend (`auto-ontology`) and frontend (`auto-ontology-frontend`) images, brings
    up Postgres and pgAdmin, runs the one-shot migration jobs to set up the
    database schema, and starts the app (backend, ingestion service, and
    frontend).

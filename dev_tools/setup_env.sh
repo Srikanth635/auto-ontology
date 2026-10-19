@@ -8,6 +8,38 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# Commands that act on a running stack. They don't need .env checks or a build.
+case "${1:-}" in
+--stop)
+	# `down` without -v: the postgres_data volume (catalog, semantic layer,
+	# settings) survives, so the next start picks up where this one left off.
+	docker compose down
+	exit 0
+	;;
+--status)
+	docker compose ps -a
+	exit 0
+	;;
+--logs)
+	shift
+	docker compose logs -f --tail=200 "$@"
+	exit 0
+	;;
+esac
+
+# Every service reads .env (env_file in docker-compose.yml), and Compose fails
+# on a missing env_file with a message that doesn't say what to do.
+if [[ ! -f .env ]]; then
+	echo "No .env found. Create one from the template and fill it in first:" >&2
+	echo "  cp .env.example .env" >&2
+	exit 1
+fi
+if ! grep -Eq '^AUTH_SECRET=.+' .env; then
+	echo "AUTH_SECRET is not set in .env. It encrypts the model API keys you save" >&2
+	echo "under Settings -> Models, so the backend needs it." >&2
+	exit 1
+fi
+
 INFRA_SERVICES="postgres pgadmin ingestion-service"
 AUTO_ONTOLOGY_SERVICES="auto-ontology auto-ontology-frontend"
 
@@ -79,3 +111,7 @@ echo "  pgAdmin:       http://localhost:5050"
 echo "  Auto Ontology frontend:  http://localhost:3000"
 echo "  Auto Ontology backend:   http://localhost:3001"
 echo "  Auto Ontology ingestion: http://localhost:3002"
+
+echo ""
+echo "Follow the logs:  ./dev_tools/setup_env.sh --logs [service]"
+echo "Stop everything:  ./dev_tools/setup_env.sh --stop"
