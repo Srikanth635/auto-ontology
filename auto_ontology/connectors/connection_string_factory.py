@@ -67,16 +67,6 @@ def build_connection_string(connection: Mapping[str, Any]) -> str:
         port = str(connection.get("port") or "").strip() or DEFAULT_MYSQL_PORT
         return f"mysql://{_enc(user)}:{_enc(password)}@{host}:{port}/{_enc(database)}"
 
-    if conn_type in ("sqlite", "duckdb"):
-        # Imported here: it is only needed for file connections, and keeps
-        # this module free of the infra package for every other type.
-        from auto_ontology.infra.data_files import resolve_inside_data_dir
-
-        path = resolve_inside_data_dir(_require(connection, "path"))
-        if conn_type == "sqlite":
-            return f"sqlite:///{path}"
-        return f"duckdb://{path}"
-
     if conn_type == "snowflake":
         account = _require(connection, "account")
         warehouse = _require(connection, "warehouse")

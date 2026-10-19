@@ -55,9 +55,8 @@ services:
       POSTGRES_PORT: "5432"
       INGESTION_SERVICE_URL: http://ingestion-service:3002
     volumes:
-      # SQLite / DuckDB files in ./data show up at /data. The ingestion service
-      # watches the folder; this service reads the files to answer questions and
-      # receives uploads from the UI.
+      # SQLite / DuckDB files dropped in ./data show up at /data, for a
+      # CONNECTION_STRINGS entry such as sqlite:////data/neem.sqlite.
       - ./data:/data
     depends_on:
       postgres:
@@ -100,10 +99,7 @@ services:
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
-      # Where the data-folder watcher tells the backend to reload its connectors.
-      API_SERVER_URL: http://auto-ontology:3001
     volumes:
-      # Database files dropped here are picked up and ingested automatically.
       - ./data:/data
     depends_on:
       postgres:

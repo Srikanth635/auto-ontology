@@ -24,7 +24,6 @@ Usage::
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -41,13 +40,7 @@ from auto_ontology.ingestion_service.config import (  # noqa: E402
     is_semantic_compilation_enabled,
 )
 from auto_ontology.ingestion_service.data_scheduler import DataScheduler  # noqa: E402
-from auto_ontology.ingestion_service.data_folder import (  # noqa: E402
-    DataFolderWatcher,
-)
-from auto_ontology.ingestion_service.router import (  # noqa: E402
-    _start_or_trigger,
-    router,
-)
+from auto_ontology.ingestion_service.router import router  # noqa: E402
 from auto_ontology.ingestion_service.semantic_scheduler import SemanticScheduler  # noqa: E402
 from auto_ontology.version import get_app_version  # noqa: E402
 
@@ -67,29 +60,15 @@ async def lifespan(app: FastAPI):
     # its in-flight wait promptly on shutdown. Schedulers are stored on
     # app.state so the router can trigger them on demand.
     data_scheduler = DataScheduler()
-    # Files in the data folder become connections. The first scan registers
-    # whatever is already there, *before* the data scheduler's startup pass, so
-    # that pass ingests those files with everything else.
-    loop = asyncio.get_running_loop()
-    scheduler_for_folder: SemanticScheduler | None = None
-
-    def _compile_after_folder_ingest() -> None:
-        if is_semantic_compilation_enabled() and scheduler_for_folder is not None:
-            loop.call_soon_threadsafe(_start_or_trigger, scheduler_for_folder)
-
-    data_folder = DataFolderWatcher(on_ingested=_compile_after_folder_ingest)
-    await asyncio.to_thread(data_folder.scan_once, startup=True)
     # Waits for the ingest scheduler's first pass before compiling (see
     # semantic_scheduler.py) so the two starting at the same moment on boot
     # can't race — otherwise the very first compile could run against a
     # catalog that ingest hasn't written yet.
     semantic_scheduler = SemanticScheduler(depends_on=data_scheduler)
-    scheduler_for_folder = semantic_scheduler
     app.state.data_scheduler = data_scheduler
     app.state.semantic_scheduler = semantic_scheduler
 
     data_scheduler.start()
-    data_folder.start()
     # Only start semantic compilation if it's enabled in settings. When a user
     # enables it later, the POST /semantic/compile trigger starts the scheduler
     # on demand, so no restart is needed.
@@ -104,7 +83,6 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
-        await data_folder.stop()
         await data_scheduler.stop()
         await semantic_scheduler.stop()
         logger.info("ingestion_service: shutting down")

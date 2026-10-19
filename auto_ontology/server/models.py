@@ -34,7 +34,6 @@ from pydantic import BaseModel, ConfigDict, Field
 __all__ = [
     "ApiModel",
     "ColumnAttribute",
-    "DataFile",
     "ColumnRef",
     "ColumnSummary",
     "CustomAnalysis",
@@ -999,24 +998,6 @@ class ExplorationRelatedNodes(ApiModel):
 # ---------------------------------------------------------------------------
 # Connections
 # ---------------------------------------------------------------------------
-
-
-class DataFile(ApiModel):
-    """A database file in the data folder, with where it is in being loaded.
-
-    ``status`` is ``pending`` (seen, not yet registered), ``converting`` (a SQL
-    dump on its way to a database), ``ingesting`` (registered, no tables read
-    yet), ``ready``, ``missing`` (a connection whose file is gone) or
-    ``failed`` (``error`` says why).
-    """
-
-    name: str
-    kind: str
-    size_bytes: int | None = None
-    modified_at: float | None = None
-    database_name: str | None = None
-    status: str
-    error: str | None = None
 
 
 class PublicConnection(ApiModel):

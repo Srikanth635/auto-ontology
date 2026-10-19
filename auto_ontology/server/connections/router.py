@@ -10,18 +10,15 @@ import logging
 import os
 from typing import Any, TypedDict
 
-from fastapi import APIRouter, HTTPException, Path, Request
+from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 
 from auto_ontology.dal.connections import list_connections as _list_connections
-from auto_ontology.server.connections import files, service
-from auto_ontology.server.models import DataFile
+from auto_ontology.server.connections import service
 from auto_ontology.server.responses import (
     ConnectionListResponse,
     ConnectionResponse,
     ConnectionTestResponse,
-    DataFileListResponse,
-    DataResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -76,74 +73,6 @@ def list_connections() -> dict:
     """
     rows = [_serialize_connection(conn) for conn in _list_connections()]
     return {"data": rows, "count": len(rows)}
-
-
-@router.post("/connections/refresh", status_code=204)
-def refresh_connections() -> None:
-    """Reload the connectors and chat workers built from the stored connections.
-
-    Called by the ingestion service after it registers a database from the data
-    folder: this process holds connectors in memory, and cannot know about a
-    connection written behind its back until they are rebuilt.
-    """
-    service.refresh_connection_caches()
-
-
-@router.get("/connections/files", response_model=DataFileListResponse)
-def list_data_files() -> dict:
-    """List the database files in the data folder and how far each has got.
-
-    ``status`` is ``pending``, ``converting`` (a ``.sql`` dump becoming a
-    database), ``ingesting``, ``ready``, ``missing`` (its file was deleted) or
-    ``failed`` with ``error`` saying why.
-    """
-    rows = files.list_files()
-    return {"data": rows, "count": len(rows)}
-
-
-@router.put(
-    "/connections/files/{filename}",
-    status_code=201,
-    response_model=DataResponse[DataFile],
-)
-async def upload_data_file(
-    request: Request,
-    filename: str = Path(description="Name to store the file under."),
-) -> dict:
-    """Upload a database file into the data folder.
-
-    The raw file is the request body. Only ``.sqlite``, ``.sqlite3``, ``.db``,
-    ``.duckdb`` and SQLite ``.sql`` dumps are accepted, and the contents must
-    match the format. The ingestion service picks the file up from the folder, so
-    this returns as soon as it is stored; poll ``GET /connections/files`` for
-    progress. Uploading a name that exists replaces the file, which is then
-    ingested again. 413 when it exceeds ``MAX_UPLOAD_MB``.
-    """
-    try:
-        row = await files.save_upload(filename, request.stream())
-    except files.UploadTooLarge as exc:
-        raise HTTPException(status_code=413, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return {"data": row}
-
-
-@router.delete("/connections/files/{filename}", response_model=ConnectionResponse)
-def delete_data_file(
-    filename: str = Path(description="The file's name in the data folder."),
-) -> dict:
-    """Delete a file from the data folder and the database loaded from it.
-
-    The connection and everything ingested from the file are removed too. 404
-    when there is no such file or database.
-    """
-    try:
-        found = files.remove_file(filename)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    if not found:
-        raise HTTPException(status_code=404, detail="File not found")
-    return {"data": {"database_name": filename}}
 
 
 @router.post("/connections/test", response_model=ConnectionTestResponse)

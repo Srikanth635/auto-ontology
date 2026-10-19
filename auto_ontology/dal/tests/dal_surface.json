@@ -23,7 +23,6 @@
     "clear_connection": "(*, database_name: 'str') -> 'None'",
     "insert_connection": "(*, connection: 'str', database_name: 'str') -> 'dict[str, Any]'",
     "list_connections": "() -> 'list[dict[str, Any]]'",
-    "table_counts_by_database": "() -> 'dict[str, int]'",
     "verify_connectivity": "() -> 'None'"
   },
   "custom_analyses": {

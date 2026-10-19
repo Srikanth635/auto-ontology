@@ -1053,75 +1053,6 @@
         "title": "DataExplorationGraph",
         "type": "object"
       },
-      "DataFile": {
-        "additionalProperties": true,
-        "description": "A database file in the data folder, with where it is in being loaded.\n\n``status`` is ``pending`` (seen, not yet registered), ``converting`` (a SQL\ndump on its way to a database), ``ingesting`` (registered, no tables read\nyet), ``ready``, ``missing`` (a connection whose file is gone) or\n``failed`` (``error`` says why).",
-        "properties": {
-          "database_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Database Name"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "modified_at": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Modified At"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "size_bytes": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Size Bytes"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "kind",
-          "status"
-        ],
-        "title": "DataFile",
-        "type": "object"
-      },
       "DataGraphNode": {
         "additionalProperties": true,
         "description": "A table on the data-layer exploration graph.\n\n``relationship_count`` is the table's degree over the whole accessible\nedge set, so it does not shrink when ``limit`` truncates the payload.",
@@ -1308,19 +1239,6 @@
           "data"
         ],
         "title": "DataResponse[DataExplorationGraph]",
-        "type": "object"
-      },
-      "DataResponse_DataFile_": {
-        "additionalProperties": true,
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/DataFile"
-          }
-        },
-        "required": [
-          "data"
-        ],
-        "title": "DataResponse[DataFile]",
         "type": "object"
       },
       "DataResponse_EntityCoverageResult_": {
@@ -2377,28 +2295,6 @@
           "id"
         ],
         "title": "IdRef",
-        "type": "object"
-      },
-      "ListResponse_DataFile_": {
-        "additionalProperties": true,
-        "properties": {
-          "count": {
-            "title": "Count",
-            "type": "integer"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/DataFile"
-            },
-            "title": "Data",
-            "type": "array"
-          }
-        },
-        "required": [
-          "data",
-          "count"
-        ],
-        "title": "ListResponse[DataFile]",
         "type": "object"
       },
       "ListResponse_DatabaseSummary_": {
@@ -6013,131 +5909,6 @@
           }
         },
         "summary": "Create Connection",
-        "tags": [
-          "connections"
-        ]
-      }
-    },
-    "/api/connections/files": {
-      "get": {
-        "description": "List the database files in the data folder and how far each has got.\n\n``status`` is ``pending``, ``converting`` (a ``.sql`` dump becoming a\ndatabase), ``ingesting``, ``ready``, ``missing`` (its file was deleted) or\n``failed`` with ``error`` saying why.",
-        "operationId": "list_data_files_api_connections_files_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListResponse_DataFile_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "List Data Files",
-        "tags": [
-          "connections"
-        ]
-      }
-    },
-    "/api/connections/files/{filename}": {
-      "delete": {
-        "description": "Delete a file from the data folder and the database loaded from it.\n\nThe connection and everything ingested from the file are removed too. 404\nwhen there is no such file or database.",
-        "operationId": "delete_data_file_api_connections_files__filename__delete",
-        "parameters": [
-          {
-            "description": "The file's name in the data folder.",
-            "in": "path",
-            "name": "filename",
-            "required": true,
-            "schema": {
-              "description": "The file's name in the data folder.",
-              "title": "Filename",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_PublicConnection_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Delete Data File",
-        "tags": [
-          "connections"
-        ]
-      },
-      "put": {
-        "description": "Upload a database file into the data folder.\n\nThe raw file is the request body. Only ``.sqlite``, ``.sqlite3``, ``.db``,\n``.duckdb`` and SQLite ``.sql`` dumps are accepted, and the contents must\nmatch the format. The ingestion service picks the file up from the folder, so\nthis returns as soon as it is stored; poll ``GET /connections/files`` for\nprogress. Uploading a name that exists replaces the file, which is then\ningested again. 413 when it exceeds ``MAX_UPLOAD_MB``.",
-        "operationId": "upload_data_file_api_connections_files__filename__put",
-        "parameters": [
-          {
-            "description": "Name to store the file under.",
-            "in": "path",
-            "name": "filename",
-            "required": true,
-            "schema": {
-              "description": "Name to store the file under.",
-              "title": "Filename",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataResponse_DataFile_"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Upload Data File",
-        "tags": [
-          "connections"
-        ]
-      }
-    },
-    "/api/connections/refresh": {
-      "post": {
-        "description": "Reload the connectors and chat workers built from the stored connections.\n\nCalled by the ingestion service after it registers a database from the data\nfolder: this process holds connectors in memory, and cannot know about a\nconnection written behind its back until they are rebuilt.",
-        "operationId": "refresh_connections_api_connections_refresh_post",
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Refresh Connections",
         "tags": [
           "connections"
         ]

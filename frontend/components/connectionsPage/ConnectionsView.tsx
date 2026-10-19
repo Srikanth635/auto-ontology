@@ -13,7 +13,6 @@ import { Size, ButtonTheme } from '@/enums/button';
 import { EmptyStateVariant } from '@/enums/emptyState';
 import { ConnectionsInfoCardView } from '@/components/connectionsPage/ConnectionsInfoCardView';
 import { ConnectionModal } from '@/components/connectionsPage/ConnectionModal';
-import { DataFilesPanel } from '@/components/connectionsPage/DataFilesPanel';
 import { ConfirmModal } from '@/common/modal';
 import { Icon, IconName } from '@/common/icons';
 import { connectionsApi } from '@/api/connections';
@@ -22,7 +21,6 @@ import {
 	invalidateConnectionList,
 	patchConnectionList,
 } from '@/lib/queries/connections';
-import { isConnectionType } from '@/enums/connection';
 import type { Connection } from '@/types/connection';
 
 export const ConnectionsView = () => {
@@ -31,16 +29,12 @@ export const ConnectionsView = () => {
 	// Prefetched by the root layout, so the cards are usually drawn on the
 	// first pass instead of after the mount's own read.
 	const {
-		data: allConnections = [],
+		data: connections = [],
 		isPending: loading,
 		error: loadError,
 		refetch,
 	} = useQuery(connectionQueries.list());
 	const error = loadError?.message ?? null;
-	// Connections to a file in the data folder are managed in the data files
-	// list, where the file itself can be replaced or removed; the cards are
-	// for the servers the wizard can set up.
-	const connections = allConnections.filter((c) => isConnectionType(c.connection.type));
 
 	/** Where a write puts what it just changed — the list the page reads from. */
 	const patchConnections = (update: Parameters<typeof patchConnectionList>[1]) =>
@@ -129,8 +123,7 @@ export const ConnectionsView = () => {
 	}
 
 	return (
-		<div className="flex h-full w-full min-w-0 flex-1 flex-col items-start gap-8">
-			<DataFilesPanel />
+		<div className="flex h-full w-full min-w-0 flex-1 flex-col items-start">
 			{connections.length === 0 ? (
 				<EmptyState
 					variant={EmptyStateVariant.Borderless}

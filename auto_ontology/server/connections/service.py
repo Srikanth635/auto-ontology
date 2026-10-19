@@ -110,11 +110,6 @@ def _refresh_connection_caches() -> None:
             logger.exception("Failed to refresh the %s cache", name)
 
 
-def refresh_connection_caches() -> None:
-    """Public entry to :func:`_refresh_connection_caches`, for the refresh route."""
-    _refresh_connection_caches()
-
-
 def test_connection(
     connection: dict[str, Any], *, replacing: str | None = None
 ) -> list[str]:

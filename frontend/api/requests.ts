@@ -133,30 +133,6 @@ export const requests = {
 			.catch(errorHandler) as Promise<ResponseWithError<OutputType>>;
 	},
 
-	/**
-	 * Sends a file as the raw request body, reporting how much of it has gone.
-	 * For endpoints that take the file itself rather than JSON or multipart.
-	 */
-	putFile: <OutputType>(
-		url: string,
-		file: File,
-		onProgress?: (fraction: number) => void,
-		abortController?: AbortController,
-	) => {
-		return api
-			.put<OutputType>(url, file, {
-				headers: { 'Content-Type': 'application/octet-stream' },
-				signal: abortController?.signal,
-				// Uploads can be large; the default is no limit, stated for the reader.
-				maxBodyLength: Infinity,
-				onUploadProgress: (event) => {
-					if (onProgress != null && event.total) onProgress(event.loaded / event.total);
-				},
-			})
-			.then(responseBody)
-			.catch(errorHandler) as Promise<ResponseWithError<OutputType>>;
-	},
-
 	patch: <OutputType>(url: string, body: Record<string, unknown> = {}) => {
 		return api.patch<OutputType>(url, body).then(responseBody).catch(errorHandler) as Promise<
 			ResponseWithError<OutputType>
