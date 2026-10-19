@@ -24,6 +24,7 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -40,8 +41,14 @@ from auto_ontology.ingestion_service.config import (  # noqa: E402
     is_semantic_compilation_enabled,
 )
 from auto_ontology.ingestion_service.data_scheduler import DataScheduler  # noqa: E402
-from auto_ontology.ingestion_service.router import router  # noqa: E402
+from auto_ontology.ingestion_service.ingest import ingest_database  # noqa: E402
+from auto_ontology.ingestion_service.router import (  # noqa: E402
+    _start_or_trigger,
+    router,
+)
 from auto_ontology.ingestion_service.semantic_scheduler import SemanticScheduler  # noqa: E402
+from auto_ontology.neem_folder import config as neem_config  # noqa: E402
+from auto_ontology.neem_folder.watcher import NeemFolderWatcher  # noqa: E402
 from auto_ontology.version import get_app_version  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -80,12 +87,43 @@ async def lifespan(app: FastAPI):
             "semantic: compilation disabled; scheduler idle "
             "(enable it in Settings → Semantic Compilation)"
         )
+    neem_watcher = _start_neem_watcher(semantic_scheduler)
+    app.state.neem_watcher = neem_watcher
     try:
         yield
     finally:
+        if neem_watcher is not None:
+            await neem_watcher.stop()
         await data_scheduler.stop()
         await semantic_scheduler.stop()
         logger.info("ingestion_service: shutting down")
+
+
+def _start_neem_watcher(
+    semantic_scheduler: SemanticScheduler,
+) -> NeemFolderWatcher | None:
+    """Watch the NEEM folder when one is configured (``NEEM_DATA_DIR``).
+
+    The watcher re-ingests the merged database on its own thread after a
+    change, then hands back to the loop to start a compilation pass -- the same
+    follow-up ``POST /ingest`` gives a connection saved in the UI.
+    """
+    directory = neem_config.data_dir()
+    if directory is None:
+        return None
+    loop = asyncio.get_running_loop()
+
+    def _compile_after_ingest() -> None:
+        if is_semantic_compilation_enabled():
+            loop.call_soon_threadsafe(_start_or_trigger, semantic_scheduler)
+
+    watcher = NeemFolderWatcher(
+        directory,
+        ingest=lambda: ingest_database(neem_config.database_name()),
+        on_changed=_compile_after_ingest,
+    )
+    watcher.start()
+    return watcher
 
 
 app = FastAPI(title="neemontology Ingestion Service", lifespan=lifespan)

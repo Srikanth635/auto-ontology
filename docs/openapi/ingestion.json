@@ -14,6 +14,103 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "NeemFileState": {
+        "additionalProperties": true,
+        "description": "What the NEEM folder watcher knows about one file.",
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "default": 0.0,
+            "title": "Updated At",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "state"
+        ],
+        "title": "NeemFileState",
+        "type": "object"
+      },
+      "NeemWatchStatusResponse": {
+        "additionalProperties": true,
+        "description": "The ingestion service's NEEM folder watcher (``GET /neem/status``).",
+        "properties": {
+          "catalog": {
+            "default": "idle",
+            "title": "Catalog",
+            "type": "string"
+          },
+          "database": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Database"
+          },
+          "directory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Directory"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "files": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/NeemFileState"
+            },
+            "title": "Files",
+            "type": "array"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "NeemWatchStatusResponse",
+        "type": "object"
+      },
       "ReembedStatusResponse": {
         "additionalProperties": true,
         "description": "Whether a re-embed pass is running, and how the last one ended.\n\nA pass rebuilds every vector after the embedding model changes. Timestamps\nare ISO 8601; ``last_error`` is set only when the last pass failed.",
@@ -246,6 +343,25 @@
           }
         },
         "summary": "Ingest Delete"
+      }
+    },
+    "/neem/status": {
+      "get": {
+        "description": "Report the NEEM folder watcher's view of each file in the folder.\n\nEach file is ``waiting`` (still changing), ``loading``, ``loaded`` or\n``failed`` (with the reason). ``catalog`` is ``ingesting`` while the merged\ndatabase is being re-read after a change. ``enabled`` is false when no\n``NEEM_DATA_DIR`` is configured.",
+        "operationId": "neem_status_neem_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeemWatchStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Neem Status"
       }
     },
     "/reembed": {

@@ -15,6 +15,7 @@ export const PRIMARY_NAV: NavLink[] = [
 	{ label: 'Chat', href: '/chat' },
 	{ label: 'Terms', href: '/terms' },
 	{ label: 'Data', href: '/data' },
+	{ label: 'NEEMs', href: '/neems' },
 	{ label: 'Settings', href: '/settings' },
 ];
 

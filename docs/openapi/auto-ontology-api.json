@@ -3502,6 +3502,116 @@
         "x-auto-ontology-proxied": true
       }
     },
+    "/api/neem-files": {
+      "get": {
+        "description": "neemFilesApi.list — the NEEM folder's files and each one's load state.",
+        "operationId": "get_api_neem_files",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeemFilesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Neem Files",
+        "tags": ["neem-files"],
+        "x-auto-ontology-source": "frontend/app/api/neem-files/route.ts",
+        "x-auto-ontology-proxied": true
+      }
+    },
+    "/api/neem-files/{file_name}": {
+      "delete": {
+        "description": "neemFilesApi.remove — delete a file; its rows leave the merged database.",
+        "operationId": "delete_api_neem_files_file_name_",
+        "parameters": [
+          {
+            "description": "File name in the NEEM folder, e.g. pickup_neem.sqlite",
+            "in": "path",
+            "name": "file_name",
+            "required": true,
+            "schema": {
+              "description": "File name in the NEEM folder, e.g. pickup_neem.sqlite",
+              "title": "File Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Neem File",
+        "tags": ["neem-files"],
+        "x-auto-ontology-source": "frontend/app/api/neem-files/[file_name]/route.ts",
+        "x-auto-ontology-proxied": true
+      },
+      "put": {
+        "description": "neemFilesApi.upload — the body is the file's raw bytes, streamed through.",
+        "operationId": "put_api_neem_files_file_name_",
+        "parameters": [
+          {
+            "description": "File name in the NEEM folder, e.g. pickup_neem.sqlite",
+            "in": "path",
+            "name": "file_name",
+            "required": true,
+            "schema": {
+              "description": "File name in the NEEM folder, e.g. pickup_neem.sqlite",
+              "title": "File Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeemFileItem"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Neem File",
+        "tags": ["neem-files"],
+        "x-auto-ontology-source": "frontend/app/api/neem-files/[file_name]/route.ts",
+        "x-auto-ontology-proxied": true
+      }
+    },
     "/api/nodes/{node_id}": {
       "patch": {
         "description": "datasources.updateNode — edit mutable properties of a catalog node.",
@@ -7969,6 +8079,91 @@
         },
         "required": ["ok", "detail"],
         "title": "ModelTestResponse",
+        "type": "object"
+      },
+      "NeemFileItem": {
+        "additionalProperties": true,
+        "description": "One file in the NEEM folder, with the watcher's view of it.",
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "modified_at": {
+            "title": "Modified At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": ["name", "size", "modified_at", "state"],
+        "title": "NeemFileItem",
+        "type": "object"
+      },
+      "NeemFilesResponse": {
+        "additionalProperties": true,
+        "description": "The NEEM folder: its files and the database they are merged into.",
+        "properties": {
+          "catalog": {
+            "title": "Catalog",
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/NeemFileItem"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "max_upload_bytes": {
+            "title": "Max Upload Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "database",
+          "catalog",
+          "max_upload_bytes",
+          "files"
+        ],
+        "title": "NeemFilesResponse",
         "type": "object"
       },
       "NodeUpdate": {

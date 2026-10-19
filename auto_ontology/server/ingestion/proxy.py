@@ -138,3 +138,20 @@ def get_reembed_status() -> dict[str, Any] | None:
     except Exception as exc:
         logger.warning("Failed to query re-embed status via %s: %s", url, exc)
         return None
+
+
+def get_neem_status() -> dict[str, Any] | None:
+    """The ingestion service's view of the NEEM folder, or ``None`` if unreachable.
+
+    Best-effort like :func:`is_semantic_compilation_running`: the NEEM page
+    polls this, so an unreachable service logs one line and the page shows the
+    files without their state rather than an error.
+    """
+    url = f"{_base_url()}/neem/status"
+    try:
+        response = httpx.get(url, timeout=_REQUEST_TIMEOUT)
+        response.raise_for_status()
+        return response.json()
+    except Exception as exc:
+        logger.warning("Failed to query NEEM folder status via %s: %s", url, exc)
+        return None

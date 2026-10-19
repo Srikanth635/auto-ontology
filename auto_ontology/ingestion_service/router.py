@@ -25,6 +25,7 @@ from auto_ontology.ingestion_service.reembed import reembed_status, trigger_reem
 from auto_ontology.server.health.checks import check_schema, check_store
 from auto_ontology.server.responses import (
     HealthResponse,
+    NeemWatchStatusResponse,
     ReembedStatusResponse,
     SemanticRunningResponse,
     StatusResponse,
@@ -164,6 +165,21 @@ async def semantic_status(request: Request) -> dict[str, bool | str | None]:
         "last_success_at": get_last_successful_run(),
         "last_failure_at": get_last_failure_if_most_recent(),
     }
+
+
+@router.get("/neem/status", response_model=NeemWatchStatusResponse)
+async def neem_status(request: Request) -> dict[str, Any]:
+    """Report the NEEM folder watcher's view of each file in the folder.
+
+    Each file is ``waiting`` (still changing), ``loading``, ``loaded`` or
+    ``failed`` (with the reason). ``catalog`` is ``ingesting`` while the merged
+    database is being re-read after a change. ``enabled`` is false when no
+    ``NEEM_DATA_DIR`` is configured.
+    """
+    watcher = getattr(request.app.state, "neem_watcher", None)
+    if watcher is None:
+        return {"enabled": False, "files": []}
+    return {"enabled": True, **watcher.status()}
 
 
 @router.post("/semantic/stop", status_code=202, response_model=StatusResponse)

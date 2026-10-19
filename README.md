@@ -211,20 +211,44 @@ neemontology resolves the source databases it connects to from two sources:
    takes over: ingestion uses only these, and connections added in the UI are
    ignored. Leave it empty to manage connections in the UI.
 
-**SQLite and DuckDB files.** The connection form in the UI covers the server
-databases. To use a file, put it in the `data/` folder of this repo (Compose
-mounts that folder at `/data` inside the containers) and list it in `.env`, then
-restart. While it is set, connections added in the UI are ignored:
+**NEEMs: drop them in `data/`.** Every SQLite NEEM in the repo's `data/` folder
+(`.sqlite`, `.sqlite3`, `.db`, or a SQLite `.sql` dump) is merged into one
+PostgreSQL database, `neem`, which then shows up in the catalog like any other
+connection. There is nothing to configure: copy a file into `data/`, or drop it
+on the **NEEMs** page in the app, and the ingestion service picks it up within a
+few seconds — a changed file is reloaded and a deleted one's rows are removed,
+each followed by a catalog refresh and, with semantic compilation on, a
+compilation pass. Compilation only covers tables that have no Term yet, so once
+the first NEEM is compiled, later NEEMs with the same structure add rows but
+nothing to compile.
+
+How the merge keeps NEEMs apart:
+
+- Every table gets a `neem_source_id` column, and `neem_sources` lists the files,
+  so a question can be scoped to one NEEM and a file's rows can be removed
+  exactly.
+- Integer ids (and the foreign keys that point at them) are shifted into a
+  range per file: the first NEEM keeps its ids, later ones never collide with
+  it, and joins stay single-column.
+- A `UNIQUE` key that is not an id holds per NEEM, so two NEEMs can both name
+  their robot `pr2`.
+- Tables and columns first seen in a later NEEM are added; nothing is dropped.
+
+Subfolders of `data/` are not scanned. `NEEM_DATABASE`, `NEEM_POLL_SECONDS` and
+`NEEM_MAX_UPLOAD_MB` (default 500) in `.env` adjust the defaults.
+
+**Other SQLite and DuckDB files.** To connect a file as a database of its own
+instead, put it in a subfolder of `data/` (Compose mounts the folder at `/data`)
+and list it in `.env`, then restart. While it is set, connections added in the
+UI are ignored (the NEEM database is kept either way):
 
 ```bash
-CONNECTION_STRINGS=sqlite:////data/neem.sqlite
-# several: comma-separated, e.g. sqlite:////data/a.sqlite,sqlite:////data/b.sqlite
+CONNECTION_STRINGS=sqlite:////data/other/inventory.sqlite
+# several: comma-separated, e.g. sqlite:////data/other/a.sqlite,sqlite:////data/other/b.duckdb
 ```
 
 The name after the last `/` (without the extension) becomes the database name,
-so give each file a different name. Files in `data/` are git-ignored. A `.sql`
-dump is not a database yet: load it into SQLite (`sqlite3 neem.sqlite < neem.sql`)
-or into PostgreSQL or MySQL first.
+so give each file a different name. Files in `data/` are git-ignored.
 
 Each connection is ingested when it is added or changed, and every connection
 is ingested again when the ingestion service starts. With semantic compilation

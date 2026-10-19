@@ -21,6 +21,7 @@ from auto_ontology.connectors.mysql import MySQLDatabase
 from auto_ontology.connectors.postgres import PostgresDatabase
 from auto_ontology.connectors.snowflake import SnowflakeDatabase
 from auto_ontology.connectors.sqlite import SQLiteDatabase
+from auto_ontology.neem_folder import config as neem_config
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +109,34 @@ def _table_filter(connection: dict) -> TableFilter:
         return TableFilter()
 
 
+def _neem_connection_string() -> str | None:
+    """The merged NEEM database's URL, once the NEEM folder has created it.
+
+    Added on top of whatever else is configured, UI connections and
+    ``CONNECTION_STRINGS`` alike: it is not a connection anyone set up, it is
+    where the files dropped in the folder end up.
+    """
+    if not neem_config.is_enabled() or not neem_config.database_exists():
+        return None
+    return neem_config.connection_string()
+
+
+def _neem_missing_from_cache() -> bool:
+    """Whether the cache predates the NEEM database's creation.
+
+    The database appears when the first file is dropped in, long after a
+    process built its cache, and nothing else would tell this process -- the
+    API server in particular -- to look again. Only asks Postgres while the
+    connector is missing, so a populated cache costs nothing.
+    """
+    if _connectors is None or not neem_config.is_enabled():
+        return False
+    name = neem_config.database_name()
+    if any(getattr(c, "database_name", None) == name for c in _connectors):
+        return False
+    return neem_config.database_exists()
+
+
 def invalidate_connectors_cache() -> None:
     """Drop cached connectors so the next :func:`get_connectors` reloads."""
     global _connectors
@@ -186,6 +215,8 @@ def get_connectors() -> list[SQLDatabase]:
     physical databases) when wiring multiple connections.
     """
     global _connectors
+    if _neem_missing_from_cache():
+        invalidate_connectors_cache()
     if _connectors is None:
         from auto_ontology.dal.connections import list_connections
 
@@ -214,6 +245,9 @@ def get_connectors() -> list[SQLDatabase]:
                 (connection_string, None, TableFilter())
                 for connection_string in parse_connection_strings(raw)
             ]
+        neem_connection_string = _neem_connection_string()
+        if neem_connection_string is not None:
+            specs.append((neem_connection_string, None, TableFilter()))
         if not specs:
             logger.warning(
                 "No connections configured. Add CONNECTION_STRINGS to your .env "

@@ -174,6 +174,40 @@ def run_ingest(connector: SQLDatabase) -> None:
     )
 
 
+def ingest_database(database_name: str) -> bool:
+    """Ingest one configured database now, on the calling thread.
+
+    Reloads the connector cache first, so a connection or database that has
+    only just appeared is found, then ingests through the same connectors the
+    scheduler uses (schema filter included). Returns ``False`` when no
+    connector has that name.
+    """
+    invalidate_connectors_cache()
+    key = database_name.strip().casefold()
+    connector = next(
+        (
+            c
+            for c in get_connectors()
+            if str(getattr(c, "database_name", "")).casefold() == key
+        ),
+        None,
+    )
+    if connector is None:
+        logger.error(
+            "Ingest skipped: no loaded connector for database %s", database_name
+        )
+        return False
+    run_ingest(connector)
+    # Unconditional, unlike the ingest pass's own replay: the callers are bare
+    # threads outside both background jobs, so without it nothing would label
+    # the database that was just ingested when compilation is off. With
+    # compilation on it at worst repeats work the following semantic pass does
+    # -- the replay is a diff and writes nothing where the labels are already
+    # right.
+    replay_rules("ingest")
+    return True
+
+
 def trigger_ingest(
     connection: dict[str, Any], *, on_done: Callable[[], None] | None = None
 ) -> None:
@@ -185,34 +219,7 @@ def trigger_ingest(
 
     def _run() -> None:
         try:
-            # The connection was just created, so reload the connector cache to
-            # pick it up, then ingest via the same connectors the scheduler uses
-            # (schema filter included).
-            invalidate_connectors_cache()
-            key = database_name.strip().casefold()
-            connector = next(
-                (
-                    c
-                    for c in get_connectors()
-                    if str(getattr(c, "database_name", "")).casefold() == key
-                ),
-                None,
-            )
-            if connector is None:
-                logger.error(
-                    "Ingest skipped: no loaded connector for database %s",
-                    database_name,
-                )
-                return
-            run_ingest(connector)
-            # Unconditional, unlike the ingest pass's own replay: this path is
-            # a bare thread outside both background jobs, so without it nothing
-            # would label the database that was just ingested when compilation
-            # is off. With compilation on it at worst repeats work the
-            # following semantic pass does -- the replay is a diff and writes
-            # nothing where the labels are already right.
-            replay_rules("ingest")
-            if on_done is not None:
+            if ingest_database(database_name) and on_done is not None:
                 on_done()
         except Exception:
             logger.exception(

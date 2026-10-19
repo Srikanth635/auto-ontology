@@ -203,6 +203,50 @@ class SemanticStatusResponse(_Payload):
     last_failure_at: str | None
 
 
+class NeemFileState(_Payload):
+    """What the NEEM folder watcher knows about one file."""
+
+    name: str
+    #: waiting (still changing), loading, loaded or failed
+    state: str
+    error: str | None = None
+    rows: int | None = None
+    updated_at: float = 0.0
+
+
+class NeemWatchStatusResponse(_Payload):
+    """The ingestion service's NEEM folder watcher (``GET /neem/status``)."""
+
+    enabled: bool
+    directory: str | None = None
+    database: str | None = None
+    #: "ingesting" while the merged database is being re-read into the catalog
+    catalog: str = "idle"
+    files: list[NeemFileState] = []
+
+
+class NeemFileItem(_Payload):
+    """One file in the NEEM folder, with the watcher's view of it."""
+
+    name: str
+    size: int
+    modified_at: str
+    #: waiting, loading, loaded, failed, or unknown when the watcher is unreachable
+    state: str
+    error: str | None = None
+    rows: int | None = None
+
+
+class NeemFilesResponse(_Payload):
+    """The NEEM folder: its files and the database they are merged into."""
+
+    enabled: bool
+    database: str
+    catalog: str
+    max_upload_bytes: int
+    files: list[NeemFileItem]
+
+
 class SemanticRunningResponse(_Payload):
     """The ingestion service's own status endpoint: whether a compilation pass
     is executing right now, when the last one finished successfully, and when

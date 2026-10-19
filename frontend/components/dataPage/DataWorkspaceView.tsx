@@ -418,6 +418,12 @@ export function DataWorkspaceView() {
 				variant={EmptyStateVariant.Borderless}
 				icon={IconName.Database}
 				title="No Databases Found"
+				description="Drop NEEM files on the NEEMs page, or connect a database in Settings."
+				action={{
+					label: 'Add NEEM Files',
+					icon: IconName.Upload,
+					onClick: () => router.push('/neems'),
+				}}
 			/>
 		);
 	}

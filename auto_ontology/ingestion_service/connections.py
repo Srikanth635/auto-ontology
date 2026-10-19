@@ -5,8 +5,8 @@
 """Resolve configured connections for the ingestion-service schedulers.
 
 Connections come from the ``CONNECTION_STRINGS`` env var when set, otherwise
-from the catalog. Both the data and semantic schedulers
-resolve through here so they see the *same* set — in particular env-var
+from the catalog, plus the merged NEEM database (``auto_ontology.neem_folder``).
+Both the data and semantic schedulers resolve through here so they see the *same* set — in particular env-var
 connections, which never reach the catalog.
 """
 
@@ -21,12 +21,21 @@ from auto_ontology.connectors.registry import (
     parse_connection_strings,
 )
 from auto_ontology.dal.connections import list_connections
+from auto_ontology.neem_folder import config as neem_config
 
 logger = logging.getLogger(__name__)
 
 
 def resolve_connection_strings() -> list[str]:
-    """Return the connection strings to process this pass (env var or the catalog)."""
+    """Return the connection strings to process this pass.
+
+    The env var or the catalog, plus the merged NEEM database when the NEEM
+    folder has created it -- the same set ``get_connectors`` loads.
+    """
+    return _configured_connection_strings() + _neem_connection_strings()
+
+
+def _configured_connection_strings() -> list[str]:
     raw = os.environ.get("CONNECTION_STRINGS", "")
     connections = parse_connection_strings(raw)
     if connections:
@@ -38,6 +47,12 @@ def resolve_connection_strings() -> list[str]:
     except Exception:
         logger.exception("connections: failed to load from the store")
         return []
+
+
+def _neem_connection_strings() -> list[str]:
+    if not neem_config.is_enabled() or not neem_config.database_exists():
+        return []
+    return [neem_config.connection_string()]
 
 
 def resolve_database_names() -> list[str]:

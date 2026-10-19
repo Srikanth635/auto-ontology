@@ -103,6 +103,28 @@ export const requests = {
 			.catch(errorHandler) as Promise<ResponseWithError<OutputType>>;
 	},
 
+	/**
+	 * PUT a file's raw bytes (not multipart), reporting upload progress as a
+	 * fraction. For large uploads the backend streams to disk as they arrive.
+	 */
+	putFile: <OutputType>(
+		url: string,
+		file: Blob,
+		onProgress?: (fraction: number) => void,
+		abortController?: AbortController,
+	) => {
+		return api
+			.put<OutputType>(url, file, {
+				headers: { 'Content-Type': 'application/octet-stream' },
+				signal: abortController?.signal,
+				onUploadProgress: (event) => {
+					if (onProgress && event.total) onProgress(event.loaded / event.total);
+				},
+			})
+			.then(responseBody)
+			.catch(errorHandler) as Promise<ResponseWithError<OutputType>>;
+	},
+
 	/** Like `post`, but for endpoints that respond with a file (e.g. a YAML export) rather than JSON. */
 	postBlob: (url: string, data: unknown = {}, abortController?: AbortController) => {
 		return api

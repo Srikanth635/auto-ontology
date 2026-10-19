@@ -30,10 +30,12 @@ export const PROXY_CACHE_CONTROL = 'private, no-store';
  * It comes from `route()`'s local user, and the header set is rebuilt from
  * scratch below — so a client cannot smuggle in an identity of its own
  * choosing by sending the header itself.
+ *
+ * `streamBody` pipes the request body through untouched, for binary uploads.
  */
 export async function proxyToBackend(
 	req: Request,
-	{ userId }: { userId?: string } = {},
+	{ userId, streamBody = false }: { userId?: string; streamBody?: boolean } = {},
 ): Promise<Response> {
 	const incoming = new URL(req.url);
 	const target = `${PYTHON_API_URL}${incoming.pathname}${incoming.search}`;
@@ -44,9 +46,20 @@ export async function proxyToBackend(
 	if (userId) Object.assign(headers, buildInternalIdentityHeaders(userId));
 
 	const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
-	const body = hasBody ? await req.text() : undefined;
+	let init: RequestInit;
+	if (hasBody && streamBody) {
+		// Piped through rather than read: an upload can be hundreds of
+		// megabytes, and `text()` would both buffer all of it and mangle every
+		// byte that is not valid UTF-8. `duplex` is required by fetch for a
+		// streamed request body and is missing from the DOM typings.
+		const contentLength = req.headers.get('content-length');
+		if (contentLength) headers['Content-Length'] = contentLength;
+		init = { method: req.method, headers, body: req.body, duplex: 'half' } as RequestInit;
+	} else {
+		init = { method: req.method, headers, body: hasBody ? await req.text() : undefined };
+	}
 
-	const upstream = await fetch(target, { method: req.method, headers, body });
+	const upstream = await fetch(target, init);
 
 	// Relayed as bytes: decoding as text would replace every byte of a binary
 	// answer, such as the Ossie export's zip, that is not valid UTF-8.

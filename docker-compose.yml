@@ -54,9 +54,13 @@ services:
       # In-network port; POSTGRES_PORT in .env is the host-side mapping.
       POSTGRES_PORT: "5432"
       INGESTION_SERVICE_URL: http://ingestion-service:3002
+      # The NEEM folder: every SQLite NEEM in ./data is merged into the `neem`
+      # database. This service takes uploads into it and queries the result;
+      # ingestion-service watches it. Subfolders are not scanned, so a file meant
+      # for a CONNECTION_STRINGS entry of its own goes in one, e.g.
+      # sqlite:////data/other/x.sqlite.
+      NEEM_DATA_DIR: /data
     volumes:
-      # SQLite / DuckDB files dropped in ./data show up at /data, for a
-      # CONNECTION_STRINGS entry such as sqlite:////data/neem.sqlite.
       - ./data:/data
     depends_on:
       postgres:
@@ -99,6 +103,7 @@ services:
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
+      NEEM_DATA_DIR: /data
     volumes:
       - ./data:/data
     depends_on:
