@@ -232,8 +232,10 @@ limited to 500 MB (`MAX_UPLOAD_MB`). The files in `data/` are git-ignored.
 Deleting a file from the folder by hand keeps what was already read from it (the
 list shows it as "File missing"), so curated descriptions are not lost by an
 accident; use the remove button to drop a database for good. Semantic compilation
-is incremental: only tables without a term yet are described, so a file with the
-same structure as one already compiled adds rows, not model calls.
+is incremental within a database: only tables without a term yet are described, so
+re-reading an updated version of the same file is cheap. Every file is its own
+database, so a new file is compiled in full even when its structure matches an
+earlier one.
 
 Leave `CONNECTION_STRINGS` empty to use data files and the connection form
 together. While it is set, ingestion uses only those entries and ignores
