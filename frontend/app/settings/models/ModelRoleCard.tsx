@@ -33,6 +33,7 @@ const BASE_URL_PLACEHOLDERS: Partial<Record<ModelProviderId, string>> = {
 };
 
 const PROVIDER_HINTS: Partial<Record<ModelProviderId, string>> = {
+	nvidia: 'NVIDIA NIM on build.nvidia.com, or your own NIM by setting the base URL. Use an nvapi- key.',
 	openai_compatible: 'Ollama, vLLM, LM Studio, OpenRouter, Azure or any OpenAI-style server.',
 	rerank_api: 'Any /rerank API in the Cohere style: Cohere, Jina, Voyage, vLLM, Infinity.',
 	none: 'Bridge tables keep their first candidate instead of a reranked one.',

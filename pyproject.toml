@@ -47,6 +47,7 @@ dependencies = [
     # route without it.
     "python-multipart>=0.0.32",
     "langchain-anthropic>=1.0",
+    "langchain-nvidia-ai-endpoints>=1.4.3",
 ]
 
 [project.optional-dependencies]

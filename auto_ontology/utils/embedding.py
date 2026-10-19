@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 import httpx
 from openai import APIStatusError, Omit, OpenAI
 
-from auto_ontology.dal.schema import ModelRole
+from auto_ontology.dal.schema import ModelProvider, ModelRole
 from auto_ontology.utils.model_config import get_model
 from auto_ontology.vdb.records import write_embedded_rows
 
@@ -86,10 +86,23 @@ class EmbedParams:
     api_key: str = field(default="", repr=False)
     #: Width to request from the model, or ``None`` for its native width.
     dimensions: int | None = None
+    #: NVIDIA NIM's asymmetric models need ``input_type`` (see
+    #: :func:`nim_embedding_fields`); other providers must not receive it.
+    nim_fields: bool = False
     embed_modality: str = "text"
     inference_batch_size: int = 32
     nim_http_max_concurrent: int = 32
     request_timeout_s: float = 600.0
+
+
+def nim_embedding_fields(input_type: InputType) -> dict[str, str]:
+    """The extra request fields NVIDIA NIM embedding models take.
+
+    ``input_type`` is the one that matters: a stored row is a ``passage`` and a
+    search string a ``query``. Mixing them up raises no error, it only makes
+    every search worse. ``truncate`` cuts an over-long text instead of failing.
+    """
+    return {"input_type": input_type, "truncate": "END"}
 
 
 def get_embed_params() -> EmbedParams:
@@ -100,6 +113,7 @@ def get_embed_params() -> EmbedParams:
         model_name=resolved.model,
         api_key=resolved.api_key,
         dimensions=resolved.dimensions,
+        nim_fields=resolved.provider == ModelProvider.NVIDIA,
     )
 
 
@@ -173,8 +187,8 @@ def embed_texts(
     """Embed *texts*, returning one vector per text in the same order.
 
     *input_type* says whether the texts are stored rows or a search query. The
-    OpenAI-style API has no field for it, so it is accepted for the callers'
-    benefit and not sent.
+    OpenAI-style API has no field for it, so it is sent only to NVIDIA NIM
+    (``params.nim_fields``), whose embedding models are asymmetric.
 
     Blank texts are not sent and come back as ``None``. Raises the client's
     error when a request fails after its retries -- an
@@ -202,6 +216,11 @@ def embed_texts(
             timeout=timeout or params.request_timeout_s,
             extra_headers=None if params.api_key else _NO_AUTH,
             **({"dimensions": params.dimensions} if params.dimensions else {}),
+            **(
+                {"extra_body": nim_embedding_fields(input_type)}
+                if params.nim_fields
+                else {}
+            ),
         )
         returned = [item.index for item in response.data]
         if sorted(returned) != list(range(len(indices))):

@@ -99,10 +99,16 @@ Choose a provider and model for each job under **Settings → Models**:
 
 | Role | Used for | Providers |
 | --- | --- | --- |
-| Chat | Answering questions, writing SQL, building the semantic layer | OpenAI, Anthropic, OpenAI-compatible |
-| Fast chat | Entity extraction, follow-up questions, charts (defaults to Chat) | OpenAI, Anthropic, OpenAI-compatible |
-| Embeddings | Vector search over the catalog and glossary | OpenAI, OpenAI-compatible |
+| Chat | Answering questions, writing SQL, building the semantic layer | OpenAI, Anthropic, NVIDIA NIM, OpenAI-compatible |
+| Fast chat | Entity extraction, follow-up questions, charts (defaults to Chat) | OpenAI, Anthropic, NVIDIA NIM, OpenAI-compatible |
+| Embeddings | Vector search over the catalog and glossary | OpenAI, NVIDIA NIM, OpenAI-compatible |
 | Reranking | Optional; ordering candidates when linking bridge tables | Off, or any Cohere-style `/rerank` API (Cohere, Jina, Voyage, vLLM) |
+
+"NVIDIA NIM" uses NVIDIA's hosted API (`https://integrate.api.nvidia.com/v1`, an
+`nvapi-` key from build.nvidia.com) or your own NIM when you set a base URL.
+Embeddings sent to it carry NVIDIA's `input_type` (`passage` when storing,
+`query` when searching), as upstream does. Changing the embedding model
+re-embeds everything.
 
 "OpenAI-compatible" covers any server that speaks the OpenAI API: Ollama,
 vLLM, LM Studio, OpenRouter, Azure OpenAI and others. Each card has **Test**

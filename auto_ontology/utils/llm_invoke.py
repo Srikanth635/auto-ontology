@@ -183,6 +183,18 @@ def _is_retryable(e: Exception) -> bool:
     )
 
 
+class _TimeoutSession(_requests.Session):
+    """requests.Session that enforces a default timeout on every request."""
+
+    def __init__(self, timeout: float = LLM_INVOKE_TIMEOUT_S, **kwargs):
+        super().__init__(**kwargs)
+        self._default_timeout = timeout
+
+    def request(self, method, url, **kwargs):
+        kwargs.setdefault("timeout", self._default_timeout)
+        return super().request(method, url, **kwargs)
+
+
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -199,6 +211,8 @@ def build_chat_client(
       only adds its own ``base_url`` (Ollama, vLLM, LM Studio, OpenRouter, Azure
       and other OpenAI-style servers).
     * ``anthropic`` goes through ``ChatAnthropic``.
+    * ``nvidia`` goes through ``ChatNVIDIA`` (NVIDIA's hosted API, or a NIM at
+      ``base_url``), as the upstream project does.
 
     OpenAI's own reasoning models reject any explicit temperature, so none is
     sent to the ``openai`` provider and its server default applies.
@@ -217,6 +231,19 @@ def build_chat_client(
             timeout=LLM_INVOKE_TIMEOUT_S,
             max_retries=0,
         )
+
+    if resolved.provider == ModelProvider.NVIDIA:
+        from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+        nim = ChatNVIDIA(
+            model=model_name,
+            api_key=resolved.api_key,
+            base_url=resolved.endpoint,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        nim._client.get_session_fn = lambda: _TimeoutSession(LLM_INVOKE_TIMEOUT_S)
+        return nim
 
     from langchain_openai import ChatOpenAI
 

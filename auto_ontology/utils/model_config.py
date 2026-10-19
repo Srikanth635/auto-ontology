@@ -53,14 +53,20 @@ ROLE_PROVIDERS: dict[ModelRole, tuple[ModelProvider, ...]] = {
     ModelRole.CHAT: (
         ModelProvider.OPENAI,
         ModelProvider.ANTHROPIC,
+        ModelProvider.NVIDIA,
         ModelProvider.OPENAI_COMPATIBLE,
     ),
     ModelRole.FAST_CHAT: (
         ModelProvider.OPENAI,
         ModelProvider.ANTHROPIC,
+        ModelProvider.NVIDIA,
         ModelProvider.OPENAI_COMPATIBLE,
     ),
-    ModelRole.EMBEDDING: (ModelProvider.OPENAI, ModelProvider.OPENAI_COMPATIBLE),
+    ModelRole.EMBEDDING: (
+        ModelProvider.OPENAI,
+        ModelProvider.NVIDIA,
+        ModelProvider.OPENAI_COMPATIBLE,
+    ),
     ModelRole.RERANK: (ModelProvider.NONE, ModelProvider.RERANK_API),
 }
 
@@ -68,12 +74,13 @@ ROLE_PROVIDERS: dict[ModelRole, tuple[ModelProvider, ...]] = {
 DEFAULT_BASE_URL: dict[ModelProvider, str] = {
     ModelProvider.OPENAI: "https://api.openai.com/v1",
     ModelProvider.ANTHROPIC: "https://api.anthropic.com",
+    ModelProvider.NVIDIA: "https://integrate.api.nvidia.com/v1",
 }
 
 #: Providers that refuse a request without a key. The others may be keyless
 #: (a local Ollama or vLLM, for instance).
 KEY_REQUIRED: frozenset[ModelProvider] = frozenset(
-    {ModelProvider.OPENAI, ModelProvider.ANTHROPIC}
+    {ModelProvider.OPENAI, ModelProvider.ANTHROPIC, ModelProvider.NVIDIA}
 )
 
 
@@ -136,6 +143,8 @@ def _infer_provider(role: ModelRole, endpoint: str) -> ModelProvider:
         return ModelProvider.RERANK_API if endpoint else ModelProvider.NONE
     if "anthropic.com" in endpoint:
         return ModelProvider.ANTHROPIC
+    if "nvidia.com" in endpoint:
+        return ModelProvider.NVIDIA
     if not endpoint or "api.openai.com" in endpoint:
         return ModelProvider.OPENAI
     return ModelProvider.OPENAI_COMPATIBLE

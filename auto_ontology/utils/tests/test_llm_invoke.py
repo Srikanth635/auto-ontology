@@ -20,6 +20,26 @@ class _Model:
         self.model_name = model_name
 
 
+def test_nvidia_builds_a_chatnvidia_client_against_the_given_endpoint() -> None:
+    from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+    from auto_ontology.dal.schema import ModelProvider, ModelRole
+    from auto_ontology.utils.model_config import ResolvedModel
+
+    client = llm_invoke.build_chat_client(
+        ResolvedModel(
+            ModelRole.CHAT,
+            ModelProvider.NVIDIA,
+            "meta/llama-3.1-70b-instruct",
+            api_key="nvapi-test",
+            base_url="http://nim.local:8000/v1",
+        )
+    )
+
+    assert isinstance(client, ChatNVIDIA)
+    assert client.model == "meta/llama-3.1-70b-instruct"
+
+
 def test_claude_uses_function_calling_without_a_tool_choice() -> None:
     """Bedrock behind LiteLLM rejects any explicit tool choice.
 

@@ -121,6 +121,30 @@ def test_openai_without_a_key_is_not_configured() -> None:
     assert not ResolvedModel(ModelRole.CHAT, ModelProvider.OPENAI, "gpt").configured
 
 
+def test_nvidia_uses_the_hosted_endpoint_and_needs_a_key() -> None:
+    nim = ResolvedModel(ModelRole.CHAT, ModelProvider.NVIDIA, "meta/llama-3.1-70b")
+    assert nim.endpoint == "https://integrate.api.nvidia.com/v1"
+    assert not nim.configured
+    assert ResolvedModel(
+        ModelRole.CHAT, ModelProvider.NVIDIA, "m", api_key="nvapi-x"
+    ).configured
+
+
+def test_nvidia_serves_chat_and_embeddings_but_not_rerank() -> None:
+    assert ModelProvider.NVIDIA in model_config.ROLE_PROVIDERS[ModelRole.CHAT]
+    assert ModelProvider.NVIDIA in model_config.ROLE_PROVIDERS[ModelRole.EMBEDDING]
+    assert ModelProvider.NVIDIA not in model_config.ROLE_PROVIDERS[ModelRole.RERANK]
+
+
+def test_an_nvidia_endpoint_infers_the_nvidia_provider() -> None:
+    assert (
+        model_config._infer_provider(
+            ModelRole.CHAT, "https://integrate.api.nvidia.com/v1"
+        )
+        == ModelProvider.NVIDIA
+    )
+
+
 def test_a_compatible_provider_needs_a_base_url() -> None:
     assert not ResolvedModel(
         ModelRole.CHAT, ModelProvider.OPENAI_COMPATIBLE, "llama", api_key="k"

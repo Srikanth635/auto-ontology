@@ -6,7 +6,13 @@
 export type ModelRoleId = 'chat' | 'fast_chat' | 'embedding' | 'rerank';
 
 /** Who serves a role. Which provider fits which role comes from the backend catalog. */
-export type ModelProviderId = 'openai' | 'anthropic' | 'openai_compatible' | 'rerank_api' | 'none';
+export type ModelProviderId =
+	| 'openai'
+	| 'anthropic'
+	| 'nvidia'
+	| 'openai_compatible'
+	| 'rerank_api'
+	| 'none';
 
 /** Where a role's effective value comes from. */
 export type ModelSettingSource = 'settings' | 'environment' | 'chat' | 'unset';

@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from auto_ontology.dal import model_settings as dal
 from auto_ontology.dal.schema import ModelProvider, ModelRole
 from auto_ontology.infra.secrets import SecretsUnavailableError, encrypt_secret
-from auto_ontology.utils.embedding import VECTOR_DIM
+from auto_ontology.utils.embedding import VECTOR_DIM, nim_embedding_fields
 from auto_ontology.utils.model_config import (
     DEFAULT_BASE_URL,
     KEY_REQUIRED,
@@ -40,6 +40,7 @@ ROLE_LABELS: dict[ModelRole, str] = {
 PROVIDER_LABELS: dict[ModelProvider, str] = {
     ModelProvider.OPENAI: "OpenAI",
     ModelProvider.ANTHROPIC: "Anthropic",
+    ModelProvider.NVIDIA: "NVIDIA NIM",
     ModelProvider.OPENAI_COMPATIBLE: "OpenAI-compatible",
     ModelProvider.RERANK_API: "Rerank API",
     ModelProvider.NONE: "Off",
@@ -292,6 +293,11 @@ def _test_embedding(resolved: ResolvedModel) -> dict[str, Any]:
         model=resolved.model,
         input=["neemontology connection test"],
         encoding_format="float",
+        **(
+            {"extra_body": nim_embedding_fields("passage")}
+            if resolved.provider == ModelProvider.NVIDIA
+            else {}
+        ),
         **({"dimensions": resolved.dimensions} if resolved.dimensions else {}),
     )
     width = len(response.data[0].embedding)

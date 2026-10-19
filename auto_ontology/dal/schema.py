@@ -1036,6 +1036,7 @@ class ModelProvider(StrEnum):
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     OPENAI_COMPATIBLE = "openai_compatible"
+    NVIDIA = "nvidia"
     RERANK_API = "rerank_api"
     NONE = "none"
 

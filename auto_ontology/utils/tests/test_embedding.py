@@ -117,6 +117,19 @@ def test_the_request_is_a_plain_openai_embedding_request(
     }
 
 
+@pytest.mark.parametrize("input_type", ["passage", "query"])
+def test_nim_receives_the_input_type_its_asymmetric_models_need(
+    endpoint, input_type: str
+) -> None:
+    seen = endpoint(_ok)
+
+    embed_texts(["orders"], _params(nim_fields=True), input_type)
+
+    body = json.loads(seen[0].content)
+    assert body["input_type"] == input_type
+    assert body["truncate"] == "END"
+
+
 def test_dimensions_are_requested_when_configured(endpoint) -> None:
     seen = endpoint(_ok)
     embed_texts(["orders"], _params(dimensions=2), "passage")
