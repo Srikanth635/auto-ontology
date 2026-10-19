@@ -105,7 +105,9 @@ Choose a provider and model for each job under **Settings → Models**:
 | Reranking | Optional; ordering candidates when linking bridge tables | NVIDIA NIM, any Cohere-style `/rerank` API (Cohere, Jina, Voyage, vLLM), or Off |
 
 Until you save something else, every role starts on NVIDIA NIM with the upstream
-models (`nvidia/nemotron-3-nano-30b-a3b` for chat and fast chat,
+models (`nvidia/nemotron-3-super-120b-a12b` for chat and
+`nvidia/nemotron-3.5-lightning-30b-a3b` for fast chat (upstream's
+`nemotron-3-nano-30b-a3b` was retired by NVIDIA on 2026-09-01),
 `nvidia/nemotron-3-embed-1b` for embeddings,
 `nvidia/llama-nemotron-rerank-vl-1b-v2` for reranking). Only the API key is
 missing; enter it on each card (fast chat follows chat), and reranking switches on

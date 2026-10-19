@@ -38,7 +38,7 @@ def test_nothing_configured_starts_on_nvidia_nim_without_a_key() -> None:
     chat = get_model(ModelRole.CHAT)
     assert chat.source == "unset"
     assert chat.provider == ModelProvider.NVIDIA
-    assert chat.model == "nvidia/nemotron-3-nano-30b-a3b"
+    assert chat.model == "nvidia/nemotron-3-super-120b-a12b"
     assert not chat.configured
     with pytest.raises(ModelNotConfiguredError, match="Settings -> Models"):
         chat.require()

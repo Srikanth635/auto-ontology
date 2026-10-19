@@ -74,11 +74,13 @@ ROLE_PROVIDERS: dict[ModelRole, tuple[ModelProvider, ...]] = {
     ),
 }
 
-#: The NVIDIA NIM model each role starts on until something else is saved: the
-#: upstream project's defaults for ``nvapi-`` keys. Only the API key is missing.
+#: The NVIDIA NIM model each role starts on until something else is saved. The
+#: upstream project's chat default (nemotron-3-nano-30b-a3b) was retired on
+#: 2026-09-01, so chat and fast chat use its live successors; embeddings and
+#: reranking are upstream's. Only the API key is missing.
 NVIDIA_DEFAULT_MODEL: dict[ModelRole, str] = {
-    ModelRole.CHAT: "nvidia/nemotron-3-nano-30b-a3b",
-    ModelRole.FAST_CHAT: "nvidia/nemotron-3-nano-30b-a3b",
+    ModelRole.CHAT: "nvidia/nemotron-3-super-120b-a12b",
+    ModelRole.FAST_CHAT: "nvidia/nemotron-3.5-lightning-30b-a3b",
     ModelRole.EMBEDDING: "nvidia/nemotron-3-embed-1b",
     ModelRole.RERANK: "nvidia/llama-nemotron-rerank-vl-1b-v2",
 }
