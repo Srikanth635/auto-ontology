@@ -54,6 +54,10 @@ services:
       # In-network port; POSTGRES_PORT in .env is the host-side mapping.
       POSTGRES_PORT: "5432"
       INGESTION_SERVICE_URL: http://ingestion-service:3002
+    volumes:
+      # SQLite / DuckDB files dropped in ./data show up at /data, for a
+      # CONNECTION_STRINGS entry such as sqlite:////data/neem.sqlite.
+      - ./data:/data
     depends_on:
       postgres:
         condition: service_started
@@ -95,6 +99,8 @@ services:
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
+    volumes:
+      - ./data:/data
     depends_on:
       postgres:
         condition: service_started

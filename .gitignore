@@ -94,3 +94,6 @@ helm.sh
 /temp.txt
 /vectors_wiki.py
 /vectors_wiki_load.py
+# Your own database files go here; only the folder is tracked.
+/data/*
+!/data/.gitkeep

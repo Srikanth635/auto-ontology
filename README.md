@@ -210,6 +210,21 @@ neemontology resolves the source databases it connects to from two sources:
    connection strings supplied at deploy time in `.env`. This is a fallback: it
    is used only when there are no UI-added connections.
 
+**SQLite and DuckDB files.** The connection form in the UI covers the server
+databases. To use a file, put it in the `data/` folder of this repo (Compose
+mounts that folder at `/data` inside the containers) and list it in `.env`, then
+restart:
+
+```bash
+CONNECTION_STRINGS=sqlite:////data/neem.sqlite
+# several: comma-separated, e.g. sqlite:////data/a.sqlite,sqlite:////data/b.sqlite
+```
+
+The name after the last `/` (without the extension) becomes the database name,
+so give each file a different name. Files in `data/` are git-ignored. A `.sql`
+dump is not a database yet: load it into SQLite (`sqlite3 neem.sqlite < neem.sql`)
+or into PostgreSQL or MySQL first.
+
 Each connection is ingested when it is added or changed, and every connection
 is ingested again when the ingestion service starts. With semantic compilation
 on, a compilation pass follows each ingest. Nothing runs on a timer; use
