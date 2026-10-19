@@ -34,9 +34,11 @@ def _clean(monkeypatch: pytest.MonkeyPatch) -> dict[ModelRole, ResolvedModel]:
     model_config.invalidate_model_cache()
 
 
-def test_nothing_configured_is_unconfigured() -> None:
+def test_nothing_configured_starts_on_nvidia_nim_without_a_key() -> None:
     chat = get_model(ModelRole.CHAT)
     assert chat.source == "unset"
+    assert chat.provider == ModelProvider.NVIDIA
+    assert chat.model == "nvidia/nemotron-3-nano-30b-a3b"
     assert not chat.configured
     with pytest.raises(ModelNotConfiguredError, match="Settings -> Models"):
         chat.require()
@@ -103,7 +105,9 @@ def test_rerank_ignores_the_shared_chat_defaults(
     monkeypatch.setenv("DEFAULT_MODELS_ENDPOINT", "https://api.openai.com/v1")
     monkeypatch.setenv("DEFAULT_MODELS_MODEL", "gpt-main")
     rerank = get_model(ModelRole.RERANK)
-    assert rerank.provider == ModelProvider.NONE
+    # The chat defaults never reach reranking: it keeps its own NVIDIA default.
+    assert rerank.provider == ModelProvider.NVIDIA
+    assert rerank.model == "nvidia/llama-nemotron-rerank-vl-1b-v2"
     assert not rerank.configured
 
 
@@ -130,10 +134,22 @@ def test_nvidia_uses_the_hosted_endpoint_and_needs_a_key() -> None:
     ).configured
 
 
-def test_nvidia_serves_chat_and_embeddings_but_not_rerank() -> None:
-    assert ModelProvider.NVIDIA in model_config.ROLE_PROVIDERS[ModelRole.CHAT]
-    assert ModelProvider.NVIDIA in model_config.ROLE_PROVIDERS[ModelRole.EMBEDDING]
-    assert ModelProvider.NVIDIA not in model_config.ROLE_PROVIDERS[ModelRole.RERANK]
+def test_every_role_starts_on_the_upstream_nvidia_model() -> None:
+    models = {role: get_model(role) for role in ModelRole}
+    assert all(m.provider == ModelProvider.NVIDIA for m in models.values())
+    assert models[ModelRole.EMBEDDING].model == "nvidia/nemotron-3-embed-1b"
+    rerank = models[ModelRole.RERANK]
+    assert rerank.model == "nvidia/llama-nemotron-rerank-vl-1b-v2"
+    assert rerank.endpoint == (
+        "https://ai.api.nvidia.com/v1/retrieval/nvidia/"
+        "llama-nemotron-rerank-vl-1b-v2/reranking"
+    )
+    assert not any(m.configured for m in models.values())
+
+
+def test_nvidia_serves_every_role() -> None:
+    for role in ModelRole:
+        assert ModelProvider.NVIDIA in model_config.ROLE_PROVIDERS[role]
 
 
 def test_an_nvidia_endpoint_infers_the_nvidia_provider() -> None:

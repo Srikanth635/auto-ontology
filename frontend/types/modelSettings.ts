@@ -38,6 +38,8 @@ export type ModelProviderInfo = {
 export type ModelRoleInfo = {
 	label: string;
 	providers: ModelProviderId[];
+	/** The NVIDIA NIM model this role starts on. */
+	nvidia_default_model: string;
 };
 
 export type ReembedStatus = {

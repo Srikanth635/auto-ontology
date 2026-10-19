@@ -19,6 +19,7 @@ from auto_ontology.utils.embedding import VECTOR_DIM, nim_embedding_fields
 from auto_ontology.utils.model_config import (
     DEFAULT_BASE_URL,
     KEY_REQUIRED,
+    NVIDIA_DEFAULT_MODEL,
     ROLE_PROVIDERS,
     ResolvedModel,
     get_model,
@@ -88,6 +89,7 @@ def catalog() -> dict[str, Any]:
             role.value: {
                 "label": ROLE_LABELS[role],
                 "providers": [p.value for p in ROLE_PROVIDERS[role]],
+                "nvidia_default_model": NVIDIA_DEFAULT_MODEL[role],
             }
             for role in ModelRole
         },
@@ -336,7 +338,9 @@ def list_models(role_name: str, body: ModelSettingBody) -> dict[str, Any]:
     role = _parse_role(role_name)
     # Listing needs no model yet, so validate with a placeholder.
     resolved = _resolve_body(role, body.model_copy(update={"model": body.model or "-"}))
-    if resolved.provider in (ModelProvider.NONE, ModelProvider.RERANK_API):
+    if resolved.provider in (ModelProvider.NONE, ModelProvider.RERANK_API) or (
+        role == ModelRole.RERANK
+    ):
         return {"models": []}
 
     if resolved.provider == ModelProvider.ANTHROPIC:

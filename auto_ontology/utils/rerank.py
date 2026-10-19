@@ -4,13 +4,16 @@
 
 """Rerank candidate hits against a query with the configured rerank API.
 
-Reranking is optional (Settings -> Models -> Reranking). It speaks the
-``/rerank`` request shared by Cohere, Jina, Voyage, vLLM and Infinity::
+Reranking is optional (Settings -> Models -> Reranking). Two request schemas
+are in use, picked by the URL:
 
-    {"model": str, "query": str, "documents": [str], "top_n": int}
-
-scored by ``results[].relevance_score``. A base URL that does not already end
-in ``/rerank`` gets it appended.
+* ``.../rerank`` (Cohere, Jina, Voyage, vLLM, Infinity) --
+  ``{"model", "query": str, "documents": [str], "top_n"}``, scored by
+  ``results[].relevance_score``. A base URL that does not already end in
+  ``/rerank`` gets it appended for the Rerank API provider.
+* ``.../reranking`` or ``.../ranking`` (NVIDIA NIM) --
+  ``{"model", "query": {"text"}, "passages": [{"text"}], "truncate"}``, scored
+  by ``rankings[].logit``.
 """
 
 from __future__ import annotations
@@ -39,19 +42,30 @@ def get_rerank_kwargs() -> dict[str, str] | None:
 
 def _ranking_url(endpoint: str) -> str:
     url = endpoint.rstrip("/")
-    return url if url.endswith("/rerank") else f"{url}/rerank"
+    if url.endswith(("/reranking", "/ranking", "/rerank")):
+        return url
+    return f"{url}/rerank"
 
 
 def _scores(
     query: str, documents: list[str], *, url: str, model_name: str, api_key: str
 ) -> list[float]:
     """One score per document, higher is better; ``-inf`` for any not returned."""
-    payload: dict[str, Any] = {
-        "model": model_name,
-        "query": query,
-        "documents": documents,
-        "top_n": len(documents),
-    }
+    v1 = url.endswith("/rerank")
+    if v1:
+        payload: dict[str, Any] = {
+            "model": model_name,
+            "query": query,
+            "documents": documents,
+            "top_n": len(documents),
+        }
+    else:
+        payload = {
+            "model": model_name,
+            "query": {"text": query},
+            "passages": [{"text": d} for d in documents],
+            "truncate": "END",
+        }
     headers = {"accept": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
@@ -60,11 +74,14 @@ def _scores(
     response.raise_for_status()
     data = response.json()
 
-    items = data.get("results") if isinstance(data, dict) else None
+    items = (
+        data.get("results" if v1 else "rankings") if isinstance(data, dict) else None
+    )
+    score_key = "relevance_score" if v1 else "logit"
     scores = [float("-inf")] * len(documents)
     for item in items if isinstance(items, list) else []:
         try:
-            index, score = int(item["index"]), float(item["relevance_score"])
+            index, score = int(item["index"]), float(item[score_key])
         except (KeyError, TypeError, ValueError):
             continue
         if 0 <= index < len(scores):

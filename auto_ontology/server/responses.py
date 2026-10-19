@@ -298,6 +298,8 @@ class ModelProviderInfo(_Payload):
 class ModelRoleInfo(_Payload):
     label: str
     providers: list[str]
+    #: The NVIDIA NIM model this role starts on.
+    nvidia_default_model: str
 
 
 class ModelSettingsResponse(_Payload):

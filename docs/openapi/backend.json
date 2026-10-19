@@ -2528,6 +2528,10 @@
             "title": "Label",
             "type": "string"
           },
+          "nvidia_default_model": {
+            "title": "Nvidia Default Model",
+            "type": "string"
+          },
           "providers": {
             "items": {
               "type": "string"
@@ -2538,7 +2542,8 @@
         },
         "required": [
           "label",
-          "providers"
+          "providers",
+          "nvidia_default_model"
         ],
         "title": "ModelRoleInfo",
         "type": "object"

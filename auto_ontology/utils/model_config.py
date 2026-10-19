@@ -67,8 +67,24 @@ ROLE_PROVIDERS: dict[ModelRole, tuple[ModelProvider, ...]] = {
         ModelProvider.NVIDIA,
         ModelProvider.OPENAI_COMPATIBLE,
     ),
-    ModelRole.RERANK: (ModelProvider.NONE, ModelProvider.RERANK_API),
+    ModelRole.RERANK: (
+        ModelProvider.NVIDIA,
+        ModelProvider.RERANK_API,
+        ModelProvider.NONE,
+    ),
 }
+
+#: The NVIDIA NIM model each role starts on until something else is saved: the
+#: upstream project's defaults for ``nvapi-`` keys. Only the API key is missing.
+NVIDIA_DEFAULT_MODEL: dict[ModelRole, str] = {
+    ModelRole.CHAT: "nvidia/nemotron-3-nano-30b-a3b",
+    ModelRole.FAST_CHAT: "nvidia/nemotron-3-nano-30b-a3b",
+    ModelRole.EMBEDDING: "nvidia/nemotron-3-embed-1b",
+    ModelRole.RERANK: "nvidia/llama-nemotron-rerank-vl-1b-v2",
+}
+
+#: NVIDIA serves reranking from its own host, one path per model.
+NVIDIA_RERANK_BASE_URL = "https://ai.api.nvidia.com/v1/retrieval"
 
 #: Endpoint used when a setting leaves ``base_url`` empty.
 DEFAULT_BASE_URL: dict[ModelProvider, str] = {
@@ -104,7 +120,13 @@ class ResolvedModel:
     @property
     def endpoint(self) -> str:
         """``base_url``, or the provider's default when it is empty."""
-        return self.base_url or DEFAULT_BASE_URL.get(self.provider, "")
+        if self.base_url:
+            return self.base_url
+        if self.provider == ModelProvider.NVIDIA and self.role == ModelRole.RERANK:
+            if not self.model:
+                return ""
+            return f"{NVIDIA_RERANK_BASE_URL}/{self.model}/reranking"
+        return DEFAULT_BASE_URL.get(self.provider, "")
 
     @property
     def configured(self) -> bool:
@@ -243,12 +265,12 @@ def _resolve_uncached(role: ModelRole) -> ResolvedModel:
             api_key=chat.api_key,
             source="chat" if chat.configured else "unset",
         )
+    # Nothing saved and nothing in the environment: start on NVIDIA NIM with the
+    # upstream models. The role stays unconfigured until a key is entered.
     return ResolvedModel(
         role=role,
-        provider=ModelProvider.NONE
-        if role == ModelRole.RERANK
-        else ModelProvider.OPENAI,
-        model="",
+        provider=ModelProvider.NVIDIA,
+        model=NVIDIA_DEFAULT_MODEL[role],
     )
 
 

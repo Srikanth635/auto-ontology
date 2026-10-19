@@ -139,7 +139,7 @@ export const ModelRoleCard = ({
 		setTest(null);
 		setModels([]);
 		if (next !== setting.provider) {
-			setModel('');
+			setModel(next === 'nvidia' ? roleInfo.nvidia_default_model : '');
 			setBaseUrl('');
 		} else {
 			setModel(usingChat ? '' : setting.model);
@@ -325,6 +325,9 @@ export const ModelRoleCard = ({
 							value={baseUrl}
 							onChange={(event) => setBaseUrl(event.target.value)}
 							placeholder={
+								(realProvider === 'nvidia' && setting.role === 'rerank'
+									? 'https://ai.api.nvidia.com/v1/retrieval/<model>/reranking'
+									: undefined) ??
 								BASE_URL_PLACEHOLDERS[realProvider] ??
 								providerInfo?.default_base_url ??
 								''

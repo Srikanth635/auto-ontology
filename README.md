@@ -102,7 +102,14 @@ Choose a provider and model for each job under **Settings → Models**:
 | Chat | Answering questions, writing SQL, building the semantic layer | OpenAI, Anthropic, NVIDIA NIM, OpenAI-compatible |
 | Fast chat | Entity extraction, follow-up questions, charts (defaults to Chat) | OpenAI, Anthropic, NVIDIA NIM, OpenAI-compatible |
 | Embeddings | Vector search over the catalog and glossary | OpenAI, NVIDIA NIM, OpenAI-compatible |
-| Reranking | Optional; ordering candidates when linking bridge tables | Off, or any Cohere-style `/rerank` API (Cohere, Jina, Voyage, vLLM) |
+| Reranking | Optional; ordering candidates when linking bridge tables | NVIDIA NIM, any Cohere-style `/rerank` API (Cohere, Jina, Voyage, vLLM), or Off |
+
+Until you save something else, every role starts on NVIDIA NIM with the upstream
+models (`nvidia/nemotron-3-nano-30b-a3b` for chat and fast chat,
+`nvidia/nemotron-3-embed-1b` for embeddings,
+`nvidia/llama-nemotron-rerank-vl-1b-v2` for reranking). Only the API key is
+missing; enter it on each card (fast chat follows chat), and reranking switches on
+with it.
 
 "NVIDIA NIM" uses NVIDIA's hosted API (`https://integrate.api.nvidia.com/v1`, an
 `nvapi-` key from build.nvidia.com) or your own NIM when you set a base URL.

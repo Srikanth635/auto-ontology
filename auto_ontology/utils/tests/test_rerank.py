@@ -121,3 +121,30 @@ def test_no_hits_makes_no_request(server: Server) -> None:
         rerank_hits("q", [], rerank_invoke_url="http://x/rerank", model_name="m") == []
     )
     assert seen == []
+
+
+def test_the_nim_schema(server: Server) -> None:
+    seen = server(
+        {"rankings": [{"index": 1, "logit": 4.5}, {"index": 0, "logit": -1.0}]}
+    )
+
+    ranked = rerank_hits(
+        "fruit",
+        _HITS[:2],
+        rerank_invoke_url=(
+            "https://ai.api.nvidia.com/v1/retrieval/nvidia/m-rerank/reranking"
+        ),
+        model_name="nvidia/m-rerank",
+        api_key="nvapi-x",
+    )
+
+    [request] = seen
+    assert str(request.url).endswith("/nvidia/m-rerank/reranking")
+    assert request.headers["authorization"] == "Bearer nvapi-x"
+    assert json.loads(request.content) == {
+        "model": "nvidia/m-rerank",
+        "query": {"text": "fruit"},
+        "passages": [{"text": "apples"}, {"text": "bananas"}],
+        "truncate": "END",
+    }
+    assert [h["id"] for h in ranked] == ["b", "a"]
