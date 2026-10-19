@@ -353,7 +353,12 @@ def create_question_intent_prompt(
 - information: asks about catalog or semantic metadata, including what a dataset,
   table, or column means, contains, or connects to, and how an existing measure is
   defined or calculated. "How is revenue calculated/defined?" is information because
-  it asks for the stored definition rather than requesting a result.
+  it asks for the stored definition rather than requesting a result. A question
+  that asks which records or values are in the data is not information, even when
+  it starts with "what" or "list": "What actions were performed?", "What are the
+  parameters of the navigate action?" and "List the customers in Berlin" read rows,
+  so they are calculation. Only a question about the data model itself ("What does
+  the parameters column mean?", "Which tables describe actions?") is information.
 - prediction: asks to predict, forecast, estimate, project, or assess the likelihood
   of a future or currently unknown outcome. A query about existing historical rows
   is not prediction merely because it contains a date.
