@@ -27,17 +27,37 @@ case "${1:-}" in
 	;;
 esac
 
-# Every service reads .env (env_file in docker-compose.yml), and Compose fails
-# on a missing env_file with a message that doesn't say what to do.
+# Every service reads .env (env_file in docker-compose.yml). First run: create it
+# from the template, with a freshly generated AUTH_SECRET instead of the
+# placeholder, so there is nothing to fill in by hand to get started.
+generate_secret() {
+	if command -v openssl >/dev/null 2>&1; then
+		openssl rand -hex 32
+	else
+		head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'
+	fi
+}
+
+set_auth_secret() {
+	local secret tmp
+	secret="$(generate_secret)"
+	tmp="$(mktemp)"
+	grep -Ev '^AUTH_SECRET=' .env >"$tmp" || true
+	echo "AUTH_SECRET=$secret" >>"$tmp"
+	cat "$tmp" >.env
+	rm -f "$tmp"
+}
+
 if [[ ! -f .env ]]; then
-	echo "No .env found. Create one from the template and fill it in first:" >&2
-	echo "  cp .env.example .env" >&2
-	exit 1
-fi
-if ! grep -Eq '^AUTH_SECRET=.+' .env; then
-	echo "AUTH_SECRET is not set in .env. It encrypts the model API keys you save" >&2
-	echo "under Settings -> Models, so the backend needs it." >&2
-	exit 1
+	cp .env.example .env
+	set_auth_secret
+	echo "Created .env from .env.example with a generated AUTH_SECRET."
+	echo "Review it (Postgres password, CONNECTION_STRINGS) if you need to."
+elif ! grep -Eq '^AUTH_SECRET=.+' .env; then
+	# Missing or empty only. A value you already set is never replaced: it
+	# encrypts the API keys saved in the app, and changing it loses them.
+	set_auth_secret
+	echo "AUTH_SECRET was empty in .env; generated one."
 fi
 
 INFRA_SERVICES="postgres pgadmin ingestion-service"

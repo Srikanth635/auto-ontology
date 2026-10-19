@@ -143,9 +143,11 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    cd neemontology
    ```
 
-2. Create your environment file (.env) from the template and fill in the values
-   (Postgres credentials, `AUTH_SECRET`, `CONNECTION_STRINGS`, etc.).
-   See [`.env.example`](./.env.example) for the full list of variables:
+2. Create your environment file (.env). The start script in step 3 does this for
+   you on first run: it copies the template and generates a random
+   `AUTH_SECRET`. To set the Postgres credentials, `CONNECTION_STRINGS` and the
+   rest first, create it yourself and edit it. See
+   [`.env.example`](./.env.example) for the full list of variables:
 
    ```bash
    cp .env.example .env
@@ -154,7 +156,9 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
 
    Note:
    - `AUTH_SECRET` is **required**: it encrypts the API keys you save under
-     Settings → Models. Changing it later means entering those keys again.
+     Settings → Models. If it is missing or empty, the start script generates
+     one; a value you set is never replaced. Changing it later means entering
+     those keys again.
    - `POSTGRES_PORT` only changes the **host-side** port mapping (set it if
      5432 is already taken on your machine); containers always reach Postgres
      on the internal network port.
@@ -165,7 +169,7 @@ each falling back to `DEFAULT_MODELS_*`). See [`.env.example`](./.env.example).
    ./dev_tools/setup_env.sh
    ```
 
-   The script checks that `.env` exists and sets `AUTH_SECRET`, then runs
+   The script creates `.env` if it is missing and fills in `AUTH_SECRET` if it is empty, then runs
    `docker compose up -d --build`. It also stops and starts the stack for you:
 
    | Command | What it does |

@@ -84,7 +84,7 @@ Brings up the Auto Ontology environment via `docker compose`.
 | `bash ./dev_tools/setup_env.sh --status` | Lists the containers and their state (`docker compose ps -a`). |
 | `bash ./dev_tools/setup_env.sh --logs [service...]` | Follows the logs of the named services, or of all of them. |
 
-The start modes first check that `.env` exists and sets `AUTH_SECRET`.
+The start modes first make sure `.env` exists (copied from `.env.example` if not) and that `AUTH_SECRET` is set (a random one is generated if it is empty). A value you already set is never replaced.
 
 ### Endpoints
 
