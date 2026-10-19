@@ -211,20 +211,33 @@ neemontology resolves the source databases it connects to from two sources:
    takes over: ingestion uses only these, and connections added in the UI are
    ignored. Leave it empty to manage connections in the UI.
 
-**SQLite and DuckDB files.** The connection form in the UI covers the server
-databases. To use a file, put it in the `data/` folder of this repo (Compose
-mounts that folder at `/data` inside the containers) and list it in `.env`, then
-restart. While it is set, connections added in the UI are ignored:
+**Data files (SQLite and DuckDB).** The easiest way to add data is to hand over
+the file itself. Either way, each file becomes its own database, named after the
+file, and is read automatically:
 
-```bash
-CONNECTION_STRINGS=sqlite:////data/neem.sqlite
-# several: comma-separated, e.g. sqlite:////data/a.sqlite,sqlite:////data/b.sqlite
-```
+- **Drop it on the page.** Settings → Connections has a "Data files" area: drag
+  database files onto it, or click to choose them. Each file shows its progress
+  (Waiting, Reading, Ready) and has a remove button, which also removes the
+  database read from it.
+- **Or copy it into the `data/` folder** of this repo. Docker Compose mounts the
+  folder at `/data`, and the ingestion service checks it every few seconds. A new
+  file is read once it has stopped growing, so a copy in progress is safe. A file
+  you replace is read again.
 
-The name after the last `/` (without the extension) becomes the database name,
-so give each file a different name. Files in `data/` are git-ignored. A `.sql`
-dump is not a database yet: load it into SQLite (`sqlite3 neem.sqlite < neem.sql`)
-or into PostgreSQL or MySQL first.
+Supported: `.sqlite`, `.sqlite3`, `.db` and `.duckdb` files, and a SQLite `.sql`
+dump (`sqlite3 x.db .dump`), which is converted to a `.sqlite` next to it first.
+Give every file a different name: the name is the database name. Uploads are
+limited to 500 MB (`MAX_UPLOAD_MB`). The files in `data/` are git-ignored.
+
+Deleting a file from the folder by hand keeps what was already read from it (the
+list shows it as "File missing"), so curated descriptions are not lost by an
+accident; use the remove button to drop a database for good. Semantic compilation
+is incremental: only tables without a term yet are described, so a file with the
+same structure as one already compiled adds rows, not model calls.
+
+Leave `CONNECTION_STRINGS` empty to use data files and the connection form
+together. While it is set, ingestion uses only those entries and ignores
+everything else.
 
 Each connection is ingested when it is added or changed, and every connection
 is ingested again when the ingestion service starts. With semantic compilation

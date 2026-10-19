@@ -16,7 +16,7 @@ import json
 import logging
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from auto_ontology.dal import schema as s
@@ -47,6 +47,33 @@ def list_connections() -> list[dict[str, Any]]:
                 json.loads(stored) if isinstance(stored, str) else stored
             )
     return connections
+
+
+def table_counts_by_database() -> dict[str, int]:
+    """How many tables each catalog database holds, keyed by database name.
+
+    A database with no ingested tables yet is absent rather than zero, which is
+    what tells "registered, still being read" apart from "ready".
+    """
+    return {
+        str(row["name"]): int(row["tables"])
+        for row in store().query_read(
+            select(
+                s.catalog_database.c.name,
+                func.count(s.catalog_table.c.id).label("tables"),
+            )
+            .select_from(
+                s.catalog_database.join(
+                    s.catalog_schema,
+                    s.catalog_schema.c.database_id == s.catalog_database.c.id,
+                ).join(
+                    s.catalog_table,
+                    s.catalog_table.c.schema_id == s.catalog_schema.c.id,
+                )
+            )
+            .group_by(s.catalog_database.c.name)
+        )
+    }
 
 
 def insert_connection(

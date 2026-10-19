@@ -28,6 +28,7 @@ from auto_ontology.server.models import (
     ColumnAttributeExplorationDetails,
     ColumnExplorationDetails,
     CustomAnalysis,
+    DataFile,
     DataExplorationGraph,
     DatabaseSummary,
     GlobalSearchItem,
@@ -73,6 +74,7 @@ __all__ = [
     "ConnectionListResponse",
     "ConnectionResponse",
     "ConnectionTestResponse",
+    "DataFileListResponse",
     "CustomAnalysisPageResponse",
     "CustomAnalysisResponse",
     "DataExplorationGraphResponse",
@@ -410,6 +412,7 @@ ExplorationRelatedNodesResponse = DataResponse[ExplorationRelatedNodes]
 # Connections
 ConnectionResponse = DataResponse[PublicConnection]
 ConnectionListResponse = ListResponse[PublicConnection]
+DataFileListResponse = ListResponse[DataFile]
 
 # Metadata
 EntityCoverageResponse = DataResponse[EntityCoverageResult]

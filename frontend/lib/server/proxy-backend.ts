@@ -33,7 +33,7 @@ export const PROXY_CACHE_CONTROL = 'private, no-store';
  */
 export async function proxyToBackend(
 	req: Request,
-	{ userId }: { userId?: string } = {},
+	{ userId, streamBody }: { userId?: string; streamBody?: boolean } = {},
 ): Promise<Response> {
 	const incoming = new URL(req.url);
 	const target = `${PYTHON_API_URL}${incoming.pathname}${incoming.search}`;
@@ -44,10 +44,27 @@ export async function proxyToBackend(
 	if (userId) Object.assign(headers, buildInternalIdentityHeaders(userId));
 
 	const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
+
+	// A file upload is passed through as the stream it arrives as. Reading it
+	// as text would corrupt a binary file, and holding all of it in memory
+	// first would make a large database cost as much RAM as it has bytes.
+	if (hasBody && streamBody) {
+		const upstream = await fetch(target, {
+			method: req.method,
+			headers,
+			body: req.body,
+			// Required by fetch to send a stream; not yet in the DOM typings.
+			duplex: 'half',
+		} as RequestInit & { duplex: 'half' });
+		return relay(upstream);
+	}
+
 	const body = hasBody ? await req.text() : undefined;
 
-	const upstream = await fetch(target, { method: req.method, headers, body });
+	return relay(await fetch(target, { method: req.method, headers, body }));
+}
 
+async function relay(upstream: Response): Promise<Response> {
 	// Relayed as bytes: decoding as text would replace every byte of a binary
 	// answer, such as the Ossie export's zip, that is not valid UTF-8.
 	const respBody = await upstream.arrayBuffer();
