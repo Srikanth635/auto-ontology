@@ -207,13 +207,14 @@ neemontology resolves the source databases it connects to from two sources:
    stored, **unencrypted**, on the catalog's database row in Postgres.
 
 2. **`CONNECTION_STRINGS` environment variable** — a comma-separated list of
-   connection strings supplied at deploy time in `.env`. This is a fallback: it
-   is used only when there are no UI-added connections.
+   connection strings supplied at deploy time in `.env`. When it is set it
+   takes over: ingestion uses only these, and connections added in the UI are
+   ignored. Leave it empty to manage connections in the UI.
 
 **SQLite and DuckDB files.** The connection form in the UI covers the server
 databases. To use a file, put it in the `data/` folder of this repo (Compose
 mounts that folder at `/data` inside the containers) and list it in `.env`, then
-restart:
+restart. While it is set, connections added in the UI are ignored:
 
 ```bash
 CONNECTION_STRINGS=sqlite:////data/neem.sqlite
