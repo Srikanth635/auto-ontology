@@ -5,7 +5,6 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { BackPanelLayout } from '@/common/BackPanelLayout';
 import { SettingsNav } from '@/components/settings/SettingsNav';
 
 type SettingsPanelLayoutProps = {
@@ -18,12 +17,8 @@ export const SettingsPanelLayout = ({
 	children,
 	connectionsEnvManaged,
 }: SettingsPanelLayoutProps) => (
-	<BackPanelLayout
-		panelAriaLabel="Settings sections"
-		expandAriaLabel="Expand settings menu"
-		collapseAriaLabel="Collapse settings menu"
-		panel={<SettingsNav connectionsEnvManaged={connectionsEnvManaged} />}
-	>
-		{children}
-	</BackPanelLayout>
+	<div className="flex h-full w-full flex-col bg-white dark:bg-slate-950">
+		<SettingsNav connectionsEnvManaged={connectionsEnvManaged} />
+		<div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
+	</div>
 );

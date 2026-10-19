@@ -4,25 +4,22 @@
 
 'use client';
 
-import { Icon, IconName } from '@/common/icons';
 import { Breadcrumbs } from '@/common/Breadcrumbs';
-import { GlobalSearch } from '@/common/GlobalSearch';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 
-export const AppTopBar = ({ version }: { version?: string }) => {
+/**
+ * The strip under the main navigation: where you are, and the current page's
+ * own actions. The page links live in `TopNav`.
+ */
+export const AppTopBar = () => {
 	const { items, rightSlot } = useBreadcrumbs();
 
+	if (items.length === 0 && !rightSlot) return null;
+
 	return (
-		<header className="flex h-[52px] shrink-0 items-center border-b border-slate-200 bg-white px-4 pr-[40px] dark:border-slate-800 dark:bg-slate-950">
-			<Icon name={IconName.AppLogo} className="mr-3 h-5 w-5 shrink-0 text-brand" />
+		<div className="flex h-10 shrink-0 items-center border-b border-slate-200 bg-canvas px-4 dark:border-slate-800">
 			<Breadcrumbs items={items} />
-			<div className="ml-auto flex items-center gap-3">
-				{rightSlot ? <div className="flex items-center gap-2">{rightSlot}</div> : null}
-				<GlobalSearch />
-				{version ? (
-					<span className="text-xs text-secondary dark:text-slate-500">v{version}</span>
-				) : null}
-			</div>
-		</header>
+			{rightSlot ? <div className="ml-auto flex items-center gap-2">{rightSlot}</div> : null}
+		</div>
 	);
 };

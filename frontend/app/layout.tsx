@@ -11,7 +11,7 @@ import {
 	dehydrate,
 	type DehydratedState,
 } from '@tanstack/react-query';
-import { NavRail } from '@/common/NavRail';
+import { TopNav } from '@/common/TopNav';
 import { AppTopBar } from '@/common/AppTopBar';
 import { BreadcrumbProvider } from '@/contexts/BreadcrumbContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
@@ -89,11 +89,9 @@ export default function RootLayout({
 				<QueryProvider>
 					<HydrationBoundary state={prefetchSharedData()}>
 						<BreadcrumbProvider>
-							<AppTopBar version={appVersion} />
-							<div className="flex min-h-0 flex-1">
-								<NavRail />
-								<div className="min-w-0 flex-1">{children}</div>
-							</div>
+							<TopNav version={appVersion} />
+							<AppTopBar />
+							<div className="min-h-0 min-w-0 flex-1">{children}</div>
 						</BreadcrumbProvider>
 					</HydrationBoundary>
 				</QueryProvider>
