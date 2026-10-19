@@ -76,7 +76,17 @@ Rules:
 - If the context lacks what the question needs, set answerable=false and explain."""
 
 
-def _prompt(loaded: LoadedOntology, question: str, context_text: str) -> str:
+_INFERRED_NOTE = """
+The graph also holds the {backend} reasoner's inferences: every individual's
+rdf:type includes all its inherited classes, rdfs:subClassOf is transitively
+closed, and classes the reasoner classified sit under their inferred parents.
+Plain rdf:type and rdfs:subClassOf therefore suffice (paths still work).
+"""
+
+
+def _prompt(
+    loaded: LoadedOntology, question: str, context_text: str, inferred_by: str = ""
+) -> str:
     ontology = loaded.ontology
     prefixes = {**STANDARD_PREFIXES, **{p: ns for p, ns in ontology.prefixes.items()}}
     prefix_lines = "\n".join(
@@ -85,8 +95,9 @@ def _prompt(loaded: LoadedOntology, question: str, context_text: str) -> str:
     return (
         f"Ontology: {ontology.title} <{ontology.ontology_iri}>\n"
         f"Available prefixes (declare the ones you use):\n{prefix_lines}\n\n"
-        f"Relevant part of the ontology:\n{context_text}\n\n"
-        f"Question: {question}"
+        f"Relevant part of the ontology:\n{context_text}\n"
+        + (_INFERRED_NOTE.format(backend=inferred_by) if inferred_by else "")
+        + f"\nQuestion: {question}"
     )
 
 
@@ -96,11 +107,30 @@ def answer_question(
     *,
     max_attempts: int = 3,
     max_elements: int = 40,
+    use_inferences: bool = False,
+    reasoner: str = "auto",
 ) -> dict:
     ontology = loaded.ontology
+    graph = None
+    reasoning_info: dict | None = None
+    if use_inferences:
+        result = loaded.inferred(reasoner)
+        reasoning_info = {"backend": result.backend, "consistent": result.consistent}
+        if result.consistent:
+            graph = result.graph
+        else:
+            reasoning_info["note"] = (
+                "The ontology is inconsistent, so its inferences are meaningless; "
+                "the asserted triples were queried instead."
+            )
     context = retrieve_context(loaded, question, max_elements=max_elements)
     context_text = render_context(ontology, context.iris)
-    base_prompt = _prompt(loaded, question, context_text)
+    base_prompt = _prompt(
+        loaded,
+        question,
+        context_text,
+        inferred_by=reasoning_info["backend"] if graph else "",
+    )
     out: dict = {
         "question": question,
         "answerable": True,
@@ -110,6 +140,7 @@ def answer_question(
         "result": None,
         "attempts": [],
         "context": context.to_dict(ontology),
+        "reasoning": reasoning_info,
     }
 
     feedback = ""
@@ -144,7 +175,7 @@ def answer_question(
             )
             continue
         try:
-            result = run_query(ontology, check)
+            result = run_query(ontology, check, graph)
         except ValueError as exc:
             record["error"] = str(exc)
             feedback = (

@@ -52,14 +52,29 @@ class ContextRequest(BaseModel):
     hops: int = Field(default=1, ge=0, le=3)
 
 
+_REASONER_HELP = "auto (HermiT if Java is present, else OWL RL), owlrl or hermit."
+
+
 class AskRequest(BaseModel):
     question: str = Field(min_length=1)
+    use_inferences: bool = Field(
+        default=False, description="Query the reasoner's inferred graph."
+    )
+    reasoner: str = Field(default="auto", description=_REASONER_HELP)
     max_attempts: int = Field(default=3, ge=1, le=6)
     max_elements: int = Field(default=40, ge=5, le=200)
 
 
 class SparqlRequest(BaseModel):
     query: str = Field(min_length=1)
+    use_inferences: bool = Field(
+        default=False, description="Query the reasoner's inferred graph."
+    )
+    reasoner: str = Field(default="auto", description=_REASONER_HELP)
+
+
+class ReasonRequest(BaseModel):
+    backend: str = Field(default="auto", description=_REASONER_HELP)
 
 
 class PlacementRequest(BaseModel):

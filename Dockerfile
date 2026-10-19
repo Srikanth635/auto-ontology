@@ -70,6 +70,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:${PATH}" \
     PORT=3001
 
+# Java runs HermiT, OntoQuerying's OWL DL reasoner (about 150 MB). Without it
+# the pure-Python OWL RL reasoner is still there: build with
+# `--build-arg INSTALL_JAVA=false` to leave Java out.
+ARG INSTALL_JAVA=true
 # The pinned base image predates later Ubuntu security fixes (libssl3, gpgv,
 # ...), so apply them before installing anything on top.
 RUN apt-get update \
@@ -78,6 +82,7 @@ RUN apt-get update \
         ca-certificates \
         libpq5 \
         tini \
+        $( [ "$INSTALL_JAVA" = "true" ] && echo default-jre-headless ) \
  && rm -rf /var/lib/apt/lists/* \
  && groupadd --system --gid 1000 auto_ontology \
  && useradd  --system --uid 1000 --gid auto_ontology --home /app --shell /usr/sbin/nologin auto_ontology

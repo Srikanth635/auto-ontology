@@ -74,7 +74,7 @@ def test_lifecycle(client: TestClient) -> None:
     validated = client.post("/api/ontologies/kitchen/validate", json={}).json()
     assert validated["conforms"]
 
-    assert client.delete("/api/ontologies/kitchen").status_code == 204
+    assert client.delete("/api/ontologies/kitchen").json() == {"deleted": "kitchen"}
     assert client.get("/api/ontologies/kitchen").status_code == 404
 
 

@@ -50,6 +50,8 @@ dependencies = [
     "rdflib>=7.1",
     "pyshacl>=0.30",
     "rank-bm25>=0.2.2",
+    "owlrl>=7.1",
+    "owlready2>=0.47",
 ]
 
 [project.optional-dependencies]

@@ -117,6 +117,18 @@
             "minLength": 1,
             "title": "Question",
             "type": "string"
+          },
+          "reasoner": {
+            "default": "auto",
+            "description": "auto (HermiT if Java is present, else OWL RL), owlrl or hermit.",
+            "title": "Reasoner",
+            "type": "string"
+          },
+          "use_inferences": {
+            "default": false,
+            "description": "Query the reasoner's inferred graph.",
+            "title": "Use Inferences",
+            "type": "boolean"
           }
         },
         "required": [
@@ -3507,6 +3519,18 @@
         "title": "PublicConnection",
         "type": "object"
       },
+      "ReasonRequest": {
+        "properties": {
+          "backend": {
+            "default": "auto",
+            "description": "auto (HermiT if Java is present, else OWL RL), owlrl or hermit.",
+            "title": "Backend",
+            "type": "string"
+          }
+        },
+        "title": "ReasonRequest",
+        "type": "object"
+      },
       "ReembedStatusResponse": {
         "additionalProperties": true,
         "description": "Whether a re-embed pass is running, and how the last one ended.\n\nA pass rebuilds every vector after the embedding model changes. Timestamps\nare ISO 8601; ``last_error`` is set only when the last pass failed.",
@@ -4005,6 +4029,18 @@
             "minLength": 1,
             "title": "Query",
             "type": "string"
+          },
+          "reasoner": {
+            "default": "auto",
+            "description": "auto (HermiT if Java is present, else OWL RL), owlrl or hermit.",
+            "title": "Reasoner",
+            "type": "string"
+          },
+          "use_inferences": {
+            "default": false,
+            "description": "Query the reasoner's inferred graph.",
+            "title": "Use Inferences",
+            "type": "boolean"
           }
         },
         "required": [
@@ -8064,6 +8100,30 @@
         ]
       }
     },
+    "/api/ontologies/reasoners": {
+      "get": {
+        "description": "Which OWL reasoners can run here, and which one ``auto`` picks.",
+        "operationId": "list_reasoners_api_ontologies_reasoners_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Reasoners Api Ontologies Reasoners Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Reasoners",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
     "/api/ontologies/upload": {
       "post": {
         "description": "Upload an OWL/RDF file (Turtle, RDF/XML, N-Triples, JSON-LD, N3), parse\nand index it. Indexing embeds every element, so large files take a while.",
@@ -8136,7 +8196,16 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Ontology Api Ontologies  Ontology Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
             "description": "Successful Response"
           },
           "422": {
@@ -8849,6 +8918,104 @@
         ]
       }
     },
+    "/api/ontologies/{ontology_id}/reason": {
+      "get": {
+        "description": "The last reasoning result, or ``{\"result\": null}`` if none is kept.",
+        "operationId": "last_reasoning_api_ontologies__ontology_id__reason_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Last Reasoning Api Ontologies  Ontology Id  Reason Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Last Reasoning",
+        "tags": [
+          "onto-query"
+        ]
+      },
+      "post": {
+        "description": "Run an OWL reasoner: consistency, unsatisfiable classes, inferences.\n\nThe result is kept for queries with ``use_inferences`` until the ontology\nchanges. Its ``turtle`` holds the inferences, ready for ``/additions``.",
+        "operationId": "run_reasoner_api_ontologies__ontology_id__reason_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ontology_id",
+            "required": true,
+            "schema": {
+              "title": "Ontology Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Reasoner Api Ontologies  Ontology Id  Reason Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Reasoner",
+        "tags": [
+          "onto-query"
+        ]
+      }
+    },
     "/api/ontologies/{ontology_id}/reindex": {
       "post": {
         "description": "Rebuild the index, e.g. after changing the embedding model.",
@@ -9051,7 +9218,7 @@
     },
     "/api/ontologies/{ontology_id}/sparql": {
       "post": {
-        "description": "Check and run a read-only SPARQL query against the ontology graph.",
+        "description": "Check and run a read-only SPARQL query against the ontology graph,\nor with ``use_inferences`` against the reasoner's inferred graph.",
         "operationId": "run_sparql_api_ontologies__ontology_id__sparql_post",
         "parameters": [
           {

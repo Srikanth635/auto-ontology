@@ -23,7 +23,7 @@ import concurrent.futures
 import re
 from dataclasses import dataclass, field
 
-from rdflib import BNode, Literal, URIRef, Variable
+from rdflib import BNode, Graph, Literal, URIRef, Variable
 from rdflib.namespace import RDF
 from rdflib.plugins.sparql import prepareQuery
 from rdflib.plugins.sparql.parserutils import CompValue
@@ -214,15 +214,20 @@ def _term(ontology: Ontology, value: object) -> dict | None:
     return {"type": "literal", "value": str(value)}
 
 
-def run_query(ontology: Ontology, check: Check) -> dict:
-    """Execute a passing :class:`Check`; raises ``ValueError`` on failure."""
+def run_query(ontology: Ontology, check: Check, graph: Graph | None = None) -> dict:
+    """Execute a passing :class:`Check`; raises ``ValueError`` on failure.
+
+    *graph* replaces the asserted graph, e.g. with a reasoner's inferred one.
+    """
     if not check.ok or check.prepared is None:
         raise ValueError(
             "The query did not pass its checks: " + "; ".join(check.errors)
         )
 
+    target = graph if graph is not None else ontology.graph
+
     def _execute():  # noqa: ANN202
-        result = ontology.graph.query(check.prepared)
+        result = target.query(check.prepared)
         if result.type == "ASK":
             return {"type": "ask", "boolean": bool(result.askAnswer)}
         if result.type in ("CONSTRUCT", "DESCRIBE"):

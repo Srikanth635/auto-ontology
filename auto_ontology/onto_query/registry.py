@@ -26,6 +26,7 @@ import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path, PurePath
+from typing import Any
 
 from auto_ontology.onto_query import config
 from auto_ontology.onto_query.index import IndexStatus, OntologyIndex
@@ -42,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 _ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,62}$")
 #: Route segments under /api/ontologies that an id must not shadow.
-_RESERVED_IDS = frozenset({"upload", "align"})
+_RESERVED_IDS = frozenset({"upload", "align", "reasoners"})
 
 EXPORT_FORMATS = {
     "turtle": ("text/turtle", "ttl"),
@@ -61,6 +62,8 @@ class LoadedOntology:
     ontology: Ontology
     index: OntologyIndex
     manifest: dict
+    #: The last :class:`~.reasoning.ReasoningResult`, dropped on any change.
+    reasoning: Any = None
 
     @property
     def id(self) -> str:
@@ -72,7 +75,28 @@ class LoadedOntology:
             "ontology_iri": self.ontology.ontology_iri,
             "counts": self.ontology.stats(),
             "index": self.index.status.to_dict(),
+            "reasoning": None
+            if self.reasoning is None
+            else {
+                "backend": self.reasoning.backend,
+                "consistent": self.reasoning.consistent,
+                "unsatisfiable": len(self.reasoning.unsatisfiable),
+                "inferred_triples": self.reasoning.inferred_triples,
+            },
         }
+
+    def inferred(self, backend: str = "auto"):  # noqa: ANN201 -- ReasoningResult
+        """The reasoning result for *backend*, running it unless it is the one kept.
+
+        A kept result from another backend is replaced: OWL RL and HermiT
+        infer different things, and a query should get the one asked for.
+        """
+        from auto_ontology.onto_query.reasoning import reason, resolve_backend
+
+        wanted = resolve_backend(backend)
+        if self.reasoning is None or self.reasoning.backend != wanted:
+            self.reasoning = reason(self.ontology, wanted)
+        return self.reasoning
 
 
 def _slug(text: str) -> str:

@@ -19,6 +19,11 @@ from auto_ontology.onto_query import candidates as candidates_mod
 from auto_ontology.onto_query import grow, qa, shapes
 from auto_ontology.onto_query.ai import OntoQueryModelError
 from auto_ontology.onto_query.loader import OntologyParseError
+from auto_ontology.onto_query.reasoning import (
+    ReasonerUnavailableError,
+    availability,
+    reason,
+)
 from auto_ontology.onto_query.registry import (
     EXPORT_FORMATS,
     LoadedOntology,
@@ -39,6 +44,7 @@ from auto_ontology.server.onto_query.schemas import (
     IssuesRequest,
     OntologyText,
     PlacementRequest,
+    ReasonRequest,
     RulesRequest,
     SearchRequest,
     SparqlRequest,
@@ -60,6 +66,8 @@ def _errors() -> Iterator[None]:
     except OntologyParseError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except OntoQueryModelError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ReasonerUnavailableError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except KeyError as exc:
         raise HTTPException(
@@ -88,6 +96,12 @@ def _kinds(values: list[str] | None):  # noqa: ANN202
 def list_ontologies() -> dict:
     """Every stored ontology, with counts and index status once loaded."""
     return {"ontologies": get_registry().list(), "reranker": backend_name()}
+
+
+@router.get("/reasoners")
+def list_reasoners() -> dict:
+    """Which OWL reasoners can run here, and which one ``auto`` picks."""
+    return availability()
 
 
 @router.post("/upload", status_code=201)
@@ -139,12 +153,14 @@ def get_ontology(ontology_id: str) -> dict:
     return {**loaded.summary(), "prefixes": loaded.ontology.prefixes}
 
 
-@router.delete("/{ontology_id}", status_code=204)
-def delete_ontology(ontology_id: str) -> Response:
+@router.delete("/{ontology_id}")
+def delete_ontology(ontology_id: str) -> dict:
     """Delete an ontology, its stored files and its vectors."""
+    # 200 with a body rather than 204: the Next.js gateway relays every answer
+    # with a body, which a 204 must not have.
     with _errors():
         get_registry().delete(ontology_id)
-    return Response(status_code=204)
+    return {"deleted": ontology_id}
 
 
 @router.post("/{ontology_id}/reindex")
@@ -206,10 +222,25 @@ def get_element(ontology_id: str, iri: str = Query(...)) -> dict:
     element = loaded.ontology.get(iri)
     if element is None:
         raise HTTPException(status_code=404, detail=f"No element {iri!r}.")
+    inferred = None
+    if loaded.reasoning is not None and loaded.reasoning.consistent:
+        r = loaded.reasoning
+        inferred = {
+            "backend": r.backend,
+            "superclasses": [
+                {"iri": i, "name": loaded.ontology.name(i)}
+                for i in r.superclasses_of(iri)
+            ],
+            "types": [
+                {"iri": i, "name": loaded.ontology.name(i)} for i in r.types_of(iri)
+            ],
+            "unsatisfiable": iri in r.unsatisfiable,
+        }
     return {
         **element.to_dict(loaded.ontology),
         "path": loaded.ontology.parent_path(iri),
         "document": loaded.index.document(iri),
+        "inferred": inferred,
     }
 
 
@@ -268,19 +299,53 @@ def ask(ontology_id: str, body: AskRequest) -> dict:
             body.question,
             max_attempts=body.max_attempts,
             max_elements=body.max_elements,
+            use_inferences=body.use_inferences,
+            reasoner=body.reasoner,
         )
 
 
 @router.post("/{ontology_id}/sparql")
 def run_sparql(ontology_id: str, body: SparqlRequest) -> dict:
-    """Check and run a read-only SPARQL query against the ontology graph."""
+    """Check and run a read-only SPARQL query against the ontology graph,
+    or with ``use_inferences`` against the reasoner's inferred graph."""
     loaded = _get(ontology_id)
     check = check_query(loaded.ontology, body.query)
     if not check.ok:
-        return {"check": check.to_dict(), "result": None}
+        return {"check": check.to_dict(), "result": None, "reasoning": None}
     with _errors():
-        result = run_query(loaded.ontology, check)
-    return {"check": check.to_dict(), "result": result}
+        graph = None
+        reasoning_info = None
+        if body.use_inferences:
+            r = loaded.inferred(body.reasoner)
+            reasoning_info = {"backend": r.backend, "consistent": r.consistent}
+            graph = r.graph if r.consistent else None
+        result = run_query(loaded.ontology, check, graph)
+    return {"check": check.to_dict(), "result": result, "reasoning": reasoning_info}
+
+
+# -- reasoning ----------------------------------------------------------------
+
+
+@router.post("/{ontology_id}/reason")
+def run_reasoner(ontology_id: str, body: ReasonRequest) -> dict:
+    """Run an OWL reasoner: consistency, unsatisfiable classes, inferences.
+
+    The result is kept for queries with ``use_inferences`` until the ontology
+    changes. Its ``turtle`` holds the inferences, ready for ``/additions``.
+    """
+    loaded = _get(ontology_id)
+    with _errors():
+        loaded.reasoning = reason(loaded.ontology, body.backend)
+    return loaded.reasoning.to_dict(loaded.ontology)
+
+
+@router.get("/{ontology_id}/reason")
+def last_reasoning(ontology_id: str) -> dict:
+    """The last reasoning result, or ``{"result": null}`` if none is kept."""
+    loaded = _get(ontology_id)
+    if loaded.reasoning is None:
+        return {"result": None}
+    return {"result": loaded.reasoning.to_dict(loaded.ontology)}
 
 
 # -- growing ------------------------------------------------------------------

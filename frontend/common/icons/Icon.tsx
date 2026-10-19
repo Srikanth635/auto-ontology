@@ -42,6 +42,7 @@ import CodeBracketSvg from './svg/code-bracket.svg';
 import LightningSvg from './svg/lightning.svg';
 import DiscoverySvg from './svg/discovery.svg';
 import FilterSvg from './svg/filter.svg';
+import OntologySvg from './svg/ontology.svg';
 
 export enum IconName {
 	Close = 'close',
@@ -82,6 +83,7 @@ export enum IconName {
 	Lightning = 'lightning',
 	Discovery = 'discovery',
 	Filter = 'filter',
+	Ontology = 'ontology',
 }
 
 const icons: Record<IconName, FC<SVGProps<SVGSVGElement>>> = {
@@ -123,6 +125,7 @@ const icons: Record<IconName, FC<SVGProps<SVGSVGElement>>> = {
 	[IconName.Lightning]: LightningSvg,
 	[IconName.Discovery]: DiscoverySvg,
 	[IconName.Filter]: FilterSvg,
+	[IconName.Ontology]: OntologySvg,
 };
 
 export type IconProps = SVGProps<SVGSVGElement> & {

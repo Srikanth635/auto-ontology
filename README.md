@@ -268,9 +268,22 @@ opened in the UI at `/chat?focus=<conversation_id>`.
 The SQL path builds a semantic layer from a database. OntoQuerying starts from
 an ontology someone has already written (OWL/RDF: Turtle, RDF/XML, N-Triples,
 JSON-LD, N3) and offers the same retrieval-plus-LLM approach over it. The code
-is in `auto_ontology/onto_query/`. The routes are on FastAPI under
-`/api/ontologies` and are called directly at `http://127.0.0.1:3001`, with no
-gateway or user header.
+is in `auto_ontology/onto_query/`, with routes under `/api/ontologies`.
+
+**In the app:** open **Ontologies** in the left rail. Load a file, then work
+in the tabs:
+
+- **Explore** browses classes, properties and individuals.
+- **Ask** answers questions in plain language or runs your own SPARQL.
+- **Find** searches and finds judged candidates.
+- **Reason** runs an OWL reasoner.
+- **Grow** places concepts, suggests subclasses and drafts definitions, and
+  checks for issues; each suggestion has an *Add* button.
+- **Align** matches the ontology against another one.
+- **Validate** writes SHACL rules and checks data against them.
+
+Scripts can call the same routes on FastAPI at `http://127.0.0.1:3001`
+without a user header.
 
 **How it works:**
 
@@ -297,6 +310,7 @@ gateway or user header.
 | Find suitable candidates for a description, judged exact / broader / narrower / related | `POST /ontologies/{id}/candidates` |
 | Answer a question with SPARQL | `POST /ontologies/{id}/ask` |
 | Run your own SPARQL (checked, read-only) | `POST /ontologies/{id}/sparql` |
+| Run an OWL reasoner: consistency, unsatisfiable classes, inferences | `GET /ontologies/reasoners`, `POST /ontologies/{id}/reason`, `GET /ontologies/{id}/reason` |
 | Grow: place a new concept, suggest missing subclasses, draft definitions | `POST /ontologies/{id}/grow/placement`, `.../grow/children`, `.../grow/definitions` |
 | Find duplicates, missing definitions, orphans, untyped properties, cycles | `POST /ontologies/{id}/grow/issues` |
 | Apply reviewed Turtle | `POST /ontologies/{id}/additions` |
@@ -320,12 +334,24 @@ curl -H 'content-type: application/json' \
   question, and `embedding` builds the index. Without an embedding model,
   search is keyword-only. Without a chat model, the model-backed routes return
   `503`; search, SPARQL, issues, derived shapes and validation still work.
-- **No reasoner.** The SPARQL runs on the asserted triples, so the prompt
-  teaches property paths (`rdfs:subClassOf*`) and the blank-node shape of
-  restrictions. Every query is checked before it runs: it must be read-only,
-  use no `SERVICE` or `FROM`, and contain only IRIs that exist. A query that
-  fails these checks goes back to the model with the reason, up to three
-  times.
+- **Reasoning.** There are two reasoners:
+  - **OWL RL** (`owlrl`, pure Python) is always available. It derives types
+    from domains and ranges, inverse and transitive facts, and catches
+    disjointness clashes.
+  - **HermiT** (via `owlready2`) does full OWL DL classification and finds
+    unsatisfiable classes. It needs Java, which the Docker image installs;
+    build with `--build-arg INSTALL_JAVA=false` to leave it out.
+
+  `auto`, the default (`ONTO_QUERY_REASONER`), picks HermiT when Java is
+  present. The last result is kept until the ontology changes. Questions and
+  SPARQL can query it by setting `use_inferences`, and its Turtle can be
+  posted to `/additions` to assert it.
+- **Checked SPARQL.** Without inferences, queries run on the asserted
+  triples, so the prompt teaches property paths (`rdfs:subClassOf*`) and the
+  blank-node shape of restrictions. Every query is checked before it runs: it
+  must be read-only, use no `SERVICE` or `FROM`, and contain only IRIs that
+  exist. A query that fails these checks goes back to the model with the
+  reason, up to three times.
 - **Suggestions are not applied.** The grow features return Turtle. Nothing
   changes until you post that Turtle to `/additions`; the uploaded original is
   kept unchanged next to the working copy.

@@ -56,6 +56,15 @@ def local_rerank_model() -> str:
     )
 
 
+def default_reasoner() -> str:
+    """``ONTO_QUERY_REASONER``: ``auto`` (default), ``owlrl`` or ``hermit``.
+
+    ``auto`` uses HermiT when Java is on the PATH, OWL RL otherwise.
+    """
+    value = os.environ.get("ONTO_QUERY_REASONER", "auto").strip().lower()
+    return value if value in ("auto", "owlrl", "hermit") else "auto"
+
+
 def max_upload_bytes() -> int:
     """Largest ontology file accepted, ``ONTO_QUERY_MAX_UPLOAD_MB`` (default 200)."""
     raw = os.environ.get("ONTO_QUERY_MAX_UPLOAD_MB", "").strip()
