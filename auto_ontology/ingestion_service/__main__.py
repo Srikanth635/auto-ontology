@@ -88,7 +88,7 @@ async def lifespan(app: FastAPI):
         logger.info("ingestion_service: shutting down")
 
 
-app = FastAPI(title="Auto Ontology Ingestion Service", lifespan=lifespan)
+app = FastAPI(title="neemontology Ingestion Service", lifespan=lifespan)
 app.include_router(router)
 
 
@@ -98,7 +98,7 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
     logger.info(
-        "Starting Auto Ontology Ingestion Service — app version %s", get_app_version()
+        "Starting neemontology Ingestion Service — app version %s", get_app_version()
     )
     uvicorn.run(
         app,

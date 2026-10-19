@@ -71,9 +71,9 @@ resolve_infra_services() {
 	echo "${services# }"
 }
 
-# Tear down any previously-running Auto Ontology app containers so the chosen mode
+# Tear down any previously-running neemontology app containers so the chosen mode
 # starts from a clean slate (infra containers are left alone).
-echo "Stopping existing Auto Ontology containers (if any): $AUTO_ONTOLOGY_SERVICES"
+echo "Stopping existing neemontology containers (if any): $AUTO_ONTOLOGY_SERVICES"
 docker compose rm -sf $AUTO_ONTOLOGY_SERVICES >/dev/null 2>&1 || true
 
 if [[ " $* " =~ \ --dev\  ]]; then
@@ -85,10 +85,10 @@ if [[ " $* " =~ \ --dev\  ]]; then
 	echo "Services:"
 	echo "  Postgres:      http://localhost:5432"
 	echo "  pgAdmin:       http://localhost:5050"
-	echo "  Auto Ontology ingestion: http://localhost:3002"
+	echo "  neemontology ingestion: http://localhost:3002"
 
 	echo ""
-	echo "Start Auto Ontology locally:"
+	echo "Start neemontology locally:"
 	echo "  uv run python -m auto_ontology.server"
 	exit 0
 fi
@@ -108,8 +108,8 @@ if [[ " $* " =~ \ --ds\  ]]; then
 	echo "Services:"
 	echo "  Postgres:      http://localhost:5432"
 	echo "  pgAdmin:       http://localhost:5050"
-	echo "  Auto Ontology frontend:  http://localhost:3000"
-	echo "  Auto Ontology ingestion: http://localhost:3002"
+	echo "  neemontology frontend:  http://localhost:3000"
+	echo "  neemontology ingestion: http://localhost:3002"
 
 	echo ""
 	echo "Start the backend locally:"
@@ -128,9 +128,9 @@ echo ""
 echo "Services:"
 echo "  Postgres:      http://localhost:5432"
 echo "  pgAdmin:       http://localhost:5050"
-echo "  Auto Ontology frontend:  http://localhost:3000"
-echo "  Auto Ontology backend:   http://localhost:3001"
-echo "  Auto Ontology ingestion: http://localhost:3002"
+echo "  neemontology frontend:  http://localhost:3000"
+echo "  neemontology backend:   http://localhost:3001"
+echo "  neemontology ingestion: http://localhost:3002"
 
 echo ""
 echo "Follow the logs:  ./dev_tools/setup_env.sh --logs [service]"

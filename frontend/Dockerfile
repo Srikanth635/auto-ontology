@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # ---------------------------------------------------------------------------
-# Auto Ontology Next.js frontend image
+# neemontology Next.js frontend image
 # ---------------------------------------------------------------------------
-# Build (from /frontend):  docker build -t auto-ontology-frontend:latest .
+# Build (from /frontend):  docker build -t neemontology-frontend:latest .
 # Run:                     docker run --rm -p 3000:3000 \
 #                              -e PYTHON_API_URL=http://auto-ontology:3001 \
-#                              auto-ontology-frontend:latest
+#                              neemontology-frontend:latest
 #
 # Uses Next.js standalone output (NEXT_OUTPUT=standalone) for a small image.
 # The runtime image only contains the standalone server, static assets and

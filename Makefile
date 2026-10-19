@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # ---------------------------------------------------------------------------
-# Auto Ontology local helpers
+# neemontology local helpers
 # ---------------------------------------------------------------------------
 # Image builds for the local Docker Compose stack, and schema migrations.
 #
@@ -18,13 +18,13 @@
 TAG            ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 PYTHON_API_URL ?= http://auto-ontology:3001
 
-BACKEND_REF  := auto-ontology:$(TAG)
-FRONTEND_REF := auto-ontology-frontend:$(TAG)
+BACKEND_REF  := neemontology:$(TAG)
+FRONTEND_REF := neemontology-frontend:$(TAG)
 
 .PHONY: help build build-backend build-frontend
 
 help:
-	@echo "Auto Ontology targets:"
+	@echo "neemontology targets:"
 	@echo "  make build               Build both images locally"
 	@echo "  make build-backend       Build backend image locally"
 	@echo "  make build-frontend      Build frontend image locally"

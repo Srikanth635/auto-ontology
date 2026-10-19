@@ -40,8 +40,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: auto-ontology:latest
-    container_name: auto-ontology
+    image: neemontology:latest
+    container_name: neemontology
     restart: unless-stopped
     ports:
       # Loopback only: there is no sign-in, so nothing here should be reachable
@@ -70,8 +70,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: auto-ontology:latest
-    container_name: auto-ontology-ingestion-service
+    image: neemontology:latest
+    container_name: neemontology-ingestion-service
     restart: unless-stopped
     command: ["ingestion_service"]
     ports:
@@ -111,8 +111,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: auto-ontology:latest
-    container_name: auto-ontology-migrate
+    image: neemontology:latest
+    container_name: neemontology-migrate
     env_file:
       - .env
     environment:
@@ -134,8 +134,8 @@ services:
       dockerfile: Dockerfile
       args:
         PYTHON_API_URL: ${PYTHON_API_URL:-http://auto-ontology:3001}
-    image: auto-ontology-frontend:latest
-    container_name: auto-ontology-frontend-migrate
+    image: neemontology-frontend:latest
+    container_name: neemontology-frontend-migrate
     working_dir: /app/migrate
     env_file:
       - .env
@@ -154,8 +154,8 @@ services:
       dockerfile: Dockerfile
       args:
         PYTHON_API_URL: ${PYTHON_API_URL:-http://auto-ontology:3001}
-    image: auto-ontology-frontend:latest
-    container_name: auto-ontology-frontend
+    image: neemontology-frontend:latest
+    container_name: neemontology-frontend
     restart: unless-stopped
     ports:
       # Loopback only, like the backend: the app has no sign-in.

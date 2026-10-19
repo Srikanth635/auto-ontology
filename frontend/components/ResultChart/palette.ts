@@ -3,17 +3,17 @@
 
 import type { ChartColor } from './types';
 
-/** Named series colors. Teal is the brand token; the rest are theme-stable hexes. */
+/** Named series colors. `green` is a real green, so a chart that asks for it gets one; the rest are theme-stable hexes. */
 export const PALETTE: Record<ChartColor, string> = {
-	green: 'var(--color-brand)',
-	blue: '#4f9ff0',
+	green: '#3f9d6b',
+	blue: 'var(--color-brand)',
 	amber: '#e8b500',
 	red: '#e5484d',
 	neutral: 'var(--result-chart-neutral, #8c8c95)',
 };
 
 /** Default color assignment order when a series omits an explicit color. */
-export const CYCLE: ChartColor[] = ['green', 'blue', 'amber', 'red', 'neutral'];
+export const CYCLE: ChartColor[] = ['blue', 'green', 'amber', 'red', 'neutral'];
 
 /** Diverging colors for delta charts; gain/loss is also encoded by bar direction. */
 export const GAIN = PALETTE.green;

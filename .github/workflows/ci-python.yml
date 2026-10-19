@@ -2,7 +2,7 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Auto Ontology CI
+name: neemontology CI
 
 on:
   push:
@@ -50,7 +50,7 @@ jobs:
           src: './auto_ontology ./alembic ./dev_tools'
 
   build_image:
-    name: Build Auto Ontology Server image
+    name: Build neemontology Server image
     runs-on: ubuntu-latest
     # The `secrets` context is not allowed in `if:` expressions, so surface the
     # NGC key as an env var and gate the nvcr.io login on that instead. The
@@ -81,7 +81,7 @@ jobs:
           username: '$oauthtoken'
           password: ${{ env.NGC_API_KEY }}
 
-      - name: Build Auto Ontology Server image (no push)
+      - name: Build neemontology Server image (no push)
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -99,7 +99,7 @@ jobs:
 
     # pgvector, not plain postgres: the vector store creates its collections
     # with `CREATE EXTENSION vector`, and `stock postgres` fails there in a way
-    # that looks like a Auto Ontology bug. Pinned to the same tag as docker-compose.yml so
+    # that looks like a neemontology bug. Pinned to the same tag as docker-compose.yml so
     # CI and a developer's laptop disagree about nothing.
     services:
       postgres:
@@ -150,7 +150,7 @@ jobs:
       - name: Seed the fixture databases (pagila, chinook)
         run: uv run --no-sync python -m dev_tools.fixtures.seed_fixtures
 
-      - name: Migrate the Auto Ontology schema
+      - name: Migrate the neemontology schema
         run: uv run --no-sync alembic upgrade head
 
       - name: Seed the deterministic graph fixture

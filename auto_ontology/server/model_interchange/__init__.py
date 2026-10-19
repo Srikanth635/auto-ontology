@@ -2,4 +2,4 @@
 # All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Auto Ontology model YAML export/import HTTP API."""
+"""neemontology model YAML export/import HTTP API."""

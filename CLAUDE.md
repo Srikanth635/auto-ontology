@@ -4,11 +4,11 @@ All rights reserved.
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# Auto Ontology
+# neemontology
 
 Full-stack repo: Next.js frontend (`/frontend`) + FastAPI backend (`/auto_ontology`).
 
-This file is for **Auto Ontology maintainers**.
+This file is for **neemontology maintainers**.
 
 ## Dev Commands
 

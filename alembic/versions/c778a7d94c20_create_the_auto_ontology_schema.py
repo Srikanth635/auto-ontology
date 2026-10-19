@@ -4,7 +4,7 @@
 
 """Create the auto_ontology schema
 
-The single baseline migration. Auto Ontology is not released and nothing is deployed with
+The single baseline migration. neemontology is not released and nothing is deployed with
 an earlier revision applied, so the history is squashed rather than accumulated:
 there is no upgrade path to preserve, and one file that matches
 ``auto_ontology/dal/schema.py`` is easier to review than a chain that has to be replayed
@@ -17,7 +17,7 @@ these tables and not in this migration. ``include_object`` in ``alembic/env.py``
 is what keeps autogenerate from seeing that schema as drift and proposing to
 drop it, which is the single most destructive mistake available here.
 
-**The DDL here is unqualified**, and that is deliberate. Auto Ontology's tables live in
+**The DDL here is unqualified**, and that is deliberate. neemontology's tables live in
 ``public``, and naming the default schema explicitly makes autogenerate report
 permanent drift: metadata says ``referent_schema='public'`` for every foreign
 key while reflection reports the default schema as ``None``, so Alembic proposes

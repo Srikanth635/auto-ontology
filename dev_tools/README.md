@@ -73,7 +73,7 @@ Open **http://localhost:3000**.
 
 ## `setup_env.sh`
 
-Brings up the Auto Ontology environment via `docker compose`.
+Brings up the neemontology environment via `docker compose`.
 
 | Command | What it starts |
 |---|---|
@@ -92,9 +92,9 @@ The start modes first make sure `.env` exists (copied from `.env.example` if not
 |---|---|
 | Postgres | `localhost:5432` |
 | pgAdmin | <http://localhost:5050> |
-| Auto Ontology ingestion service | <http://localhost:3002> |
-| Auto Ontology frontend (full stack only) | <http://localhost:3000> |
-| Auto Ontology backend (full stack only) | <http://localhost:3001> |
+| neemontology ingestion service | <http://localhost:3002> |
+| neemontology frontend (full stack only) | <http://localhost:3000> |
+| neemontology backend (full stack only) | <http://localhost:3001> |
 
 ### `--dev` workflow
 

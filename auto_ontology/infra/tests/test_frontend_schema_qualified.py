@@ -140,7 +140,7 @@ def test_all_prisma_models_declare_the_frontend_schema() -> None:
     No model may name any other schema either, and that is the load-bearing
     half: `db push` reconciles every schema the datasource lists, so a model
     declaring `public` means the datasource has to list `public`, and Prisma
-    then treats Auto Ontology's own tables as drift. It proposed dropping
+    then treats neemontology's own tables as drift. It proposed dropping
     `alembic_version` the one time this was tried.
     """
     schema_file = _AUTO_ONTOLOGY_ROOT.parent / "frontend" / "prisma" / "schema.prisma"
@@ -171,7 +171,7 @@ def test_all_prisma_models_declare_the_frontend_schema() -> None:
 def test_the_datasource_manages_only_the_frontend_schema() -> None:
     """`db push` reconciles every schema the datasource names.
 
-    Naming `public` there hands Prisma Auto Ontology's own tables: the first `db push`
+    Naming `public` there hands Prisma neemontology's own tables: the first `db push`
     after it was added stopped with "You are about to drop the
     `alembic_version` table", and would have taken the rest with
     `--accept-data-loss`.
@@ -187,6 +187,6 @@ def test_the_datasource_manages_only_the_frontend_schema() -> None:
     )
     assert schemas == [FRONTEND_SCHEMA], (
         f"the Prisma datasource manages {schemas}; it must manage only "
-        f"[{FRONTEND_SCHEMA!r}] — anything else is a Auto Ontology schema Prisma will "
+        f"[{FRONTEND_SCHEMA!r}] — anything else is a neemontology schema Prisma will "
         f"propose dropping tables from"
     )

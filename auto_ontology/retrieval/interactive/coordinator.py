@@ -224,7 +224,7 @@ def _apply_follow_up_seed(
 
 
 def _run_sql_generation(session: InteractiveSessionState) -> str:
-    """Call Auto Ontology and persist the returned path_state back to session."""
+    """Call neemontology and persist the returned path_state back to session."""
     from auto_ontology.retrieval.text_to_sql.main import get_agent_response_with_state
     from auto_ontology.retrieval.text_to_sql.state import TextToSQLPayload
 
@@ -363,7 +363,7 @@ def _run_sql_generation(session: InteractiveSessionState) -> str:
         "connectors": session.connectors,
         "path_state": dict(
             session.path_state
-        ),  # copy so Auto Ontology doesn't mutate in place
+        ),  # copy so neemontology doesn't mutate in place
         "acronyms": [],
         "custom_prompts": combined_knowledge,  # full union as low-priority fallback
     }

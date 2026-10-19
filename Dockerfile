@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # ---------------------------------------------------------------------------
-# Auto Ontology FastAPI backend image
+# neemontology FastAPI backend image
 # ---------------------------------------------------------------------------
 # Build:
 #
-#   docker build -t auto-ontology:latest .
+#   docker build -t neemontology:latest .
 #
 # Run:
 #
-#   docker run --rm -p 3001:3001 --env-file .env auto-ontology:latest
+#   docker run --rm -p 3001:3001 --env-file .env neemontology:latest
 #
 # ---------------------------------------------------------------------------
 

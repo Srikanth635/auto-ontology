@@ -4,8 +4,8 @@
 
 // `frontend` only, and deliberately: `db push` reconciles every schema listed
 // here against this file, so naming `public` would hand Prisma authority over
-// Auto Ontology's own tables — it proposed dropping `alembic_version` the moment it was
-// added. Auto Ontology's schema is Alembic's (see `auto_ontology/dal/schema.py`), and the two stay
+// neemontology's own tables — it proposed dropping `alembic_version` the moment it was
+// added. neemontology's schema is Alembic's (see `auto_ontology/dal/schema.py`), and the two stay
 // out of each other's way by each listing only what it owns.
 datasource db {
   provider = "postgresql"

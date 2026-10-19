@@ -147,7 +147,7 @@ const HOVER_LABEL_BACKGROUND_DARK = '#18181b';
 const prefersDarkMode = () =>
 	typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-const EDGE_BRAND_COLOR = '#2a9d8f';
+const EDGE_BRAND_COLOR = '#4f5fd1';
 
 const hexToRgb = (hex: string) => {
 	const value = hex.replace('#', '');

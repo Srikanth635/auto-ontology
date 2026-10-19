@@ -45,14 +45,16 @@ It lets you:
 | Background jobs | Ingestion and compilation every 24 hours | Once at startup, then on demand; adding a connection ingests and compiles it straight away |
 | Deployment | Helm chart, release tooling, Vault, SSO, invitations | Docker Compose only |
 | Connectors | Also HeavyDB, Kyuubi, Trino, ClickHouse | PostgreSQL, MySQL, SQLite, DuckDB, Snowflake, Databricks |
-| Look | NVIDIA black and green | Slate and teal |
+| Look | NVIDIA black and green | Slate and indigo |
 
 Kept as they were: KumoRFM predictive queries, pgAdmin, PII detection, tags and
 rules, import/export of the semantic model, and the analytics page.
 
-Internal identifiers still use the upstream name — the `auto_ontology` Python
-package, the `auto-ontology` Docker images, and the `x-auto-ontology-user-id`
-header — so the code stays easy to compare with upstream.
+The app, the Docker images and the container names say neemontology. A few
+internal identifiers still use the upstream name — the `auto_ontology` Python
+package, the Compose service names, the Postgres database name and the
+`x-auto-ontology-user-id` header — so existing data keeps working and the code
+stays easy to compare with upstream.
 
 ## Benchmarks
 

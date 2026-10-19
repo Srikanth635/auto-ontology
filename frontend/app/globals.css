@@ -11,16 +11,16 @@
 	--color-foreground: #0f1419;
 
 	/*
-	 * Slate and teal. The brand teal is the only accent; every other tone is a
+	 * Slate and indigo. The brand indigo is the only accent; every other tone is a
 	 * cool blue-grey. Redefining Tailwind's own slate scale keeps `slate-*`
 	 * classes on this palette rather than Tailwind's default, bluer slate.
 	 */
-	--color-brand: #2a9d8f;
-	--color-brand-strong: #21867a;
-	--color-brand-deep: #17594f;
-	--color-brand-light: #5cc4b5;
-	--color-brand-pale: #a8dcd4;
-	--color-brand-soft: #e3f4f1;
+	--color-brand: #4f5fd1;
+	--color-brand-strong: #3f4eb8;
+	--color-brand-deep: #2c3a8c;
+	--color-brand-light: #8d99ec;
+	--color-brand-pale: #c2c9f5;
+	--color-brand-soft: #eceefc;
 
 	/* The app background behind cards: #f7f8fa, and #0f1419 in dark mode. */
 	--color-canvas: #f7f8fa;

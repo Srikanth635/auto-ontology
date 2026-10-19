@@ -35,11 +35,10 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
 	title: {
-		default: 'Auto Ontology',
-		template: 'Auto Ontology - %s',
+		default: 'neemontology',
+		template: 'neemontology - %s',
 	},
-	description:
-		'Auto Ontology — a semantic layer and natural-language querying for your databases',
+	description: 'neemontology — a semantic layer and natural-language querying for your databases',
 	icons: {
 		icon: '/favicon.svg',
 	},

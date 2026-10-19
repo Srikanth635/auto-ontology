@@ -47,7 +47,7 @@ export const ThinkingMessage = ({ steps, liveSql }: ThinkingMessageProps) => {
 						<Icon name={IconName.AppLogo} className="h-4 w-4 text-brand" />
 					</div>
 					<span className="text-xs font-semibold text-body dark:text-slate-200">
-						Auto Ontology Agent
+						neemontology Agent
 					</span>
 				</div>
 

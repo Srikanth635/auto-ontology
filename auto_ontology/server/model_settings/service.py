@@ -290,7 +290,7 @@ def _test_embedding(resolved: ResolvedModel) -> dict[str, Any]:
     )
     response = client.embeddings.create(
         model=resolved.model,
-        input=["Auto Ontology connection test"],
+        input=["neemontology connection test"],
         encoding_format="float",
         **({"dimensions": resolved.dimensions} if resolved.dimensions else {}),
     )

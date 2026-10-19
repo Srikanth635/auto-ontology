@@ -318,7 +318,7 @@ export const GlobalSearchModal = ({ open, onClose }: GlobalSearchModalProps) => 
 						value={query}
 						onChange={handleQueryChange}
 						placeholder="Search…"
-						aria-label="Search Auto Ontology"
+						aria-label="Search neemontology"
 						autoFocus
 						className="h-9 w-full"
 					/>
@@ -370,7 +370,7 @@ export const GlobalSearch = () => {
 			<button
 				type="button"
 				onClick={() => setOpen(true)}
-				aria-label="Search Auto Ontology"
+				aria-label="Search neemontology"
 				className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-full bg-slate-100 px-3 text-sm text-body transition-colors hover:bg-brand-soft hover:text-brand-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800"
 			>
 				<svg
@@ -385,7 +385,7 @@ export const GlobalSearch = () => {
 						clipRule="evenodd"
 					/>
 				</svg>
-				Search Auto Ontology
+				Search neemontology
 			</button>
 			<GlobalSearchModal open={open} onClose={() => setOpen(false)} />
 		</>

@@ -193,7 +193,7 @@ export const ChatSidebar = ({
 					<Link href="/" className="flex items-center gap-3">
 						<Icon name={IconName.AppLogo} className="h-6 w-auto text-brand" />
 						<span className="text-sm font-semibold tracking-wide text-black dark:text-slate-100">
-							Auto Ontology
+							neemontology
 						</span>
 					</Link>
 				</div>
